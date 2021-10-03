@@ -2,8 +2,8 @@
   description = "A very basic flake";
 
   inputs.nixpkgs.follows = "nix/nixpkgs";
-  inputs.set_wm_class.url = "github.com:aakropotkin/set_wm_class";
-  inputs.ak-core.url = "github.com:aakropotkin/ak-core";
+  inputs.set_wm_class.url = "github:aakropotkin/set_wm_class";
+  inputs.ak-core.url = "github:aakropotkin/ak-core";
 
   outputs = { self, nixpkgs, set_wm_class, ak-core, nix, ... }: {
 
