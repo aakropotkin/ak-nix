@@ -1,5 +1,5 @@
 {
-  description = "A very basic flake";
+  description = "A collection of aakropotkin's nix flakes";
 
   inputs.nixpkgs.follows = "nix/nixpkgs";
   inputs.set_wm_class.url = "github:aakropotkin/set_wm_class";
