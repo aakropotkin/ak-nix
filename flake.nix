@@ -25,7 +25,8 @@
     nixosModules.ak-core = ak-core.nixosModule;
     nixosModules.ak-nix = { pkgs, ... }@args:
       ( set_wm_class.nixosModule args ) //
-      ( ak-core.nixosModule args );
+      ( ak-core.nixosModule args ) //
+      ( ini2json.nixosModule args );
     nixosModule = self.nixosModules.ak-nix; 
 
   };
