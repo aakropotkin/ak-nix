@@ -23,6 +23,24 @@
         "type": "github"
       }
     },
+    "ini2json": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "lastModified": 1633580628,
+        "narHash": "sha256-su33DIriNsTU6JaGje0bgjSMl3rsmtUlSIOUXWRgloo=",
+        "owner": "aakropotkin",
+        "repo": "ini2json",
+        "rev": "ec8c9efd46238daa74fefaceee1898a87cf9dc42",
+        "type": "github"
+      },
+      "original": {
+        "owner": "aakropotkin",
+        "repo": "ini2json",
+        "type": "github"
+      }
+    },
     "lowdown-src": {
       "flake": false,
       "locked": {
@@ -92,7 +110,7 @@
     "nix_2": {
       "inputs": {
         "lowdown-src": "lowdown-src_2",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1633283586,
@@ -110,7 +128,7 @@
     "nix_3": {
       "inputs": {
         "lowdown-src": "lowdown-src_3",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_4"
       },
       "locked": {
         "lastModified": 1633283586,
@@ -142,16 +160,15 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1632864508,
-        "narHash": "sha256-d127FIvGR41XbVRDPVvozUPQ/uRHbHwvfyKHwEt5xFM=",
+        "lastModified": 1633573942,
+        "narHash": "sha256-kmcYNDXiqNGJzi6gy55+aObl5wjFGp908zBMCklExqo=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "82891b5e2c2359d7e58d08849e4c89511ab94234",
+        "rev": "ea4524e6cc7761c3cc271233fa97b5e7473f760a",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-21.05-small",
         "type": "indirect"
       }
     },
@@ -170,9 +187,25 @@
         "type": "indirect"
       }
     },
+    "nixpkgs_4": {
+      "locked": {
+        "lastModified": 1632864508,
+        "narHash": "sha256-d127FIvGR41XbVRDPVvozUPQ/uRHbHwvfyKHwEt5xFM=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "82891b5e2c2359d7e58d08849e4c89511ab94234",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "ref": "nixos-21.05-small",
+        "type": "indirect"
+      }
+    },
     "root": {
       "inputs": {
         "ak-core": "ak-core",
+        "ini2json": "ini2json",
         "nix": "nix_2",
         "nixpkgs": [
           "nix",
