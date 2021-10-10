@@ -297,15 +297,16 @@
         ]
       },
       "locked": {
-        "lastModified": 1633901066,
-        "narHash": "sha256-VMmkufUEaTyKmxs+lAMr5tlyN+UGyUR/QNLZejHxR6I=",
+        "lastModified": 1633903245,
+        "narHash": "sha256-E9/jxa763KgcAny7Q+cM/sgB4+JXxGv4J4i7rorzLSU=",
         "owner": "aakropotkin",
         "repo": "slibtool",
-        "rev": "ce2e9874589226f9f1de9255e3536d7b01a7f099",
+        "rev": "290a7a345463f161964e7fe7480c31ce27f3018d",
         "type": "github"
       },
       "original": {
         "owner": "aakropotkin",
+        "ref": "nix",
         "repo": "slibtool",
         "type": "github"
       }
