@@ -37,7 +37,7 @@
         ( set_wm_class.nixosModule args ) //
         ( ak-core.nixosModule args )      //
         ( ini2json.nixosModule args )     //
-        ( slibtool.nixosModules args );
+        ( slibtool.nixosModule args );
       nixosModule = self.nixosModules.ak-nix; 
 
     };
