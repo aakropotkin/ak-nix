@@ -6,7 +6,7 @@
   inputs.ak-core.url = "github:aakropotkin/ak-core";
   inputs.ini2json.url = "github:aakropotkin/ini2json";
   inputs.slibtool.url = "github:aakropotkin/slibtool/nix";
-  inputs.slibtool.url = "github:aakropotkin/sfm/nix";
+  inputs.sfm.url = "github:aakropotkin/sfm/nix";
 
   outputs =
     { self, nixpkgs, nix,
@@ -29,7 +29,7 @@
         ( set_wm_class.overlay final prev ) //
         ( ak-core.overlay final prev )      //
         ( ini2json.overlay final prev )     //
-        ( sfm.overlay final prev )     //
+        ( sfm.overlay final prev )          //
         ( slibtool.overlay final prev );
       overlay = self.overlays.ak-nix;
 
@@ -37,7 +37,7 @@
       nixosModules.ak-core = ak-core.nixosModule;
       nixosModules.ini2json = ini2json.nixosModule;
       nixosModules.slibtool = slibtool.nixosModule;
-      nixosModules.slibtool = sfm.nixosModule;
+      nixosModules.sfm = sfm.nixosModule;
       nixosModules.ak-nix = { pkgs, ... }@args:
         ( set_wm_class.nixosModule args ) //
         ( ak-core.nixosModule args )      //
