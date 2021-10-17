@@ -35,7 +35,7 @@
       overlay = self.overlays.ak-nix;
 
       nixosModules.set_wm_class = set_wm_class.nixosModule;
-      nixosModules.ak-core = ak-core.nixosModule;
+      #nixosModules.ak-core = ak-core.nixosModule;
       nixosModules.ini2json = ini2json.nixosModule;
       nixosModules.slibtool = slibtool.nixosModule;
       nixosModules.sfm = sfm.nixosModule;
