@@ -2,11 +2,12 @@
   description = "A collection of aakropotkin's nix flakes";
 
   inputs.nixpkgs.follows = "nix/nixpkgs";
+
   inputs.set_wm_class.url = "github:aakropotkin/set_wm_class";
-  inputs.ak-core.url = "github:aakropotkin/ak-core";
-  inputs.ini2json.url = "github:aakropotkin/ini2json";
-  inputs.slibtool.url = "github:aakropotkin/slibtool/nix";
-  inputs.sfm.url = "github:aakropotkin/sfm/nix";
+  inputs.ak-core.url      = "github:aakropotkin/ak-core";
+  inputs.ini2json.url     = "github:aakropotkin/ini2json";
+  inputs.slibtool.url     = "github:aakropotkin/slibtool/nix";
+  inputs.sfm.url          = "github:aakropotkin/sfm/nix";
 
   outputs =
     { self, nixpkgs, nix,
@@ -17,7 +18,7 @@
         set_wm_class.packages.x86_64-linux //
         ak-core.packages.x86_64-linux      //
         ini2json.packages.x86_64-linux     //
-        sfm.packages.x86_64-linux     //
+        sfm.packages.x86_64-linux          //
         slibtool.packages.x86_64-linux;
 
       overlays.set_wm_class = set_wm_class.overlay;
@@ -42,7 +43,7 @@
         ( set_wm_class.nixosModule args ) //
         ( ak-core.nixosModule args )      //
         ( ini2json.nixosModule args )     //
-        ( sfm.nixosModule args )     //
+        ( sfm.nixosModule args )          //
         ( slibtool.nixosModule args );
       nixosModule = self.nixosModules.ak-nix; 
 
