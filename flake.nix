@@ -3,11 +3,11 @@
 
   inputs.nixpkgs.follows = "nix/nixpkgs";
 
-  inputs.set_wm_class.url = "github:aakropotkin/set_wm_class";
-  inputs.ak-core.url      = "github:aakropotkin/ak-core";
-  inputs.ini2json.url     = "github:aakropotkin/ini2json";
-  inputs.slibtool.url     = "github:aakropotkin/slibtool/nix";
-  inputs.sfm.url          = "github:aakropotkin/sfm/nix";
+  inputs.set_wm_class.url = github:aakropotkin/set_wm_class;
+  inputs.ak-core.url      = github:aakropotkin/ak-core;
+  inputs.ini2json.url     = github:aakropotkin/ini2json;
+  inputs.slibtool.url     = github:aakropotkin/slibtool/nix;
+  inputs.sfm.url          = github:aakropotkin/sfm/nix;
 
   outputs =
     { self, nixpkgs, nix,
