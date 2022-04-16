@@ -40,10 +40,10 @@
       overlays.slibtool = slibtool.overlay;
       overlays.sfm = sfm.overlay;
       overlays.ak-nix = final: prev:
-        ( set_wm_class.overlay final prev ) //
-        ( ak-core.overlay final prev )      //
-        ( ini2json.overlay final prev )     //
-        ( sfm.overlay final prev )          //
+        ( set_wm_class.overlay final prev )      //
+        ( ak-core.overlays.default final prev )  //
+        ( ini2json.overlay final prev )          //
+        ( sfm.overlay final prev )               //
         ( slibtool.overlay final prev );
       overlays.default = self.overlays.ak-nix;
 
