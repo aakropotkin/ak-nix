@@ -6,6 +6,7 @@
     ini2json.url     = github:aakropotkin/ini2json;
     slibtool.url     = github:aakropotkin/slibtool/nix;
     sfm.url          = github:aakropotkin/sfm/nix;
+    ak-pkgs.url      = "path:./pkgs";
     utils.url        = github:numtide/flake-utils;
   };
 
@@ -17,6 +18,7 @@
     , ini2json
     , slibtool
     , sfm
+    , ak-pkgs
     , utils
     }: {
       lib = import ./lib { flake-utils = utils; };
@@ -66,5 +68,5 @@
       };
       templates.default = self.templates.basic;
 
-    };
+    } // ak-pkgs.outputs;
 }
