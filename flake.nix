@@ -60,5 +60,11 @@
         ( slibtool.nixosModule args );
       nixosModule = self.nixosModules.ak-nix; 
 
+      templates.basic = {
+        path = ./templates/basic;
+        description = "a basic GNU build system package";
+      };
+      templates.default = self.templates.basic;
+
     };
 }
