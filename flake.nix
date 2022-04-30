@@ -66,5 +66,5 @@
       };
       templates.default = self.templates.basic;
 
-    }
+    };
 }
