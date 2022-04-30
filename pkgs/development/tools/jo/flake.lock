@@ -1,29 +1,12 @@
 {
   "nodes": {
-    "jo-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1641398377,
-        "narHash": "sha256-aATCeJV0x+XHOQbwulutxivPzGVQ0mJj90vA+6IM124=",
-        "owner": "jpmens",
-        "repo": "jo",
-        "rev": "6962bca178a6778328d1126ff762120305bb4327",
-        "type": "github"
-      },
-      "original": {
-        "owner": "jpmens",
-        "repo": "jo",
-        "rev": "6962bca178a6778328d1126ff762120305bb4327",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1650920067,
-        "narHash": "sha256-iV+7zkBZsHiy4epfcyoiW8lRXdjZXq6h8RfNcaua4Fc=",
+        "lastModified": 1651007983,
+        "narHash": "sha256-GNay7yDPtLcRcKCNHldug85AhAvBpTtPEJWSSDYBw8U=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "6a323903ad07de6680169bb0423c5cea9db41d82",
+        "rev": "e10da1c7f542515b609f8dfbcf788f3d85b14936",
         "type": "github"
       },
       "original": {
@@ -33,7 +16,6 @@
     },
     "root": {
       "inputs": {
-        "jo-src": "jo-src",
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }

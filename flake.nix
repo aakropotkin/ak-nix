@@ -6,7 +6,6 @@
     ini2json.url     = github:aakropotkin/ini2json;
     slibtool.url     = github:aakropotkin/slibtool/nix;
     sfm.url          = github:aakropotkin/sfm/nix;
-    ak-pkgs.url      = "path:./pkgs";
     utils.url        = github:numtide/flake-utils;
   };
 
@@ -18,7 +17,6 @@
     , ini2json
     , slibtool
     , sfm
-    , ak-pkgs
     , utils
     }: {
       lib = import ./lib { flake-utils = utils; };
@@ -34,7 +32,7 @@
             inherit (nixpkgs.legacyPackages.x86_64-linux)
               buildEnv bash tcsh zsh ksh dash;
           };
-        };
+        } // ( nixpkgs.legacyPackages.x86_64-linux.callPackage ./pkgs {} );
 
       overlays.set_wm_class = set_wm_class.overlay;
       overlays.ak-core = ak-core.overlays.default;
@@ -68,5 +66,5 @@
       };
       templates.default = self.templates.basic;
 
-    } // ak-pkgs.outputs;
+    }
 }
