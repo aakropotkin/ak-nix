@@ -31,12 +31,6 @@
         ini2json.packages.x86_64-linux    
         sfm.packages.x86_64-linux         
         slibtool.packages.x86_64-linux    
-        {
-          shall = nixpkgs.legacyPackages.x86_64-linux.callPackage ./shall.nix {
-            inherit (nixpkgs.legacyPackages.x86_64-linux)
-              buildEnv bash tcsh zsh ksh dash;
-          };
-        }
         ( nixpkgs.legacyPackages.x86-linux.callPackage ./pkgs {} )
       ];
 
