@@ -1,5 +1,5 @@
 { lib , callPackage }:
-builtins.foldl ( subdir: lib.recursiveUpdate ( callPackage subdir {} ) ) {} [
+builtins.foldl' ( xs: sub: lib.recursiveUpdate xs ( callPackage sub {} ) ) {} [
   ./development
   ./build-support
 ]
