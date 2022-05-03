@@ -1,4 +1,4 @@
-{ makeSetupHook, writeShellScriptBin }:
+{ makeSetupHook, writeShellScriptBin, ... }:
 {
   isAR = makeSetupHook { name = "isAR"; } ./isAR.sh;
   isAR_sh = let isARContents = builtins.readFile ./isAR.sh; in
