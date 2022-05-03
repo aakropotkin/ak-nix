@@ -1,4 +1,4 @@
-{ callPackage }:
-( callPackage ./setup-hooks {} ) // {
-  tsconfig-lib = callPackage ./tsconfig.nix {};
+{ lib, callPackage, makeSetupHook, writeShellScriptBin, ... }@args:
+( import ./setup-hooks args ) // {
+  tsconfig-lib = import ./tsconfig.nix { inherit lib; };
 }

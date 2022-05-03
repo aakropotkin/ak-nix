@@ -1,5 +1,5 @@
 /* Development tools */
-{ callPackage }:
+{ callPackage, ... }:
 {
   jo = callPackage ./jo {};
 }

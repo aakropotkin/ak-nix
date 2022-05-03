@@ -20,26 +20,30 @@
     , utils
     }:
     let
-      mergeSets =
-        builtins.foldl' ( xs: x: nixpkgs.lib.recursiveUpdate xs x ) {};
+      pkgsFor = import nixpkgs { stdenv = "x86_64-linux"; };
+      mergeSets = { lib ? pkgsFor.lib }: sets:
+        builtins.foldl' ( xs: x: lib.recursiveUpdate xs x ) {} sets;
     in {
       lib = import ./lib { flake-utils = utils; };
 
-      packages.x86_64-linux = mergeSets [
-        set_wm_class.packages.x86_64-linux
-        ak-core.packages.x86_64-linux     
-        ini2json.packages.x86_64-linux    
-        sfm.packages.x86_64-linux         
-        slibtool.packages.x86_64-linux    
-        ( nixpkgs.legacyPackages.x86-linux.callPackage ./pkgs {} )
-      ];
+      packages.x86_64-linux = mergeSets {} [
+          set_wm_class.packages.x86_64-linux
+          ak-core.packages.x86_64-linux     
+          ini2json.packages.x86_64-linux    
+          sfm.packages.x86_64-linux         
+          slibtool.packages.x86_64-linux    
+          ( import ./pkgs {
+              inherit (pkgsFor) lib callPackage makeSetupHook;
+              inherit (pkgsFor) writeShellScriptBin;
+            } )
+        ];
 
       overlays.set_wm_class = set_wm_class.overlay;
       overlays.ak-core = ak-core.overlays.default;
       overlays.ini2json = ini2json.overlay;
       overlays.slibtool = slibtool.overlay;
       overlays.sfm = sfm.overlay;
-      overlays.ak-nix = final: prev: mergeSets [
+      overlays.ak-nix = final: prev: mergeSets {} [
         ( set_wm_class.overlay final prev )    
         ( ak-core.overlays.default final prev )
         ( ini2json.overlay final prev )        
@@ -53,7 +57,7 @@
       nixosModules.ini2json = ini2json.nixosModule;
       nixosModules.slibtool = slibtool.nixosModule;
       nixosModules.sfm = sfm.nixosModule;
-      nixosModules.ak-nix = { pkgs, ... }@args: mergeSets [
+      nixosModules.ak-nix = { pkgs, ... }@args: mergeSets {} [
         ( set_wm_class.nixosModule args )
         ( ak-core.nixosModule args )     
         ( ini2json.nixosModule args )    

@@ -5,7 +5,7 @@
 let
 
   inherit (json-utils) readJSON;
-  # inherit (paths-lib) expandGlob expandGlobList;
+  inherit (paths-lib) isAbspath asAbspath expandGlob expandGlobList;
 
   merge2TsConfigs = f1: f2:
     let merged = lib.recursiveUpdate ( readJSON f1 ) ( readJSON f2 );

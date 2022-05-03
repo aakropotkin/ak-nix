@@ -1,1 +1,1 @@
-{ callPackage }: callPackage ./tools {}
+{ ... }@args: import ./tools args
