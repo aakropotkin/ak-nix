@@ -5,6 +5,7 @@ let
   attrsets = import ./attrsets.nix { inherit flake-utils; };
   paths    = import ./paths.nix { lib = nixpkgs-lib; };
   json     = import ./json.nix;
+  strings  = import ./strings.nix { lib = nixpkgs-lib; };
 in nixpkgs-lib // {  # Extend `nixpkgs.lib'
 
   inherit (attrsets) defaultSystemsMap allSystemsMap;
@@ -17,6 +18,9 @@ in nixpkgs-lib // {  # Extend `nixpkgs.lib'
 
   inherit (paths) isAbsolutePath asAbspath extSuffix expandGlob;
   inherit paths;
+
+  inherit (strings) matchingLines linesGrep readLines readLinesGrep readGrep;
+  strings = nixpkgs-lib.strings // strings;
 
   tsconfig = import ../pkgs/build-support/tsconfig.nix {
     lib       = nixpkgs-lib;
