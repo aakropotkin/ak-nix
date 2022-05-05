@@ -1,6 +1,5 @@
 { lib }:
 let
-
   /* Taken from yarn2nix */
   globElemToRegex = builtins.replaceStrings ["*"] [".*"];
 
@@ -15,6 +14,14 @@ in rec {
 
 
 /* -------------------------------------------------------------------------- */
+
+  extSuffix = path: with builtins;
+    let ms = match "^[^.].*\\.(.*)$" ( baseNameOf path );
+    in if isNull ms then "" else head ms;
+
+
+/* -------------------------------------------------------------------------- */
+
 
   # Path -> PathGlob -> [Path]
   expandGlob = base: glob: expandGlobList base ( splitGlob glob );
