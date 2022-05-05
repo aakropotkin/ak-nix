@@ -1,4 +1,3 @@
 { lib, callPackage, makeSetupHook, writeShellScriptBin, ... }@args:
-( import ./setup-hooks args ) // {
-  tsconfig-lib = import ./tsconfig.nix { inherit lib; };
-}
+( import ./setup-hooks args )
+# NOTE: tsconfig.nix is intentionally excluded. Use `ak-nix.lib.tsconfig'.

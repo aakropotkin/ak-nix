@@ -1,3 +1,12 @@
+/**
+ * NOTE:
+ *  In retrospect, merging flakes like this was really dumb.
+ *  I was basically reinventing a `registry.json' but in a much uglier way.
+ *  This should get gutted soon, and flakes should be imported where they
+ *  are actually used.
+ *  By merging flakes, managing lockfiles becomes incredibly tedious, and I
+ *  do not recommend that any readers look at this flake as "good practice".
+ */
 {
   description = "A collection of aakropotkin's nix flakes";
   inputs = {
@@ -24,7 +33,8 @@
       mergeSets = { lib ? pkgsFor.lib }: sets:
         builtins.foldl' ( xs: x: lib.recursiveUpdate xs x ) {} sets;
     in {
-      lib = import ./lib { flake-utils = utils; };
+      # An extension to `nixpkgs.lib'
+      lib = import ./lib { flake-utils = utils; nixpkgs-lib = nixpkgs.lib; };
 
       packages.x86_64-linux = mergeSets {} [
           set_wm_class.packages.x86_64-linux

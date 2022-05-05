@@ -43,7 +43,7 @@ rec {
    *     packages.x86_64-linux.default = <drv>;
    *   }
    */
-  eachDefaultSystemMap = f: eachSystemMap defaultSystems f;
+  defaultSystemsMap = f: eachSystemMap defaultSystems f;
 
 
 /* -------------------------------------------------------------------------- */
@@ -51,7 +51,7 @@ rec {
   /* Like `eachDefaultSystemMap', but for all systems
    * See `flake-utils' for full list.
    */
-  eachAllSystemMap = eachSystemMap allSystems;
+  allSystemsMap = eachSystemMap allSystems;
 
 
 /* -------------------------------------------------------------------------- */

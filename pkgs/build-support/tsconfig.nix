@@ -1,11 +1,14 @@
+# This is technically a lib, and is included in `ak-nix.lib.tsconfig',
+# but it has been placed here for visibility, since it's more likely to
+# be used only when generating typescript packages.
 { lib
-, json-utils ? import ../../lib/json-utils.nix
-, paths-lib  ? import ../../lib/paths.nix
+, json-lib  ? import ../../lib/json.nix
+, paths-lib ? import ../../lib/paths.nix { inherit lib; }
 }:
 let
 
-  inherit (json-utils) readJSON;
-  inherit (paths-lib) isAbspath asAbspath expandGlob expandGlobList;
+  inherit (json-lib) readJSON;
+  inherit (paths-lib) isAbspath asAbspath expandGlob;
 
   merge2TsConfigs = f1: f2:
     let merged = lib.recursiveUpdate ( readJSON f1 ) ( readJSON f2 );
