@@ -1,4 +1,6 @@
-{ lib   ? ( builtins.getFlake "nixpkgs" ).lib }:
+{ lib ? ( builtins.getFlake "nixpkgs" ).lib
+, libstr ? import ./strings.nix { inherit lib; }
+}:
 rec {
 
   isAbspath = str: ( str != "" ) && ( builtins.substring 0 1 str ) == "/";
@@ -17,9 +19,9 @@ rec {
       dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
       isSub = ( stringLength p ) < ( stringLength s );
       swapped = realpathRel s p;
-      dist = ( length ( split "/" swapped ) ) - 3;  # Ignore "./."
+      dist = libstr.count "/" swapped;
       dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
-    in if isSub then dropP else dots;
+    in if ( p == s ) then "." else if isSub then dropP else dots;
 
 
 /* -------------------------------------------------------------------------- */

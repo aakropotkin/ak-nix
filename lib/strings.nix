@@ -1,4 +1,4 @@
-{ lib }:
+{ lib ? ( builtins.getFlake "nixpkgs" ).lib }:
 let
   charN' = n: builtins.substring n ( n + 1 );
   # charN 1 "hey"       ==> "h"
@@ -18,9 +18,13 @@ let
       post = if pattHasDollar patt then "" else ".*$";
     in pre + patt + post;
 
+  count = splitter: string:
+    let inherit (builtins) length split filter isList; in
+    length ( filter isList ( split splitter string ) );
+
 in rec {
   inherit (lib) splitString hasPrefix hasSuffix hasInfix fileContents;
-  inherit charN;
+  inherit charN count;
 
   matchingLines = re: lines:
     builtins.filter ( l: ( builtins.match re l ) != null ) lines;
