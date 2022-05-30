@@ -1,7 +1,10 @@
-{ lib ? ( builtins.getFlake "nixpkgs" ).lib
-, libstr ? import ./strings.nix { inherit lib; }
+{ lib     ? ( builtins.getFlake "nixpkgs" ).lib
+, libstr  ? import ./strings.nix { inherit lib; }
+, liblist ? import ./lists.nix { inherit lib; }
 }:
 rec {
+
+/* -------------------------------------------------------------------------- */
 
   isAbspath = str: ( str != "" ) && ( builtins.substring 0 1 str ) == "/";
   asAbspath = path:
@@ -22,6 +25,17 @@ rec {
       dist = libstr.count "/" swapped;
       dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
     in if ( p == s ) then "." else if isSub then dropP else dots;
+
+
+/* -------------------------------------------------------------------------- */
+
+  commonParent = a: b:
+    let
+      inherit (builtins) split filter isString concatStringsSep;
+      a' = filter isString ( split "/" ( asAbspath a ) );
+      b' = filter isString ( split "/" ( asAbspath b ) );
+      common = liblist.commonPrefix a' b';
+    in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
 
 
 /* -------------------------------------------------------------------------- */
