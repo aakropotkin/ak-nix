@@ -29,7 +29,7 @@ rec {
         globElemToRegex = replaceStrings ["*"] [".*"];
         elemRegex       = globElemToRegex ( head globElems );
         rest            = tail globElems;
-        isDir           = filterAttrs ( _: type: type == "directory" );
+        filterDirs      = filterAttrs ( _: type: type == "directory" );
         children        = attrNames ( filterDirs ( readDir base ) );
         childMatches    = child: ( match elemRegex child ) != null;
         chMatches       = filter childMatches children;
