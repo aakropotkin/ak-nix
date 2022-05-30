@@ -14,21 +14,6 @@ rec {
 
 /* -------------------------------------------------------------------------- */
 
-  realpathRel = from: to:
-    let
-      inherit (builtins) substring stringLength length split concatStringsSep;
-      p = asAbspath from;
-      s = asAbspath to;
-      dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
-      isSub = ( stringLength p ) < ( stringLength s );
-      swapped = realpathRel s p;
-      dist = libstr.count "/" swapped;
-      dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
-    in if ( p == s ) then "." else if isSub then dropP else dots;
-
-
-/* -------------------------------------------------------------------------- */
-
   commonParent = a: b:
     let
       inherit (builtins) split filter isString concatStringsSep;
@@ -36,6 +21,40 @@ rec {
       b' = filter isString ( split "/" ( asAbspath b ) );
       common = liblist.commonPrefix a' b';
     in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
+
+
+/* -------------------------------------------------------------------------- */
+
+  # Get relative path between parent and subdir.
+  # This will not work for non-subdirs.
+  realpathRel' = from: to:
+    let
+      inherit (builtins) substring stringLength length split concatStringsSep;
+      p = asAbspath from;
+      s = asAbspath to;
+      dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
+      isSub = ( stringLength p ) < ( stringLength s );
+      swapped = realpathRel' s p;
+      dist = libstr.count "/" swapped;
+      dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
+    in if ( p == s ) then "." else if isSub then dropP else dots;
+
+  # This handles non-subdirs.
+  # WARNING: This function has no idea if your arguments are dirs or files!
+  #          It will assume that they are directories.
+  #          Also be mindful of how Nix may expand a Path ( type ) vs. a string.
+  realpathRel = from: to:
+    let
+      parent = commonParent from to;
+      fromToParent = realpathRel' from parent;
+      parentToTo   = realpathRel' parent to;
+      joined = "${fromToParent}/${parentToTo}";
+      san = builtins.replaceStrings ["/./"] ["/"] joined;
+      sanF = s: let m = builtins.match "(\\./)(.*)" s; in
+                if ( m == null ) then s else ( builtins.elemAt m 1 );
+      sanE = s: let m = builtins.match "(.*)(/\\.)" s; in
+                if ( m == null ) then s else ( builtins.head m );
+    in sanE ( sanF san );
 
 
 /* -------------------------------------------------------------------------- */
