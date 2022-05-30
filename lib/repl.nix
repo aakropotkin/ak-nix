@@ -1,5 +1,5 @@
-{ libfs ? import ./filesystem.nix
-, lib   ? ( builtins.getFlake "nixpkgs" ).lib
+{ libfs   ? import ./filesystem.nix
+, lib     ? ( builtins.getFlake "nixpkgs" ).lib
 , libpath ? import ./paths.nix { inherit lib; }
 }:
 let
@@ -9,6 +9,8 @@ let
     let lines = builtins.concatStringsSep "\n" ( map toString xs );
     in builtins.trace ( "\n" + lines ) true;
 
+  # Uses trace to print arbitrary values to the console.
+  # If passed a list, each element will be printed on a line.
   show = x: showList ( if ( builtins.isList x ) then x else [x] );
 
 
@@ -29,6 +31,7 @@ let
       dirs = libfs.listSubdirs dir;
     in files ++ ( map ( d: d + "/" ) dirs );
 
+  # Only handles globs at the end of paths.
   lsDirGlob' = path':
     let
       inherit (builtins) substring stringLength split head replaceStrings;
@@ -53,7 +56,8 @@ let
 
 in {
   inherit show;
-  inherit pwd' pwd lsDirGlob';
-  inherit unGlob;
-  ls' = lsDirGlob' ./.;
+  inherit pwd' pwd;
+  # FIXME: Handle globs in the middle of paths, and names.
+  ls' = lsDirGlob' "";
+  ls  = lsDirGlob';
 }
