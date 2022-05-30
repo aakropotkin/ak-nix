@@ -9,6 +9,9 @@ let
       n' = lib.mod ( n + len ) len;
     in charN' n' str;
 
+
+/* -------------------------------------------------------------------------- */
+
   pattHasCaret = patt: ( charN' 1 patt ) == "^";
   pattHasDollar = patt: ( charN ( -1 ) patt ) == "$";
 
@@ -18,13 +21,30 @@ let
       post = if pattHasDollar patt then "" else ".*$";
     in pre + patt + post;
 
+
+/* -------------------------------------------------------------------------- */
+
   count = splitter: string:
     let inherit (builtins) length split filter isList; in
     length ( filter isList ( split splitter string ) );
 
+
+/* -------------------------------------------------------------------------- */
+
+  commonPrefix = a: b: let l = lib.strings.commonPrefixLength a b; in
+    builtins.substring 0 l a;
+
+  commonSuffix = a: b: let l = lib.strings.commonSuffixLength a b; in
+    builtins.substring ( l - 1 ) ( builtins.stringLength a ) a;
+
+
+/* -------------------------------------------------------------------------- */
+
 in rec {
+  inherit (lib.strings) commonPrefixLength commonSuffixLength;
   inherit (lib) splitString hasPrefix hasSuffix hasInfix fileContents;
   inherit charN count;
+  inherit commonPrefix commonSuffix;
 
   matchingLines = re: lines:
     builtins.filter ( l: ( builtins.match re l ) != null ) lines;
