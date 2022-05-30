@@ -1,9 +1,25 @@
-{ lib }:
+{ lib   ? ( builtins.getFlake "nixpkgs" ).lib }:
 rec {
 
-  isAbsolutePath = str: ( builtins.substring 0 1 str ) == "/";
-  asAbspath = str:
-    if ( isAbsolutePath str ) then str else ( ./. + ( "/" + str ) );
+  isAbspath = str: ( str != "" ) && ( builtins.substring 0 1 str ) == "/";
+  asAbspath = path:
+    let str = toString path; in
+    if ( isAbspath str ) then str else ( ./. + ( "/" + str ) );
+
+
+/* -------------------------------------------------------------------------- */
+
+  realpathRel = from: to:
+    let
+      inherit (builtins) substring stringLength length split concatStringsSep;
+      p = asAbspath from;
+      s = asAbspath to;
+      dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
+      isSub = ( stringLength p ) < ( stringLength s );
+      swapped = realpathRel s p;
+      dist = ( length ( split "/" swapped ) ) - 3;  # Ignore "./."
+      dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
+    in if isSub then dropP else dots;
 
 
 /* -------------------------------------------------------------------------- */

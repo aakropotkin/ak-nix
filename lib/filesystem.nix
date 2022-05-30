@@ -21,6 +21,15 @@ rec {
 
 /* -------------------------------------------------------------------------- */
 
+  listSubdirs = dir:
+    let
+      inherit (builtins) readDir attrValues mapAttrs filter;
+      process = name: type: let bname = baseNameOf name; in
+        if ( type == "directory" ) then ( ( toString dir ) + "/" + bname )
+                                   else null;
+      files = attrValues ( mapAttrs process ( readDir dir ) );
+    in filter ( x: x != null ) files;
+
   listFiles = dir:
     let
       inherit (builtins) readDir attrValues mapAttrs filter;
@@ -29,6 +38,17 @@ rec {
                                    else ( ( toString dir ) + "/" + bname );
       files = attrValues ( mapAttrs process ( readDir dir ) );
     in filter ( x: x != null ) files;
+
+  listDir = dir: ( listSubdirs dir ) ++ ( listFiles dir );
+
+
+/* -------------------------------------------------------------------------- */
+
+  mapSubdirs = fn: dir: map fn ( listSubdirs dir );
+
+  listDirsRecursive = dir:
+    let dirs = listSubdirs dir; in
+    builtins.foldl' ( acc: d: acc ++ ( listDirsRecursive d ) ) dirs dirs;
 
 
 /* -------------------------------------------------------------------------- */
