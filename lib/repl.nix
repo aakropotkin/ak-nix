@@ -44,11 +44,9 @@ let
       lines = if isSGlob then ( files ++ subs ) else
               if isDGlob then ( lib.filesystem.listFilesRecursive dir ) else
               ( lsDir' dir );
-      makeRel = p:
-        let trimmed = substring ( stringLength dir ) ( stringLength p ) p;
-        in ( replaceStrings ["*"] [""] path ) + trimmed;
-      rsl = if wasAbs then ( show lines ) else ( show ( map makeRel lines ) );
-      in rsl;
+      makeRel = p: libpath.realpathRel' dir p;
+      relLines = if wasAbs then lines else ( map makeRel lines );
+    in show relLines;
 
 
 /* -------------------------------------------------------------------------- */
