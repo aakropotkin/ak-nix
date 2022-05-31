@@ -1,8 +1,7 @@
-{ pkgs       ? import <nixpkgs> {}
-, stdenv     ? pkgs.stdenv
-, nix        ? pkgs.nix
-, boost      ? pkgs.boost
-, pkg-config ? pkgs.pkg-config
+{ pkgs   ? import <nixpkgs> {}
+, stdenv ? pkgs.stdenv
+, nix    ? pkgs.nix
+, boost  ? pkgs.boost
 }: stdenv.mkDerivation {
   pname   = "nix-hello-plugin";
   version = "0.0.1";
@@ -12,11 +11,7 @@
     filter = name: type:
       ( type == "regular" ) && ( ( baseNameOf name ) == "hello.cc" );
   };
-  nativeBuildInputs = [pkg-config];
-  buildInputs = [
-    nix.dev
-    boost.dev
-  ];
+  buildInputs = [nix.dev boost.dev];
   buildPhase = ''
     runHook preBuild
     g++ -shared -o libhello.so -g -std=c++17 ./hello.cc
