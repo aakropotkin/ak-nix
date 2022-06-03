@@ -10,12 +10,12 @@
 {
   description = "A collection of aakropotkin's nix flakes";
   inputs = {
-    set_wm_class.url = github:aakropotkin/set_wm_class;
-    ak-core.url      = github:aakropotkin/ak-core;
-    ini2json.url     = github:aakropotkin/ini2json;
-    slibtool.url     = github:aakropotkin/slibtool/nix;
-    sfm.url          = github:aakropotkin/sfm/nix;
-    utils.url        = github:numtide/flake-utils;
+    set_wm_class.url = "github:aakropotkin/set_wm_class";
+    ak-core.url      = "github:aakropotkin/ak-core";
+    ini2json.url     = "github:aakropotkin/ini2json";
+    slibtool.url     = "github:aakropotkin/slibtool/nix";
+    sfm.url          = "github:aakropotkin/sfm/nix";
+    utils.url        = "github:numtide/flake-utils/master";
   };
 
   outputs =
