@@ -43,7 +43,7 @@ rec {
    *     packages.x86_64-linux.default = <drv>;
    *   }
    */
-  defaultSystemsMap = f: eachSystemMap defaultSystems f;
+  defaultSystemsMap = f: with flake-utils.lib; eachSystemMap defaultSystems f;
 
 
 /* -------------------------------------------------------------------------- */
@@ -51,7 +51,7 @@ rec {
   /* Like `eachDefaultSystemMap', but for all systems
    * See `flake-utils' for full list.
    */
-  allSystemsMap = eachSystemMap allSystems;
+  allSystemsMap = with flake-utils.lib; eachSystemMap allSystems;
 
 
 /* -------------------------------------------------------------------------- */

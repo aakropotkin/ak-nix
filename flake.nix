@@ -34,7 +34,10 @@
         builtins.foldl' ( xs: x: lib.recursiveUpdate xs x ) {} sets;
     in {
       # An extension to `nixpkgs.lib'
-      lib = import ./lib { flake-utils = utils; nixpkgs-lib = nixpkgs.lib; };
+      lib = import ./lib {
+        flake-utils = utils;
+        nixpkgs-lib = nixpkgs.lib;
+      };
 
       packages.x86_64-linux = mergeSets {} [
           set_wm_class.packages.x86_64-linux
