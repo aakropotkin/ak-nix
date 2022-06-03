@@ -1,4 +1,4 @@
-{ lib ? ( builtins.getFlake "nixpkgs" ).lib }:
+{ nixpkgs ? builtins.getFlake "nixpkgs", lib ? nixpkgs.lib }:
 rec {
 
   inherit (lib) take drop reverseList;

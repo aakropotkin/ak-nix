@@ -1,6 +1,6 @@
 /* ========================================================================== */
 
-{ flake-utils }:
+{ flake-utils ? builtins.getFlake "github:numtide/flake-utils" }:
 
 rec {
 

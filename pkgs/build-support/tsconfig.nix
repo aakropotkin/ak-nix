@@ -2,13 +2,13 @@
 # but it has been placed here for visibility, since it's more likely to
 # be used only when generating typescript packages.
 { lib
-, json-lib  ? import ../../lib/json.nix
-, paths-lib ? import ../../lib/paths.nix { inherit lib; }
+, libjson ? import ../../lib/json.nix
+, libpath ? import ../../lib/paths.nix { inherit lib; }
 }:
 let
 
-  inherit (json-lib) readJSON;
-  inherit (paths-lib) isAbspath asAbspath expandGlob;
+  inherit (libjson) readJSON;
+  inherit (libpath) isAbspath asAbspath expandGlob;
 
   merge2TsConfigs = f1: f2:
     let merged = lib.recursiveUpdate ( readJSON f1 ) ( readJSON f2 );

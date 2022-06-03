@@ -1,5 +1,6 @@
-{ libfs   ? import ./filesystem.nix
-, lib     ? ( builtins.getFlake "nixpkgs" ).lib
+{ nixpkgs ? builtins.getFlake "nixpkgs"
+, lib     ? nixpkgs.lib
+, libfs   ? import ./filesystem.nix
 , libpath ? import ./paths.nix { inherit lib; }
 }:
 let
