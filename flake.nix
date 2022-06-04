@@ -9,6 +9,7 @@
  */
 {
   description = "A collection of aakropotkin's nix flakes";
+
   inputs = {
     set_wm_class.url = "github:aakropotkin/set_wm_class";
     ak-core.url      = "github:aakropotkin/ak-core";
@@ -17,6 +18,9 @@
     sfm.url          = "github:aakropotkin/sfm/nix";
     utils.url        = "github:numtide/flake-utils/master";
   };
+
+
+/* -------------------------------------------------------------------------- */
 
   outputs =
     { self
@@ -29,15 +33,31 @@
     , utils
     }:
     let
-      pkgsFor = import nixpkgs { stdenv = "x86_64-linux"; };
+      pkgsFor = import nixpkgs { system = "x86_64-linux"; };
       mergeSets = { lib ? pkgsFor.lib }: sets:
         builtins.foldl' ( xs: x: lib.recursiveUpdate xs x ) {} sets;
     in {
+
       # An extension to `nixpkgs.lib'
       lib = import ./lib {
         flake-utils = utils;
         nixpkgs-lib = nixpkgs.lib;
       };
+
+
+/* -------------------------------------------------------------------------- */
+
+      docgen =
+        let forSys = { system }:
+              let pkgsFor = import nixpkgs { inherit system; }; in
+              import ./pkgs/docgen { inherit (pkgsFor) pandoc texinfo; };
+            inherit (builtins) attrsToList;
+            supportedSystems =
+              ["x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin"];
+        in attrsToList ( map forSys supportedSystems );
+
+
+/* -------------------------------------------------------------------------- */
 
       packages.x86_64-linux = mergeSets {} [
           set_wm_class.packages.x86_64-linux
@@ -50,6 +70,9 @@
               inherit (pkgsFor) writeShellScriptBin;
             } )
         ];
+
+
+/* -------------------------------------------------------------------------- */
 
       overlays.set_wm_class = set_wm_class.overlay;
       overlays.ak-core = ak-core.overlays.default;
@@ -65,6 +88,9 @@
       ];
       overlays.default = self.overlays.ak-nix;
 
+
+/* -------------------------------------------------------------------------- */
+
       nixosModules.set_wm_class = set_wm_class.nixosModule;
       #nixosModules.ak-core = ak-core.nixosModule;
       nixosModules.ini2json = ini2json.nixosModule;
@@ -77,7 +103,10 @@
         ( sfm.nixosModule args )         
         ( slibtool.nixosModule args )
       ];
-      nixosModule = self.nixosModules.ak-nix; 
+      nixosModule = self.nixosModules.ak-nix;
+
+
+/* -------------------------------------------------------------------------- */
 
       templates = {
         basic = {
@@ -90,6 +119,9 @@
         };
         default = self.templates.basic;
       };
+
+
+/* -------------------------------------------------------------------------- */
 
     };
 }
