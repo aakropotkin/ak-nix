@@ -12,11 +12,22 @@
 
   inputs = {
     set_wm_class.url = "github:aakropotkin/set_wm_class";
-    ak-core.url      = "github:aakropotkin/ak-core";
-    ini2json.url     = "github:aakropotkin/ini2json";
-    slibtool.url     = "github:aakropotkin/slibtool/nix";
-    sfm.url          = "github:aakropotkin/sfm/nix";
-    utils.url        = "github:numtide/flake-utils/master";
+    set_wm_class.inputs.nixpkgs.follows = "nixpkgs";
+
+    ak-core.url = "github:aakropotkin/ak-core";
+    ak-core.inputs.nixpkgs.follows = "nixpkgs";
+
+    ini2json.url = "github:aakropotkin/ini2json";
+    ini2json.inputs.nixpkgs.follows = "nixpkgs";
+
+    slibtool.url = "github:aakropotkin/slibtool/nix";
+    slibtool.inputs.nixpkgs.follows = "nixpkgs";
+
+    sfm.url = "github:aakropotkin/sfm/nix";
+    sfm.inputs.nixpkgs.follows = "nixpkgs";
+
+    utils.url = "github:numtide/flake-utils/master";
+    utils.inputs.nixpkgs.follows = "nixpkgs";
   };
 
 
@@ -39,10 +50,9 @@
         "aarch64-darwin"
         "x86_64-darwin"
       ];
-      pkgsFor = nixpkgs.legacyPackages.x86_64-linux;
       mergeSets = sets:
         builtins.foldl' ( xs: x: nixpkgs.lib.recursiveUpdate xs x ) {} sets;
-    in {
+      systemsMap = utils.lib.eachSystemMap supportedSystems;
 
       # An extension to `nixpkgs.lib'
       lib = import ./lib {
@@ -50,32 +60,37 @@
         nixpkgs-lib = nixpkgs.lib;
       };
 
+    in {
 
 /* -------------------------------------------------------------------------- */
 
-      docgen = system:
-        let pkgsFor' = nixpkgs.legacyPackages.${system}; in
-        import ./pkgs/docgen { inherit (pkgsFor') pandoc texinfo; };
+      # Not effected by systems:
+      inherit lib;
+      repl = lib.librepl;  # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
+
+      # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
+      docgen = system: import ./pkgs/docgen {
+        inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
+      };
 
 
 /* -------------------------------------------------------------------------- */
 
-      packages.x86_64-linux = mergeSets [
-        set_wm_class.packages.x86_64-linux
-        ak-core.packages.x86_64-linux
-        ini2json.packages.x86_64-linux
-        sfm.packages.x86_64-linux
-        slibtool.packages.x86_64-linux
-        ( import ./pkgs {
-            inherit nixpkgs;
-            inherit (nixpkgs) lib;
-            inherit (pkgsFor) callPackage makeSetupHook;
-            inherit (pkgsFor) writeShellScriptBin pandoc texinfo;
-            system = "x86_64-linux";
-            pkgs = pkgsFor;
-          } )
-      ];
-
+      packages =
+        let
+          selfPkgs = systemsMap ( system:
+            let pkgsFor = nixpkgs.legacyPackages.${system};
+            in import ./pkgs {
+              inherit nixpkgs system;
+              inherit (nixpkgs) lib;
+              inherit (pkgsFor) callPackage makeSetupHook writeShellScriptBin;
+              inherit (pkgsFor) pandoc texinfo;
+              pkgs = pkgsFor;
+            } );
+          inPkgs = systemsMap ( system:
+            let ins = [set_wm_class ak-core ini2json sfm slibtool];
+            in mergeSets ( map ( i: i.packages.${system} or {} ) ins ) );
+        in mergeSets [selfPkgs inPkgs];
 
 /* -------------------------------------------------------------------------- */
 
@@ -84,31 +99,30 @@
       overlays.ini2json = ini2json.overlay;
       overlays.slibtool = slibtool.overlay;
       overlays.sfm = sfm.overlay;
-      overlays.ak-nix = final: prev: mergeSets [
-        ( set_wm_class.overlay final prev )    
-        ( ak-core.overlays.default final prev )
-        ( ini2json.overlay final prev )        
-        ( sfm.overlay final prev )             
-        ( slibtool.overlay final prev )
-      ];
       overlays.default = self.overlays.ak-nix;
+      # Merge input overlays in isolation from one another.
+      overlays.ak-nix = final: prev:
+        let
+          pass = f: _: f;
+          getOverlay = i: i.overlays.default or i.overlay or pass;
+          overlayIsolated = i: ( getOverlay i ) final prev;
+          ins = [set_wm_class ak-core ini2json sfm slibtool];
+        in mergeSets ( map overlayIsolated ins );
 
 
 /* -------------------------------------------------------------------------- */
 
       nixosModules.set_wm_class = set_wm_class.nixosModule;
-      #nixosModules.ak-core = ak-core.nixosModule;
       nixosModules.ini2json = ini2json.nixosModule;
       nixosModules.slibtool = slibtool.nixosModule;
       nixosModules.sfm = sfm.nixosModule;
-      nixosModules.ak-nix = { pkgs, ... }@args: mergeSets [
-        ( set_wm_class.nixosModule args )
-        ( ak-core.nixosModule args )     
-        ( ini2json.nixosModule args )    
-        ( sfm.nixosModule args )         
-        ( slibtool.nixosModule args )
-      ];
       nixosModules.default = self.nixosModules.ak-nix;
+      nixosModules.ak-nix = { pkgs, ... }@args:
+        let
+          pass = _: {};
+          getModule = i: i.nixosModules.default or i.nixosModule or pass;
+          ins = [set_wm_class ak-core ini2json sfm slibtool];
+        in mergeSets ( map getModule ins );
       nixosModule = self.nixosModules.ak-nix;
 
 

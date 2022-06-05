@@ -6,8 +6,8 @@
 , ...
 }:
 let
-  pandocGen = import ./pandoc { inherit pandoc; };
-  infoGen   = import ./makeinfo { inherit texinfo; };
+  pandocGen     = import ./pandoc { inherit pandoc; };
+  infoGen       = import ./makeinfo { inherit texinfo; };
   moduleOptions = import ./module-options.nix {
     inherit pandocGen infoGen;
     inherit (pkgs) linkFarmFromDrvs;

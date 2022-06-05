@@ -1,7 +1,8 @@
-{ pkgs               ? import <nixpkgs> {}
-, system             ? pkgs.stdenv.system
-, lib                ? pkgs.lib
-, genDoc             ? import <nixpkgs/nixos/lib/make-options-doc>
+{ nixpkgs            ? builtins.getFlake "nixpkgs"
+, system             ? builtins.currentSystem
+, pkgs               ? nixpkgs.legacyPackages.${system}
+, lib                ? nixpkgs.lib
+, genDoc             ? import "${nixpkgs}/nixos/lib/make-options-doc"
 , pandocGen          ? import ../pandoc { inherit (pkgs) pandoc; }
 , infoGen            ? import ../makeinfo { inherit (pkgs) texinfo; }
 , linkFarmFromDrvs   ? pkgs.linkFarmFromDrvs

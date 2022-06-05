@@ -1,6 +1,6 @@
 { nixpkgs  ? builtins.getFlake "nixpkgs"
 , system   ? builtins.currentSystem
-, pkgs     ? import nixpkgs { inherit system; }
+, pkgs     ? import nixpkgs.legacyPackages.${system}
 , texinfo  ? pkgs.texingo
 }:
 {
