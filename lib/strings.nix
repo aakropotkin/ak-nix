@@ -1,4 +1,4 @@
-{ nixpkgs ? builtins.getFlake "nixpkgs", lib ? nixpkgs.lib }:
+{ lib }:
 let
   charN' = n: builtins.substring n ( n + 1 );
   # charN 1 "hey"       ==> "h"

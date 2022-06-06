@@ -1,8 +1,4 @@
-{ nixpkgs ? builtins.getFlake "nixpkgs"
-, lib     ? nixpkgs.lib
-, libstr  ? import ./strings.nix { inherit lib; }
-, liblist ? import ./lists.nix { inherit lib; }
-}:
+{ lib }:
 rec {
 
 /* -------------------------------------------------------------------------- */
