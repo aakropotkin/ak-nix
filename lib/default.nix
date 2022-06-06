@@ -2,14 +2,6 @@
 , flake-utils ? builtins.getFlake "github:numtide/flake-utils"
 }:
 let
-  libattrs = import ./attrsets.nix { inherit flake-utils; };
-  libpath  = import ./paths.nix { lib = nixpkgs-lib; };
-  libjson  = import ./json.nix;
-  libstr   = import ./strings.nix { lib = nixpkgs-lib; };
-  libfs    = import ./filesystem.nix;
-  librepl  = import ./repl.nix { inherit libfs libpath; lib = nixpkgs-lib; };
-  liblist  = import ./lists.nix { lib = nixpkgs-lib; };
-
   lib = nixpkgs-lib.extend ( final: prev:
     let callLibs = file: import file { lib = final; };
     in {
@@ -21,21 +13,20 @@ let
       librepl  = callLibs ./repl.nix;
       liblist  = callLibs ./lists.nix;
 
-      inherit (libattrs) defaultSystemsMap allSystemsMap;
+      inherit (final.libattrs) defaultSystemsMap allSystemsMap;
 
-      inherit (libjson) importJSON';
+      inherit (final.libjson) importJSON';
 
-      inherit (libpath) isAbsolutePath asAbspath extSuffix expandGlob;
-      inherit (libpath) realpathRel;
+      inherit (final.libpath) isAbsolutePath asAbspath extSuffix expandGlob;
+      inherit (final.libpath) realpathRel;
 
-      inherit (libstr) matchingLines linesGrep readLines readLinesGrep readGrep;
-      inherit (libstr) charN;
+      inherit (final.libstr) matchingLines readLines charN;
+      inherit (final.libstr) linesGrep readGrep readLinesGrep;
 
-      inherit (libfs) baseName';
+      inherit (final.libfs) baseName';
 
-      inherit (librepl) show ls pwd;
+      inherit (final.librepl) show ls pwd;
 
-      inherit (liblist) takeUntil dropUntil;
-
+      inherit (final.liblist) takeUntil dropUntil;
     } );
 in lib
