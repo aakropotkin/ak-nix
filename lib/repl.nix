@@ -1,8 +1,4 @@
-{ nixpkgs ? builtins.getFlake "nixpkgs"
-, lib     ? nixpkgs.lib
-, libfs   ? import ./filesystem.nix
-, libpath ? import ./paths.nix { inherit lib; }
-}:
+{ lib }:
 let
 /* -------------------------------------------------------------------------- */
 
@@ -28,8 +24,8 @@ let
 
   lsDir' = dir:
     let
-      files = libfs.listFiles dir;
-      dirs = libfs.listSubdirs dir;
+      files = lib.listFiles dir;
+      dirs = lib.listSubdirs dir;
     in files ++ ( map ( d: d + "/" ) dirs );
 
   # Only handles globs at the end of paths.
@@ -37,18 +33,18 @@ let
     let
       inherit (builtins) substring stringLength split head replaceStrings;
       path = toString path';
-      wasAbs = libpath.isAbspath path;
+      wasAbs = lib.isAbspath path;
       ng = unGlob path;
-      dir = if ( ng == "" ) then ( toString ./. ) else ( libpath.asAbspath ng );
+      dir = if ( ng == "" ) then ( toString ./. ) else ( lib.asAbspath ng );
       plen = stringLength path;
       isSGlob = ( 2 <= plen ) && ( substring ( plen - 2 ) plen path ) == "/*";
       isDGlob = ( 3 <= plen ) && ( substring ( plen - 3 ) plen path ) == "/**";
-      files = libfs.listFiles dir;
-      subs  = builtins.concatLists ( libfs.mapSubdirs libfs.listDir dir );
+      files = lib.listFiles dir;
+      subs  = builtins.concatLists ( lib.mapSubdirs lib.listDir dir );
       lines = if isSGlob then ( files ++ subs ) else
               if isDGlob then ( lib.filesystem.listFilesRecursive dir ) else
               ( lsDir' dir );
-      makeRel = p: libpath.realpathRel' dir p;
+      makeRel = p: lib.realpathRel' dir p;
       relLines = if wasAbs then lines else ( map makeRel lines );
     in show relLines;
 

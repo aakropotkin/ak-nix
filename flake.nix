@@ -59,9 +59,19 @@
       repl = lib.librepl;  # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
 
       # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
-      docgen = system: import ./pkgs/docgen {
-        inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
-      };
+      docgen = ( utils.lib.eachDefaultSystemMap ( system:
+        import ./pkgs/docgen {
+          inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
+        } ) ) // { __functor = docgenSelf: system: docgenSelf.${system}; };
+
+
+/* -------------------------------------------------------------------------- */
+
+      tarutils = ( utils.lib.eachDefaultSystemMap ( system:
+        import ./pkgs/build-support/trivial/tar.nix {
+          inherit system;
+          inherit (nixpkgs.legacyPackages.${system}) gzip gnutar;
+        } ) ) // { __functor = tarSelf: system: tarSelf.${system}; };
 
 
 /* -------------------------------------------------------------------------- */
@@ -77,9 +87,11 @@
             pkgs = pkgsFor;
           } );
         inPkgs = utils.lib.eachDefaultSystemMap ( system:
-          let ins = [set_wm_class ak-core ini2json sfm slibtool];
+          # FIXME: set_wm_class, slibtool, sfm, and ini2json are impure
+          let ins = [ak-core];
           in mergeSets ( map ( i: i.packages.${system} or {} ) ins ) );
-      in mergeSets [selfPkgs inPkgs];
+        merged = mergeSets [selfPkgs inPkgs];
+      in merged;
 
 /* -------------------------------------------------------------------------- */
 
@@ -94,7 +106,20 @@
         pass = f: _: f;
         getOverlay = i: i.overlays.default or i.overlay or pass;
         overlayIsolated = i: ( getOverlay i ) final prev;
-        ins = [set_wm_class ak-core ini2json sfm slibtool];
+        ins = [
+          set_wm_class
+          ak-core
+          ini2json
+          sfm
+          slibtool
+          ( final: prev: import ./pkgs {
+            inherit (final)
+              system lib callPackage makeSetupHook writeShellScriptBin pandoc
+              texinfo gnutar gzip;
+            pkgs = final;
+            inherit nixpkgs;
+          } )
+        ];
       in mergeSets ( map overlayIsolated ins );
 
 

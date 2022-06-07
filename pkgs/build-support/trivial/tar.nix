@@ -1,5 +1,5 @@
-# Unzips a Node.js tarball without botching the SHA expected by
-# `yarn' and `yarn'.
+# Create/extract gzip tarballs.
+# FIXME: support Xz and bzip2
 
 { system, gnutar, gzip }:
 
@@ -11,10 +11,20 @@ let
     let m = builtins.match "(.*)(\\.(tgz|tar(\\.[gxb]z)?))?" str;
     in if ( m != null ) then ( builtins.head m ) else str;
 
+  substOut = out: str: let
+    m = builtins.match "(.*)\\$out(.*)" str;
+    sub = ( builtins.head m ) + out + ( builtins.elemAt m 1 );
+  in if ( m != null ) then sub else str;
+
+  substSrc = src: str: let
+    m = builtins.match "(.*)\\$src(.*)" str;
+    sub = ( builtins.head m ) + src + ( builtins.elemAt m 1 );
+  in if ( m != null ) then sub else str;
+
 
 /* -------------------------------------------------------------------------- */
 
-  # Use "$out" normally in `tarFlags', we'll replace it.
+  # Use "$out" and "$src" normally in `tarFlags', we'll replace it.
   # NOTE: No other shell expansions are supported.
   runTar = {
       src
@@ -23,10 +33,13 @@ let
     , extraAttrs ? {}
     }: derivation ( {
       inherit name system;
+      PATH = "${gzip}/bin";
       builder = "${gnutar}/bin/tar";
-      PATH    = "${gzip}/bin";
-      args = map ( a: if a == "$out" then builtins.placeholder "out" else a )
-                 tarFlags;
+      args = let
+        so    = substOut ( builtins.placeholder "out" );
+        subst = a:
+          let a' = so ( substSrc "${src}" a ); in builtins.deepSeq a' a';
+      in map subst tarFlags;
     } // extraAttrs );
 
 
@@ -42,7 +55,10 @@ let
       inherit name system;
       builder = "${gnutar}/bin/tar";
       PATH    = "${gzip}/bin";
-      args = tarFlags ++ ["-xf" ( builtins.placeholder "out" )] ++ tarFlagsLate;
+      args = tarFlags ++ [
+        "-xf" "${tarball}"
+        "--one-top-level=${builtins.placeholder "out"}"
+      ] ++ tarFlagsLate;
     } // extraAttrs );
 
 
