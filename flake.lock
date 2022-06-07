@@ -1,48 +1,5 @@
 {
   "nodes": {
-    "ak-core": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ],
-        "utils": [
-          "utils"
-        ]
-      },
-      "locked": {
-        "lastModified": 1654540520,
-        "narHash": "sha256-+C18RPBlIJgh4wIArtd0oujgirgAFC70Rw2hX4onIm4=",
-        "owner": "aakropotkin",
-        "repo": "ak-core",
-        "rev": "4aff44f6c3965ae8ba3a9ae09801e8eb4d8d1721",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "repo": "ak-core",
-        "type": "github"
-      }
-    },
-    "ini2json": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1633581098,
-        "narHash": "sha256-2KpYe0YdwJwPkhz7iiyhmXyRt9FPcvFpjMP9EJqCgEM=",
-        "owner": "aakropotkin",
-        "repo": "ini2json",
-        "rev": "c4a5b8dd57a4b865b6a77138735b6476c6409767",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "repo": "ini2json",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1654398695,
@@ -59,75 +16,8 @@
     },
     "root": {
       "inputs": {
-        "ak-core": "ak-core",
-        "ini2json": "ini2json",
         "nixpkgs": "nixpkgs",
-        "set_wm_class": "set_wm_class",
-        "sfm": "sfm",
-        "slibtool": "slibtool",
         "utils": "utils"
-      }
-    },
-    "set_wm_class": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1645664979,
-        "narHash": "sha256-3LAnYQbe8SiRWS3ESsBsVdVj9E800p94bdfuUCqQfI4=",
-        "owner": "aakropotkin",
-        "repo": "set_wm_class",
-        "rev": "099e03c1af9397819c22ca9cd824bf847adf65a4",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "repo": "set_wm_class",
-        "type": "github"
-      }
-    },
-    "sfm": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1645665153,
-        "narHash": "sha256-QyJQyylQcrZwjuRg4sfFpSfURPz8gsH2dYPwAUe07vM=",
-        "owner": "aakropotkin",
-        "repo": "sfm",
-        "rev": "7bc3280c12cc7667732570715dd7c401c0d64fd3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "ref": "nix",
-        "repo": "sfm",
-        "type": "github"
-      }
-    },
-    "slibtool": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1645665349,
-        "narHash": "sha256-v7+bXTXEyL/wP/m162sJv6axSl9m9zvf/rzbF66GGYA=",
-        "owner": "aakropotkin",
-        "repo": "slibtool",
-        "rev": "55a8b0747582065538fbefded7840bbd195814e5",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "ref": "nix",
-        "repo": "slibtool",
-        "type": "github"
       }
     },
     "utils": {
