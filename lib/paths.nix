@@ -16,7 +16,7 @@ rec {
       inherit (builtins) split filter isString concatStringsSep;
       a' = filter isString ( split "/" ( asAbspath a ) );
       b' = filter isString ( split "/" ( asAbspath b ) );
-      common = liblist.commonPrefix a' b';
+      common = lib.commonPrefix a' b';
     in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
 
 
@@ -32,7 +32,7 @@ rec {
       dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
       isSub = ( stringLength p ) < ( stringLength s );
       swapped = realpathRel' s p;
-      dist = libstr.count "/" swapped;
+      dist = lib.count "/" swapped;
       dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
     in if ( p == s ) then "." else if isSub then dropP else dots;
 
