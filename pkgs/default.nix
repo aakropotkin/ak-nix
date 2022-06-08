@@ -8,7 +8,9 @@
 , pandoc              ? pkgs.pandoc
 , texinfo             ? pkgs.texinfo
 , gnutar              ? pkgs.gnutar
-, gzip                ? gzip
+, gzip                ? pkgs.gzip
+, coreutils           ? pkgs.coreutils
+, bash                ? pkgs.bash
 , ...
 }@args:
 let merged =

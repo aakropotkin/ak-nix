@@ -29,7 +29,7 @@
       # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
       docgen = ( eachDefaultSystemMap ( system: import ./pkgs/docgen {
         inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
-      } ) ) // { __functor = docgenSelf: system: docgenSelf.${system}; };
+      } ) ) // { __functor = _self: system: _self.${system}; };
 
 
 /* -------------------------------------------------------------------------- */
@@ -38,7 +38,23 @@
         import ./pkgs/build-support/trivial/tar.nix {
           inherit system;
           inherit (nixpkgs.legacyPackages.${system}) gzip gnutar;
-        } ) ) // { __functor = tarSelf: system: tarSelf.${system}; };
+        } ) ) // { __functor = _self: system: _self.${system}; };
+
+
+/* -------------------------------------------------------------------------- */
+
+      linkutils = ( eachDefaultSystemMap ( system:
+        import ./pkgs/build-support/trivial/link.nix {
+          inherit system lib;
+          inherit (nixpkgs.legacyPackages.${system}) coreutils bash;
+        } ) ) // { __functor = _self: system: _self.${system}; };
+
+
+/* -------------------------------------------------------------------------- */
+
+      trivial = ( eachDefaultSystemMap ( system:
+          self.tarutils.${system} // self.linkutils.${system}
+        ) ) // { __functor = _self: system: _self.${system}; };
 
 
 /* -------------------------------------------------------------------------- */
@@ -47,7 +63,7 @@
         inherit nixpkgs system lib;
         inherit (nixpkgs.legacyPackages.${system})
           callPackage makeSetupHook writeShellScriptBin texinfo pandoc
-          gnutar gzip;
+          gnutar gzip coreutils bash;
         pkgs = nixpkgs.legacyPackages.${system};
       } );
 
@@ -58,7 +74,7 @@
         inherit nixpkgs;
         inherit (final)
           system lib callPackage makeSetupHook writeShellScriptBin pandoc
-          texinfo gnutar gzip;
+          texinfo gnutar gzip coreutils bash;
         pkgs = final;
       };
       overlays.default = self.overlays.ak-nix;
