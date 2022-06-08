@@ -52,10 +52,12 @@ let
     inherit name system extraLnFlags src to;
     builder = "${bash}/bin/bash";
     PATH    = "${coreutils}/bin";
+    passAsFile = ["buildPhase"];
     buildPhase = ''
       mkdir -p $out/${dirOf to}
       ln $extraLnFlags -- $src $out/$to
     '';
+    args = ["-c" ". $buildPhasePath"];
   } ) // extraAttrs;
 
 
