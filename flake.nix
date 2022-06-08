@@ -14,7 +14,7 @@
 
     # An extension to `nixpkgs.lib'.
     lib = import ./lib {
-      flake-utils = utils;
+      inherit utils;
       nixpkgs-lib = nixpkgs.lib;
     };
 

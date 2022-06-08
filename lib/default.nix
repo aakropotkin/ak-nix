@@ -1,11 +1,11 @@
 { nixpkgs-lib ? ( builtins.getFlake "nixpkgs" ).lib
-, flake-utils ? builtins.getFlake "github:numtide/flake-utils"
+, utils ? builtins.getFlake "github:numtide/flake-utils"
 }:
 let
   lib = nixpkgs-lib.extend ( final: prev:
     let callLibs = file: import file { lib = final; };
     in {
-      libattrs = import   ./attrsets.nix { lib = final; inherit flake-utils; };
+      libattrs = import   ./attrsets.nix { lib = final; inherit utils; };
       libpath  = callLibs ./paths.nix;
       libjson  = callLibs ./json.nix;
       libstr   = callLibs ./strings.nix;
