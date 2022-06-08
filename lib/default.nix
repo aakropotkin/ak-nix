@@ -13,7 +13,9 @@ let
       librepl  = callLibs ./repl.nix;
       liblist  = callLibs ./lists.nix;
 
-      inherit (final.libattrs) defaultSystemsMap allSystemsMap;
+      inherit (final.libattrs)
+        currySystems curryDefaultSystems funkSystems funkDefaultSystems
+        attrsToList;
 
       inherit (final.libjson) importJSON';
 

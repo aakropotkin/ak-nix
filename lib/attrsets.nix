@@ -50,9 +50,17 @@
 
 /* -------------------------------------------------------------------------- */
 
+  attrsToList = as: let
+    inherit (builtins) attrValues mapAttrs;
+  in attrValues ( mapAttrs ( name: value: { inherit name value; } ) as );
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
   inherit currySystems curryDefaultSystems;
   inherit funkSystems funkDefaultSystems;
+  inherit attrsToList;
 }  /* End `attrsets.nix' */
 
 
