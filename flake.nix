@@ -8,7 +8,7 @@
   inputs.jo.url = "path:./pkgs/development/tools/jo";
   inputs.jo.inputs.utils.follows = "/utils";
   inputs.jo.inputs.nixpkgs.follows = "/nixpkgs";
-  inputs.jo.follows = "";
+  inputs.jo.follows = "/jo";
 
 
 /* -------------------------------------------------------------------------- */
