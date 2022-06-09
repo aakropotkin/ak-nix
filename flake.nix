@@ -5,18 +5,20 @@
   inputs.utils.url = "github:numtide/flake-utils/master";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
 
+  inputs.jo.url = "path:./pkgs/development/tools/jo";
+  inputs.jo.inputs.utils.follows = "/utils";
+  inputs.jo.inputs.nixpkgs.follows = "/nixpkgs";
+  inputs.jo.inputs."".follows = "/";
+
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, utils }: let
+  outputs = { self, nixpkgs, utils, jo }: let
 
     inherit (utils.lib) eachDefaultSystemMap;
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib {
-      inherit utils;
-      nixpkgs-lib = nixpkgs.lib;
-    };
+    lib = import ./lib { inherit utils; inherit (nixpkgs) lib; };
 
   in {
 
@@ -60,18 +62,17 @@
 /* -------------------------------------------------------------------------- */
 
       packages = eachDefaultSystemMap ( system: {
-
+        inherit (jo.packages.${system}) jo;
       } );
 
 /* -------------------------------------------------------------------------- */
 
       # Merge input overlays in isolation from one another.
-      overlays.ak-nix = final: prev: import ./pkgs {
-        inherit nixpkgs;
-        inherit (final) system;
+      overlays.ak-nix = final: prev: {
         lib = import ./lib { inherit (prev) lib; inherit utils; };
       };
       overlays.default = self.overlays.ak-nix;
+      overlays.jo = jo.overlays.jo;
 
 
 /* -------------------------------------------------------------------------- */
@@ -80,6 +81,7 @@
         overlays = [self.overlays.ak-nix];
       };
       nixosModules.default = self.nixosModules.ak-nix;
+      nixosModules.jo = jo.nixosModules.jo;
 
 
 /* -------------------------------------------------------------------------- */
@@ -98,5 +100,10 @@
 
 
 /* -------------------------------------------------------------------------- */
+
+      checks = eachDefaultSystemMap ( system: jo.checks.${system} );
+
+/* -------------------------------------------------------------------------- */
+
     };
 }
