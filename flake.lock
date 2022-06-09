@@ -2,7 +2,6 @@
   "nodes": {
     "jo": {
       "inputs": {
-        "": [],
         "jo-src": "jo-src",
         "nixpkgs": [
           "nixpkgs"
@@ -13,7 +12,7 @@
       },
       "locked": {
         "lastModified": 1,
-        "narHash": "sha256-91vy+0q7vALIvLjGiEIZiHgjnU8VRnguiEJfg3Qj0t8=",
+        "narHash": "sha256-3ZXjMv/lBhFMvFcnddg3Cpy3FFpOXBvKBy3oiGAXJrU=",
         "path": "./pkgs/development/tools/jo",
         "type": "path"
       },

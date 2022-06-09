@@ -3,7 +3,6 @@
 
   inputs.utils.url = "github:numtide/flake-utils";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
-  inputs."".follows = "/";
 
   inputs.jo-src = {
     url = "github:jpmens/jo/1.6";
