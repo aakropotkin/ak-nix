@@ -1,5 +1,43 @@
 {
   "nodes": {
+    "jo": {
+      "inputs": {
+        "jo-src": "jo-src",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "utils": [
+          "utils"
+        ]
+      },
+      "locked": {
+        "lastModified": 1,
+        "narHash": "sha256-3ZXjMv/lBhFMvFcnddg3Cpy3FFpOXBvKBy3oiGAXJrU=",
+        "path": "./pkgs/development/tools/jo",
+        "type": "path"
+      },
+      "original": {
+        "path": "./pkgs/development/tools/jo",
+        "type": "path"
+      }
+    },
+    "jo-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1641398377,
+        "narHash": "sha256-aATCeJV0x+XHOQbwulutxivPzGVQ0mJj90vA+6IM124=",
+        "owner": "jpmens",
+        "repo": "jo",
+        "rev": "6962bca178a6778328d1126ff762120305bb4327",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jpmens",
+        "ref": "1.6",
+        "repo": "jo",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1654665288,
@@ -16,9 +54,7 @@
     },
     "root": {
       "inputs": {
-        "jo": [
-          "jo"
-        ],
+        "jo": "jo",
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }
