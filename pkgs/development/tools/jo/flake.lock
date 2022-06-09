@@ -33,6 +33,7 @@
     },
     "root": {
       "inputs": {
+        "": [],
         "jo-src": "jo-src",
         "nixpkgs": "nixpkgs",
         "utils": "utils"

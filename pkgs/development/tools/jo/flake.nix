@@ -3,13 +3,14 @@
 
   inputs.utils.url = "github:numtide/flake-utils";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
+  inputs."".follows = "/";
 
   inputs.jo-src = {
     url = "github:jpmens/jo/1.6";
     flake = false;
   };
 
-  outputs = { self, nixpkgs, utils, jo-src }: {
+  outputs = { self, nixpkgs, utils, jo-src, ... }: {
     packages = utils.lib.eachDefaultSystemMap ( system: {
       jo = nixpkgs.legacyPackages.${system}.callPackage ./. {
         inherit jo-src;
