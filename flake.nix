@@ -59,12 +59,8 @@
 
 /* -------------------------------------------------------------------------- */
 
-      packages = eachDefaultSystemMap ( system: import ./pkgs {
-        inherit nixpkgs system lib;
-        inherit (nixpkgs.legacyPackages.${system})
-          callPackage makeSetupHook writeShellScriptBin texinfo pandoc
-          gnutar gzip coreutils bash;
-        pkgs = nixpkgs.legacyPackages.${system};
+      packages = eachDefaultSystemMap ( system: {
+
       } );
 
 /* -------------------------------------------------------------------------- */
@@ -72,10 +68,8 @@
       # Merge input overlays in isolation from one another.
       overlays.ak-nix = final: prev: import ./pkgs {
         inherit nixpkgs;
-        inherit (final)
-          system lib callPackage makeSetupHook writeShellScriptBin pandoc
-          texinfo gnutar gzip coreutils bash;
-        pkgs = final;
+        inherit (final) system;
+        lib = import ./lib { inherit (prev) lib; inherit utils; };
       };
       overlays.default = self.overlays.ak-nix;
 
