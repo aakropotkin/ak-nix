@@ -16,7 +16,6 @@
     },
     "root": {
       "inputs": {
-        "jo": [],
         "nixpkgs": "nixpkgs",
         "utils": "utils"
       }
