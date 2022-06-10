@@ -60,7 +60,7 @@ in rec {
   inherit (lib) splitString hasPrefix hasSuffix hasInfix fileContents;
   inherit charN count;
   inherit commonPrefix commonSuffix;
-  inherit coerceToString;
+  inherit coerceString;
 
   matchingLines = re: lines:
     builtins.filter ( l: ( builtins.match re l ) != null ) lines;

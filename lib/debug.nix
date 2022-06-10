@@ -7,8 +7,8 @@ let
     report = { name, expected, result }: let
       msg = ''
         Test ${name} Failure: Expectation did not match result.
-          expected: ${coerceString expected}
-          result:   ${coerceString result}
+          expected: ${lib.libstr.coerceString expected}
+          result:   ${lib.libstr.coerceString result}
       '';
     in builtins.trace msg false;
 
@@ -28,7 +28,6 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-    # FIXME
     mkTestHarness = {
       writeText
     , tests
@@ -47,5 +46,5 @@ let
 /* -------------------------------------------------------------------------- */
 
 in {
-  inherit report checker checkerDrv;
+  inherit report checker checkerDrv mkTestHarness;
 } // lib.debug

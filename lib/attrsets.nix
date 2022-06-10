@@ -16,19 +16,25 @@
 #   trace: x86_64-linux
 #   3
 
-{ utils ? builtins.getFlake "github:numtide/flake-utils" }: let
+{ utils ? builtins.getFlake "github:numtide/flake-utils", lib }: let
 
   inherit (utils.lib) eachDefaultSystemMap eachSystemMap defaultSystems;
 
   currySystems = supportedSystems: fn: args: let
-     fas    = builtins.functionArgs fn;
-     callAs = system: fn ( { inherit system; } // args );
-     callV  = system: fn system args;
-     apply  = if ( fas == {} ) then callV else if ( fas ? system ) then callAs
-              else throw "provided function cannot accept system as an arg";
-     sysAttrs = eachSystemMap supportedSystems apply;
-     curried  = { __functor = self: system: self.${system}; };
-  in sysAttrs // curried;
+    inherit (builtins) functionArgs isString elem;
+    fas    = functionArgs fn;
+    callAs = system: fn ( { inherit system; } // args );
+    callV  = system: fn system args;
+    isSys  = ( isString args ) && ( elem args supportedSystems );
+    callF  = _: args': fn args args';  # Flip
+    apply  =
+      if ( fas == {} ) then if isSys then callF else callV else
+      if ( fas ? system ) then callAs else
+      throw "provided function cannot accept system as an arg";
+    sysAttrs = eachSystemMap supportedSystems apply;
+    curried  = { __functor = self: system: self.${system}; };
+    curriedF = { __functor = self: args': self.${args} args'; };
+  in sysAttrs // ( if isSys then curriedF else curried );
 
   curryDefaultSystems = currySystems defaultSystems;
 
@@ -36,13 +42,13 @@
 /* -------------------------------------------------------------------------- */
 
   funkSystems = supportedSystems: fn: let
-     fas    = builtins.functionArgs fn;
-     callAs = system: fn { inherit system; };
-     callV  = system: fn system;
-     apply  = if ( fas == {} ) then callV else if ( fas ? system ) then callAs
-              else throw "provided function cannot accept system as an arg";
-     sysAttrs = eachSystemMap supportedSystems apply;
-     curried  = { __functor = self: system: self.${system}; };
+    fas    = builtins.functionArgs fn;
+    callAs = system: fn { inherit system; };
+    callV  = system: fn system;
+    apply  = if ( fas == {} ) then callV else if ( fas ? system ) then callAs
+             else throw "provided function cannot accept system as an arg";
+    sysAttrs = eachSystemMap supportedSystems apply;
+    curried  = { __functor = self: system: self.${system}; };
   in sysAttrs // curried;
 
   funkDefaultSystems = funkSystems defaultSystems;

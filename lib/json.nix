@@ -6,7 +6,7 @@ rec {
     concatStringsSep "" ( filter isString ( split "(//[^\n]*)\n" str ) );
 
   importJSON' = x:
-    let (builtins) isAttrs isString fromJSON readFile; in
+    let inherit (builtins) isAttrs isString fromJSON readFile; in
     if ( isAttrs x ) then x
     else if ( isString x ) then fromJSON x
     else fromJSON ( stripCommentsJSONStr ( readFile x ) );

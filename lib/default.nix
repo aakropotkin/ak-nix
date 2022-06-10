@@ -20,11 +20,11 @@ let
 
       inherit (final.libjson) importJSON';
 
-      inherit (final.libpath) isAbsolutePath asAbspath extSuffix expandGlob;
+      inherit (final.libpath) isAbspath asAbspath extSuffix expandGlob;
       inherit (final.libpath) realpathRel;
 
       inherit (final.libstr) matchingLines readLines charN;
-      inherit (final.libstr) linesGrep readGrep readLinesGrep coerceToString;
+      inherit (final.libstr) linesGrep readGrep readLinesGrep coerceString;
 
       inherit (final.libfs)
         baseName' baseNameOfDropExt' listSubdirs listFiles listDir
@@ -34,6 +34,6 @@ let
 
       inherit (final.liblist) takeUntil dropUntil;
 
-      inherit (final.libdbg) report checker checkerDrv mkHarness;
+      inherit (final.libdbg) report checker checkerDrv mkTestHarness;
     } );
 in lib'
