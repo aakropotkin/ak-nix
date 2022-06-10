@@ -17,7 +17,8 @@ rec {
 
   baseName' = p: builtins.unsafeDiscardStringContext ( baseName p );
 
-  baseNameOfDropExt = p: builtins.head ( builtins.split "\\." ( baseName' p ) );
+  baseNameOfDropExt  = p: builtins.head ( builtins.split "\\." ( baseName p ) );
+  baseNameOfDropExt' = p: builtins.head ( builtins.split "\\." ( baseName' p ) );
 
 
 /* -------------------------------------------------------------------------- */
@@ -64,13 +65,6 @@ rec {
         ( slen <= ( builtins.stringLength s ) ) && ( suffstring slen s ) == sfx;
       matches = builtins.filter hasSfx ( builtins.attrNames fs );
     in ( toString dir ) + "/" + ( builtins.head matches );
-
-
-/* -------------------------------------------------------------------------- */
-
-  exists = t:
-    let d = builtins.readDir ( dirOf t ); in
-    builtins.elem ( baseNameOf t ) ( builtins.attrNames d );
 
 
 /* -------------------------------------------------------------------------- */

@@ -1,5 +1,20 @@
 { lib }:
 let
+/* -------------------------------------------------------------------------- */
+
+  # Force a value to a string.
+  coerceString = x: let
+    inherit (builtins) toJSON mapAttrs isFunction isAttrs trace typeOf;
+    coerceAs = as:
+      toJSON ( mapAttrs ( _: v: coerceString v ) as );
+  in if ( lib.strings.isCoercibleToString x ) then ( toString x ) else
+      if ( isFunction x ) then "<LAMBDA>" else
+      if ( isAttrs x ) then ( coerceAs x ) else
+          ( trace "Unable to stringify type ${typeOf x}" "<?>" );
+
+
+/* -------------------------------------------------------------------------- */
+
   charN' = n: builtins.substring n ( n + 1 );
   # charN 1 "hey"       ==> "h"
   # charN ( -1 ) "hey"  ==> "y"
@@ -45,6 +60,7 @@ in rec {
   inherit (lib) splitString hasPrefix hasSuffix hasInfix fileContents;
   inherit charN count;
   inherit commonPrefix commonSuffix;
+  inherit coerceToString;
 
   matchingLines = re: lines:
     builtins.filter ( l: ( builtins.match re l ) != null ) lines;

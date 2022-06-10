@@ -12,6 +12,7 @@ let
       libfs    = callLibs ./filesystem.nix;
       librepl  = callLibs ./repl.nix;
       liblist  = callLibs ./lists.nix;
+      libdbg   = callLibs ./debug.nix;
 
       inherit (final.libattrs)
         currySystems curryDefaultSystems funkSystems funkDefaultSystems
@@ -23,12 +24,16 @@ let
       inherit (final.libpath) realpathRel;
 
       inherit (final.libstr) matchingLines readLines charN;
-      inherit (final.libstr) linesGrep readGrep readLinesGrep;
+      inherit (final.libstr) linesGrep readGrep readLinesGrep coerceToString;
 
-      inherit (final.libfs) baseName';
+      inherit (final.libfs)
+        baseName' baseNameOfDropExt' listSubdirs listFiles listDir
+        findFileWithSuffix;
 
       inherit (final.librepl) show ls pwd;
 
       inherit (final.liblist) takeUntil dropUntil;
+
+      inherit (final.libdbg) report checker checkerDrv mkHarness;
     } );
 in lib'

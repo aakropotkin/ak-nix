@@ -33,7 +33,7 @@ let
     let
       inherit (builtins) substring stringLength split head replaceStrings;
       path = toString path';
-      wasAbs = lib.isAbspath path;
+      wasAbs = lib.libpath.isAbspath path;
       ng = unGlob path;
       dir = if ( ng == "" ) then ( toString ./. ) else ( lib.asAbspath ng );
       plen = stringLength path;
