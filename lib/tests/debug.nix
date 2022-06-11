@@ -1,8 +1,8 @@
-{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, nixpkgs   ? builtins.getFlake "nixpkgs"
-, system    ? builtins.currentSystem
-, pkgs      ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgs.writeText
+{ lib           ? ( builtins.getFlake ( toString ../.. ) ).lib
+, nixpkgs       ? builtins.getFlake "nixpkgs"
+, system        ? builtins.currentSystem
+, pkgs          ? nixpkgs.legacyPackages.${system}
+, writeText     ? pkgs.writeText
 }:
 let
   inherit (lib) libdbg;
@@ -18,7 +18,7 @@ let
     tests = with libdbg; {
 
       testChecker = {
-        expr = checker ( lib.runTests tests );
+        expr = checker "tests" ( lib.runTests tests );
         expected = true;
       }; 
 

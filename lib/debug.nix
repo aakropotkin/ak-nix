@@ -82,7 +82,7 @@ let
       assert builtins.isAttrs tests; let
       attrs'      = removeAttrs attrs ["withDrv" "writeText"];
       run         = lib.runTests tests;
-      check       = checker run name;
+      check       = checker name run;
       common      = { inherit run check; } // attrs';
       checkDrv    = checkerDrv writeText check;
       __functor   = self: self.checkDrv;
