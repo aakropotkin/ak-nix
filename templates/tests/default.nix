@@ -19,3 +19,10 @@
   inputs = args // { inherit lib; };
   check  = import ./check.nix inputs;
 in writeText "test.log" check
+
+# NOTE: this file's output/behavior is identical to `lib.libdbg.checkerDrv'.
+# The definition has been inlined for the benefit of readers.
+# Just know that a `flake.nix' file that uses `checkerDrv' or `mkTestHarness'
+# is equivalent.
+# XXX: Obviously delete the above comment if you modify the output in a way that
+# doesn't align with `lib.libdbg.checkerDrv'.
