@@ -29,18 +29,21 @@ let
 /* -------------------------------------------------------------------------- */
 
     mkTestHarness = {
-      writeText
+      withDrv   ? false
+    , writeText ? null
     , tests
-    , env   ? null
     , ...
     }@attrs:
       assert builtins.isAttrs tests; let
-        run    = lib.runTests tests;
-        check  = checker run;
-      in {
-        inherit run check;
-        checkDrv = checkerDrv writeText check;
-      } // attrs;
+      attrs'      = removeAttrs attrs ["withDrv" "writeText"];
+      run         = lib.runTests tests;
+      check       = checker run;
+      common      = { inherit run check; } // attrs';
+      checkDrv    = checkerDrv writeText check;
+      addCheckDrv = wt: common // { checkDrv = checkerDrv wt check; };
+      drvExtras   = if withDrv then { inherit checkDrv; }
+                               else { inherit addCheckDrv; };
+    in common // drvExtras;
 
 
 /* -------------------------------------------------------------------------- */

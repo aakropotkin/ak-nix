@@ -1,12 +1,39 @@
 { lib }:
-rec {
+let
+  inherit (builtins) isString typeOf;
+in rec {
+
+  inherit (builtins) readDir isPath pathExists;
 
 /* -------------------------------------------------------------------------- */
 
-  isAbspath = str: ( str != "" ) && ( builtins.substring 0 1 str ) == "/";
+  isCoercibleToPath = x: ( isPath x) || ( isString x );
+
+  coercePath = x:
+    if isPath x then x else if ( ! isString x ) then
+    throw "Cannot coerce a path from type: ${typeOf x}" else
+    if isAbspath x then ( /. + x ) else ./. + "/${x}";
+
+
+/* -------------------------------------------------------------------------- */
+
+  isAbspath = x:
+    if isPath x then true else if ( ! isString x ) then
+    throw "Cannot get absolute path of type: ${typeOf x}" else
+    ( x != "" ) && ( builtins.substring 0 1 x ) == "/";
+
   asAbspath = path:
     let str = toString path; in
     if ( isAbspath str ) then str else ( ./. + ( "/" + str ) );
+
+
+/* -------------------------------------------------------------------------- */
+
+  categorizePath = x: let
+    p = coercePath x;
+  in assert isCoercibleToPath x;
+     assert pathExists p;
+     ( readDir ( dirOf p ) ).${baseNameOf p};
 
 
 /* -------------------------------------------------------------------------- */
