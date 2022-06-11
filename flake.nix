@@ -79,14 +79,12 @@
 /* -------------------------------------------------------------------------- */
 
       templates = {
-        basic = {
-          path = ./templates/basic;
-          description = "a basic GNU build system package";
-        };
-        autotools = {
-          path = ./templates/autotools;
-          description = "a basic autotools project";
-        };
+        basic.path = ./templates/basic;
+        basic.description = "a basic GNU build system package";
+        autotools.path = ./templates/autotools;
+        autotools.description = "a basic autotools project";
+        nix-test.path = ./templates/nix-test;
+        nix-test.description = "a test harness for Nix expressions";
         default = self.templates.basic;
       };
 
