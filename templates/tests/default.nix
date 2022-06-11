@@ -1,0 +1,21 @@
+# Provides sane defaults for running this set of tests.
+# This is likely not the "ideal" way to utilize the test suite, but for someone
+# who is consuming your project and knows nothing about it - this file should
+# allow them to simply run `nix build' to see if the test suite passes.
+# This will produce a dummy derivation if tests pass, or will throw an eval
+# time error if they fail.
+# From the perspective of a CI system or `nix flake check' - this is the desired
+# behavior for a failing test suite.
+#
+# During active/iterative development, maintainters and contributors will almost
+# certainly prefer the specialized interfaces of `run.nix' or `check.nix'.
+{ lib       ? ( builtins.getFlake "github:aakropotkin/ak-nix/main?dir=lib" ).lib
+, nixpkgs   ? builtins.getFlake "nixpkgs"
+, system    ? builtins.currentSystem
+, pkgs      ? nixpkgs.legacyPackages.${system}
+, writeText ? pkgs.writeText
+, ...
+} @ args: let
+  inputs = args // { inherit lib; };
+  check  = import ./check.nix inputs;
+in writeText "test.log" check

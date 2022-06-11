@@ -83,8 +83,8 @@
         basic.description = "a basic GNU build system package";
         autotools.path = ./templates/autotools;
         autotools.description = "a basic autotools project";
-        nix-test.path = ./templates/nix-test;
-        nix-test.description = "a test harness for Nix expressions";
+        tests.path = ./templates/tests;
+        tests.description = "a test harness for Nix expressions and drvs";
         default = self.templates.basic;
       };
 
