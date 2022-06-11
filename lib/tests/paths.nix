@@ -4,12 +4,12 @@
 , system    ? builtins.currentSystem
 , pkgs      ? nixpkgs.legacyPackages.${system}
 , writeText ? pkgs.writeText
-}@args:
+}:
 let
   inherit (lib) libdbg libpath;
 
   harness = libdbg.mkTestHarness ( {
-    env = ( removeAttrs args ["withDrv" "writeText"] ) // { inherit lib; };
+    env = { inherit lib system nixpkgs pkgs; };
     tests = with libpath; {
 
       testIsCoercibleToPath = {
