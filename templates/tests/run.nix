@@ -1,7 +1,8 @@
 # Runs your tests, and returns a list of tests cases that failed.
 # A failed test is one where the evaluated `expr' does not `== expected'.
-# Failed tests are listed as attrsets with the original fields plus `result':
-#   Ex:  [{ expr = myAdd 1 1; expected = 2; result = 3; ... } ...]
+# Failed tests are listed as attrsets with the original `expected' and `result'
+# fields plus `result'.
+#   Ex:  [{ expected = 2; result = 3; name = "testFoo"; }]
 #
 # I have made `runner' an argument here in several of my own test dirs
 # which default to `lib.runTests' ( refering to the Nixpkgs implementation ).
