@@ -29,7 +29,7 @@ let
 /* -------------------------------------------------------------------------- */
 
     mkTestHarness = {
-      withDrv   ? false
+      withDrv   ? ( writeText != null )
     , writeText ? null
     , tests
     , ...
@@ -40,8 +40,12 @@ let
       check       = checker run;
       common      = { inherit run check; } // attrs';
       checkDrv    = checkerDrv writeText check;
-      addCheckDrv = wt: common // { checkDrv = checkerDrv wt check; };
-      drvExtras   = if withDrv then { inherit checkDrv; }
+      __functor   = self: self.checkDrv;
+      addCheckDrv = wt: common // {
+        checkDrv = checkerDrv wt check;
+        inherit __functor;
+      };
+      drvExtras   = if withDrv then { inherit checkDrv __functor; }
                                else { inherit addCheckDrv; };
     in common // drvExtras;
 

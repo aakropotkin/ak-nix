@@ -12,17 +12,17 @@ let
     testStrings = { expr = builtins.substring 0 1 "foo"; expected = "f"; };
   };
 
-  harness = libdbg.mkTestHarness ( {
-    env = { inherit lib system nixpkgs pkgs; };
+  harness = libdbg.mkTestHarness {
+    inherit writeText;
+    env = { inherit lib libdbg system nixpkgs pkgs; };
     tests = with libdbg; {
 
       testChecker = {
         expr = checker ( lib.runTests tests );
-        expected = null;
+        expected = true;
       }; 
 
     };
-  } // ( if withDrv then { inherit writeText; } else {} ) );
+  };
 
 in harness
-
