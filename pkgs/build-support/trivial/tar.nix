@@ -16,7 +16,7 @@ let
 
   # Use "$out" and "$src" normally in `tarFlags', we'll replace it.
   # NOTE: No other shell expansions are supported.
-  runTar = { src, name, tarFlags ? [], extraAttrs ? {} }: derivation ( {
+  runTar = { src, name, tarFlags ? [], extraAttrs ? {} }: ( derivation {
       inherit name system;
       PATH = "${gzip}/bin";
       builder = "${gnutar}/bin/tar";
@@ -24,7 +24,7 @@ let
                            ["$out" "$src"]
                            [( builtins.placeholder "out" ) ( toString src )];
       in map subst tarFlags;
-    } // extraAttrs );
+    } ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -35,7 +35,7 @@ let
     , tarFlags     ? ["--no-same-owner" "--no-same-permissions"]
     , tarFlagsLate ? []
     , extraAttrs   ? {}
-    }: derivation ( {
+    }: ( derivation {
       inherit name system;
       builder = "${gnutar}/bin/tar";
       PATH    = "${gzip}/bin";
@@ -43,7 +43,7 @@ let
         "-xf" "${tarball}"
         "--one-top-level=${builtins.placeholder "out"}"
       ] ++ tarFlagsLate;
-    } // extraAttrs );
+    } ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -55,13 +55,13 @@ let
     , tarFlags     ? ["--no-same-owner" "--no-same-permissions"]
     , tarFlagsLate ? []
     , extraAttrs   ? {}
-    }: derivation ( {
+    }: ( derivation {
       inherit name system;
       builder = "${gnutar}/bin/tar";
       PATH    = "${gzip}/bin";
       args = tarFlags     ++ ["-cf" ( builtins.placeholder "out" )] ++
              tarFlagsLate ++ ["${src}"];
-    } // extraAttrs );
+    } ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
