@@ -8,16 +8,18 @@
 let
   inherit (lib) libdbg libpath;
 
-  harness = libdbg.mkTestHarness ( {
-    env = { inherit lib system nixpkgs pkgs; };
-    tests = with libpath; {
+  tests = with libpath; {
 
-      testIsCoercibleToPath = {
-        expr = map isCoercibleToPath ["" ./.];
-        expected = [true true];
-      };
-
+    testIsCoercibleToPath = {
+      expr = map isCoercibleToPath ["" ./.];
+      expected = [true true];
     };
+
+  };  # End tests
+
+  harness = libdbg.mkTestHarness ( {
+    inherit writeText tests;
+    env = { inherit lib system nixpkgs pkgs; };
   } // ( if withDrv then { inherit writeText; } else {} ) );
 
 in harness
