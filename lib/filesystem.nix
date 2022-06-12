@@ -1,5 +1,6 @@
-{ ... }:
-rec {
+{ ... }: let
+  inherit (builtins) head split readDir substring stringLength filter;
+in rec {
 
 /* -------------------------------------------------------------------------- */
 
@@ -17,15 +18,15 @@ rec {
 
   baseName' = p: builtins.unsafeDiscardStringContext ( baseName p );
 
-  baseNameOfDropExt  = p: builtins.head ( builtins.split "\\." ( baseName p ) );
-  baseNameOfDropExt' = p: builtins.head ( builtins.split "\\." ( baseName' p ) );
+  baseNameOfDropExt  = p: head ( split "\\." ( baseName p ) );
+  baseNameOfDropExt' = p: head ( split "\\." ( baseName' p ) );
 
 
 /* -------------------------------------------------------------------------- */
 
   listSubdirs = dir:
     let
-      inherit (builtins) readDir attrValues mapAttrs filter;
+      inherit (builtins) attrValues mapAttrs;
       process = name: type: let bname = baseNameOf name; in
         if ( type == "directory" ) then ( ( toString dir ) + "/" + bname )
                                    else null;
@@ -34,7 +35,7 @@ rec {
 
   listFiles = dir:
     let
-      inherit (builtins) readDir attrValues mapAttrs filter;
+      inherit (builtins) attrValues mapAttrs;
       process = name: type: let bname = baseNameOf name; in
         if ( type == "directory" ) then null
                                    else ( ( toString dir ) + "/" + bname );
@@ -57,14 +58,14 @@ rec {
 
   findFileWithSuffix = dir: sfx:
     let
-      fs = builtins.readDir dir;
-      slen = builtins.stringLength sfx;
-      suffstring = l: str: let sl = builtins.stringLength str; in
-        builtins.substring ( sl - l ) sl str;
+      fs = readDir dir;
+      slen = stringLength sfx;
+      suffstring = l: str: let sl = stringLength str; in
+        substring ( sl - l ) sl str;
       hasSfx = s:
-        ( slen <= ( builtins.stringLength s ) ) && ( suffstring slen s ) == sfx;
-      matches = builtins.filter hasSfx ( builtins.attrNames fs );
-    in ( toString dir ) + "/" + ( builtins.head matches );
+        ( slen <= ( stringLength s ) ) && ( suffstring slen s ) == sfx;
+      matches = filter hasSfx ( builtins.attrNames fs );
+    in ( toString dir ) + "/" + ( head matches );
 
 
 /* -------------------------------------------------------------------------- */

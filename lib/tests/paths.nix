@@ -4,8 +4,9 @@
 , system    ? builtins.currentSystem
 , pkgs      ? nixpkgs.legacyPackages.${system}
 , writeText ? pkgs.writeText
-}:
-let
+, ...
+} @ args: let
+
   inherit (lib) libdbg libpath;
 
   tests = with libpath; {
@@ -18,8 +19,8 @@ let
   };  # End tests
 
   harness = libdbg.mkTestHarness ( {
-    inherit writeText tests;
-    env = { inherit lib system nixpkgs pkgs; };
+    inherit tests;
+    inputs = args // { inherit lib system nixpkgs pkgs; };
   } // ( if withDrv then { inherit writeText; } else {} ) );
 
 in harness

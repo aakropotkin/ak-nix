@@ -1,4 +1,4 @@
-{ lib ? ( builtins.getFlake "nixpkgs" ).lib
+{ lib   ? ( builtins.getFlake "nixpkgs" ).lib
 , utils ? builtins.getFlake "github:numtide/flake-utils"
 }:
 let
@@ -20,8 +20,9 @@ let
 
       inherit (final.libjson) importJSON';
 
-      inherit (final.libpath) isAbspath asAbspath extSuffix expandGlob;
-      inherit (final.libpath) realpathRel;
+      inherit (final.libpath)
+        isAbspath asAbspath extSuffix expandGlob realpathRel categorizePath
+        isCoercibleToPath coercePath;
 
       inherit (final.libstr) matchingLines readLines charN;
       inherit (final.libstr) linesGrep readGrep readLinesGrep coerceString;

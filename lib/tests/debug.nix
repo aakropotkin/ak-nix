@@ -1,12 +1,13 @@
 
 # Test for your testers so we can test while we test!
 
-{ lib           ? ( builtins.getFlake ( toString ../.. ) ).lib
-, nixpkgs       ? builtins.getFlake "nixpkgs"
-, system        ? builtins.currentSystem
-, pkgs          ? nixpkgs.legacyPackages.${system}
-, writeText     ? pkgs.writeText
-}: let
+{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
+, withDrv   ? false
+, nixpkgs   ? builtins.getFlake "nixpkgs"
+, system    ? builtins.currentSystem
+, pkgs      ? nixpkgs.legacyPackages.${system}
+, writeText ? pkgs.writeText
+} @ args: let
 
   inherit (lib) libdbg;
 
@@ -62,10 +63,10 @@
   # doesn't properly detect errors in tests, then it cannot be expected to
   # properly report its own flaws.
   # This is a "who polices the police?" paradox.
-  harness = libdbg.mkTestHarness {
-    inherit writeText tests;
-    env = { inherit lib libdbg system nixpkgs pkgs tests innerTests; };
-  };
+  harness = libdbg.mkTestHarness ( {
+    inherit tests;
+    inputs = args // { inherit lib libdbg tests innerTests; };
+  } ) // ( if withDrv then { inherit writeText; } else {} );
 
 
 /* -------------------------------------------------------------------------- */

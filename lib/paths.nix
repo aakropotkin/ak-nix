@@ -8,13 +8,16 @@ in rec {
 /* -------------------------------------------------------------------------- */
 
   # (Pred) Can `x' be coerced to a Path?
-  isCoercibleToPath = x: ( isPath x) || ( isString x );
+  isCoercibleToPath = x:
+    ( isPath x ) || ( isString x ) || ( lib.isDerivation x );
 
   # Force a path-like `x' to be a Path.
   coercePath = x:
-    if isPath x then x else if ( ! isString x ) then
-    throw "Cannot coerce a path from type: ${typeOf x}" else
-    if isAbspath x then ( /. + x ) else ./. + "/${x}";
+    if isPath x then x else
+    if lib.isDerivation x then x.outPath else
+    if ( ! isString x ) then
+      throw "Cannot coerce a path from type: ${typeOf x}" else
+    if isAbspath x then ( /. + x ) else ( ./. + "/${x}" );
 
 
 /* -------------------------------------------------------------------------- */
