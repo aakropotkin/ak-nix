@@ -1,11 +1,6 @@
 
 # lndir is available under `nixpkgs.legacyPackages.${system}.xorg.lndir'
-{ lib       ? { libfs = import ../../../lib/filesystem {}; }
-, system
-, coreutils
-, bash
-#, lndir
-}:
+{ lib, system, coreutils, bash /* , lndir */ }:
 
 let
 
@@ -22,7 +17,7 @@ let
   , lnFlags    ? ["-s" "--"] ++ ( map toString srcs ) ++
                  [( builtins.placeholder "out" )]
   , extraAttrs ? {}
-  }@args:
+  } @ args:
     # Make sure the user really provided SOME way for `ln' to run successfully.
     assert ! ( ( srcs == [] ) && ( src == null ) && ( ! ( args ? lnFlags ) ) );
   ( derivation {
@@ -31,11 +26,16 @@ let
     args = let
       so = builtins.replaceStrings ["$out"] [( builtins.placeholder "out" )];
     in if ( args ? lnFlags ) then ( map so lnFlags ) else lnFlags;
-  } // extraAttrs );
+  } ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
 
+  # Create a symlink from a file ( presumably from a larger `drv' ) to `$out'.
+  # On its own this isn't particularly useful; but when viewed as analogous to
+  # "copying" a single file ( which is effectively how the Nix Store will see
+  # treat it when performing `--optimize' or binary cache fetches ) it's
+  # becomes a powerful tool for creating "fine grained" Derivation contexts.
   linkOut = { src, name ? baseName' src, extraAttrs ? {} }:
     runLn { inherit name src extraAttrs; };
 
