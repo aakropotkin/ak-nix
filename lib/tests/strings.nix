@@ -33,6 +33,9 @@
       expected = [true  true true true false false false false];
     };
 
+
+/* -------------------------------------------------------------------------- */
+
     testYankN' = {
       expr = map ( yankN' 1 "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
         " aa " "AaaAAA" "aa bb ZZ" "aa "
@@ -54,7 +57,35 @@
       expected = [[" " "aa"] ["A" "aa"] ["aa " "bb"] [null "aa"]];
     };
 
-  };
+    /* The safer ones */
+    testYankN = {
+      expr = map ( yankN 1 "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
+        " aa " "AaaAAA" "aa bb ZZ" "aa "  "A"
+      ];
+      expected = ["aa" "aa" "bb" "aa" null];
+    };
+
+    testYank = {
+      expr = map ( yank "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
+        " aa " "AaaAAA" "aa bb ZZ" "aa "  "A"
+      ];
+      expected = [" " "A" "aa " null null];
+    };
+
+    testYankNs = {
+      expr = map ( yankNs [0 1] "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
+        " aa " "AaaAAA" "aa bb ZZ" "aa " "A"
+      ];
+      expected = [[" " "aa"] ["A" "aa"] ["aa " "bb"] [null "aa"] null];
+    };
+
+
+/* -------------------------------------------------------------------------- */
+
+
+
+  }; /* End tests */
+
 
   harness = libdbg.mkTestHarness ( {
     inherit tests;
