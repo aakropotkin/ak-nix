@@ -17,6 +17,8 @@
 
   inherit (lib) libdbg libstr;
 
+/* -------------------------------------------------------------------------- */
+
   data = {
     file1 = toFile "file1" ''
       foo
@@ -25,6 +27,14 @@
       quux
     '';
   };
+
+  __mkYanker = e: f: map ( f "(.*[^a-z]+)?([a-z]+)([^a-z]+)" )
+                         ( [" aa " "AaaAAA" "aa bb ZZ" "aa "] ++ e );
+  mkYanker' = __mkYanker [];
+  mkYanker  = __mkYanker ["A"];
+
+
+/* -------------------------------------------------------------------------- */
 
   tests = {
 
@@ -37,45 +47,33 @@
 /* -------------------------------------------------------------------------- */
 
     testYankN' = {
-      expr = map ( yankN' 1 "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa "
-      ];
+      expr = mkYanker' ( yankN' 1 );
       expected = ["aa" "aa" "bb" "aa"];
     };
 
     testYank' = {
-      expr = map ( yank' "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa "
-      ];
+      expr = mkYanker' yank';
       expected = [" " "A" "aa " null];
     };
 
     testYankNs' = {
-      expr = map ( yankNs' [0 1] "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa "
-      ];
+      expr = mkYanker' ( yankNs' [0 1] );
       expected = [[" " "aa"] ["A" "aa"] ["aa " "bb"] [null "aa"]];
     };
 
     /* The safer ones */
     testYankN = {
-      expr = map ( yankN 1 "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa "  "A"
-      ];
+      expr = mkYanker ( yankN 1 );
       expected = ["aa" "aa" "bb" "aa" null];
     };
 
     testYank = {
-      expr = map ( yank "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa "  "A"
-      ];
+      expr = mkYanker yank;
       expected = [" " "A" "aa " null null];
     };
 
     testYankNs = {
-      expr = map ( yankNs [0 1] "(.*[^a-z]+)?([a-z]+)([^a-z]+)" ) [
-        " aa " "AaaAAA" "aa bb ZZ" "aa " "A"
-      ];
+      expr = mkYanker ( yankNs [0 1] );
       expected = [[" " "aa"] ["A" "aa"] ["aa " "bb"] [null "aa"] null];
     };
 
