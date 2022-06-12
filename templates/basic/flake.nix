@@ -1,23 +1,24 @@
 {
+  # FIXME: replace BASIC and OWNER with real info
   description = "a basic package";
 
   inputs.utils.url = "github:numtide/flake-utils";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
 
-  inputs.basic-src.url   = "github:owner/basic";
-  inputs.basic-src.flake = false;
+  inputs.BASIC-src.url   = "github:OWNER/BASIC";
+  inputs.BASIC-src.flake = false;
 
-  outputs = { self, nixpkgs, utils, basic-src }: let
+  outputs = { self, nixpkgs, utils, BASIC-src }: let
     inherit (utils.lib) eachDefaultSystemMap;
   in {
 
     packages = eachDefaultSystemMap ( system: let
       pkgsFor = nixpkgs.legacyPackages.${system};
     in {
-      basic = pkgsFor.stdenv.mkDerivation {
-        pname = "basic";
+      BASIC = pkgsFor.stdenv.mkDerivation {
+        pname = "BASIC";
         version = "0.0.0";
-        src = basic-src;
+        src = BASIC-src;
         nativeBuildInputs = with pkgsFor; [
           # pkg-config
           # help2man
@@ -29,7 +30,7 @@
         ];
       };
 
-      default = self.packages.${system}.basic;
+      default = self.packages.${system}.BASIC;
     } );  # End Packages
 
   };

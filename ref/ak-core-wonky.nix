@@ -22,14 +22,14 @@
       overlays =
         let
           packageOverlays = builtins.mapAttrs ( n: _: ( final: prev: {
-            inherit (self.packages.${final.system}) ${n};
+            ${n} = self.packages.${final.system}.${n};
           } ) ) ( nonDefaultAttrs self.packages );
           nonPackageOverlays = {/* Add overlays */};
           overlayValues = ( builtins.attrValues packageOverlays ) ++
-                          ( builtins.attrValues nonPackageOverlays )
+                          ( builtins.attrValues nonPackageOverlays );
         in packageOverlays // nonPackageOverlays // {
           default = final: prev:
-            foldl' ( acc: o: acc // ( o final prev ) ) overlayValues;
+            builtins.foldl' ( acc: o: acc // ( o final prev ) ) overlayValues;
         };
 
       #overlays.ak-core = final: prev: {
@@ -42,7 +42,7 @@
         /* Modules */
       };
       nixosModule = { ... }: {
-        imports = buitins.attrValues self.nixosModules;
+        imports = builtins.attrValues self.nixosModules;
       };
     };
 }
