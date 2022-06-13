@@ -6,7 +6,7 @@ let
 /* -------------------------------------------------------------------------- */
 
   __doc__isCoercibleToPath = ''
-    (Pred) Can `x' be coerced to a Path?
+    Can `x' be coerced to a Path?
   '';
   isCoercibleToPath = x:
     ( isPath x ) || ( isString x ) || ( lib.isDerivation x );
@@ -26,7 +26,7 @@ let
 /* -------------------------------------------------------------------------- */
 
   __doc__isAbspath = ''
-    (Pred) Is path-like `x' an absolute path?
+    Is path-like `x' an absolute path?
     This is always true for Path types, but we're really interested in checking
     for whether or not a relative path-like (string) needs to be resolved.
   '';

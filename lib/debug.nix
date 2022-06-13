@@ -29,9 +29,15 @@ let
     rsl' = builtins.deepSeq ( builtins.trace msg ) rsl;
   in assert rsl'; rsl';
 
+
   # Produce a dummy output if `check' succeeds.
   # I recommend passing the output of `checker' as the argument `check'.`
-  checkerDrv = writeText: check: writeText "test.log" check;
+  # NOTE: This is largely here for reference, and as a nice starter.
+  # You'll notice below in `mkTestHarness' I call `writeText' directly so that
+  # I can change the name of the output file; but for the convenience of users
+  # I've offered up this dinky wrapper.
+  checkerDrv = writeText: check:
+    writeText "test.log" check;
 
 
 /* -------------------------------------------------------------------------- */
@@ -84,10 +90,10 @@ let
       run         = lib.runTests tests;
       check       = checker name run;
       common      = { inherit run check; } // attrs';
-      checkDrv    = checkerDrv writeText check;
+      checkDrv    = writeText "${name}.log" check;
       __functor   = self: self.checkDrv;
       addCheckDrv = wt: common // {
-        checkDrv = checkerDrv wt check;
+        checkDrv = writeText "${name}.log" check;
         inherit __functor;
       };
       drvExtras   = if withDrv then { inherit checkDrv __functor; }

@@ -64,9 +64,10 @@
   # properly report its own flaws.
   # This is a "who polices the police?" paradox.
   harness = libdbg.mkTestHarness ( {
-    inherit tests;
+    inherit tests withDrv;
+    name = "test-debug";
     inputs = args // { inherit lib libdbg tests innerTests; };
-  } ) // ( if withDrv then { inherit writeText; } else {} );
+  } // ( if withDrv then { inherit writeText; } else {} ) );
 
 
 /* -------------------------------------------------------------------------- */

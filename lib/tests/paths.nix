@@ -29,7 +29,8 @@
   };  # End tests
 
   harness = libdbg.mkTestHarness ( {
-    inherit tests;
+    inherit tests withDrv;
+    name = "test-paths";
     inputs = args // { inherit lib system nixpkgs pkgs; };
   } // ( if withDrv then { inherit writeText; } else {} ) );
 

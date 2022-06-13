@@ -90,8 +90,9 @@
 
 
   harness = libdbg.mkTestHarness ( {
-    inherit tests;
+    inherit tests withDrv;
+    name = "test-strings";
     inputs = args // { inherit lib libstr data; };
-  } ) // ( if withDrv then { inherit writeText; } else {} );
+  } // ( if withDrv then { inherit writeText; } else {} ) );
 
 in harness
