@@ -1,7 +1,7 @@
 # Create/extract gzip tarballs.
 # FIXME: support Xz and bzip2
 
-{ system, gnutar, gzip }:
+{ lib, system, gnutar, gzip }:
 
 let
 
@@ -19,14 +19,45 @@ let
 /* -------------------------------------------------------------------------- */
 
   # Use "$out" and "$src" normally in `tarFlags', we'll replace it.
+  # "$src" replacement attempts to "do what I mean" in cases where `src' is a
+  # single path-like vs. a list or path-likes, and depending on whether the
+  # argument being processed matches "$src" exactly vs. contains "$src".
+  #
+  # When `src' is a list:
+  #  - If `arg == "$src"' the list of sources are substed as separate arguments:
+  #      { src = ["hey" "there"]; tarFlags = ["bar" "$src"]
+  #      ==> ["bar" "hey" "there"]
+  #  - If `arg contains "$src"' sources are space separated ( UNQUOTED! ):
+  #      { src = ["hey" "there"]; tarFlags = ["bar" "--files='$src'"]
+  #      ==> ["bar" "--files='hey there'"]
+  #
+  # Pay attention to the fact that the flag provided by the user provided the
+  # single quotes - these are not provided for you.
+  #
+  # This behavior aims to align with the rules `derivation[Strict]' uses to
+  # convert variables to POSIX Shell variables,
+  #
+  #
   # NOTE: No other shell expansions are supported.
-  runTar = { src, name, tarFlags ? [], extraAttrs ? {} }: ( derivation {
+  #
+  runTar = { name, src ? [], tarFlags ? [], extraAttrs ? {} }: let
+    sources = map toString ( if builtins.isList src then src else [src] );
+    substSrc = args: let
+      # XXX: No quoting is performed! Write them in your flags!
+      joined = builtins.concatStringsSep " " sources;
+      subst = acc: s:
+        if ( s == "$src" ) then acc ++ sources else
+        if ( lib.libstr.test ".*$src.*" s )
+          then acc ++ [( builtins.replaceStrings ["$src"] [joined] s )] else
+        acc ++ [s];
+    in if src == [] then args else builtins.foldl' subst [] args;
+  in ( derivation {
     inherit name system;
     PATH = "${gzip}/bin";
     builder = "${gnutar}/bin/tar";
-    args = let subst = builtins.replaceStrings
-                         ["$out" "$src"]
-                         [( builtins.placeholder "out" ) ( toString src )];
+    args = let
+      so = builtins.replaceStrings ["$out"] [( builtins.placeholder "out" )];
+      subst = arg: substSrc ( so arg );
     in map subst tarFlags;
   } ) // extraAttrs;
 
@@ -124,4 +155,24 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-in { inherit runTar untar tar; }
+  # We'll replace "$out" for you, but not "$src".
+  # We use `lib.toGnuCommandLine' to convert our args.
+  # Because that function takes attrsets, we accept a list of attrsets to allow
+  # the user to use flags repeatedly.
+  # This isn't ideal but whatever.
+  #
+  # If a member of `argsList' is not an attrset, we will recurse over lists,
+  # and call `toString' on anything else.
+  tarcli = { name, argsList, extraAttrs ? {} }: let
+    mkTarFlags = builtins.foldl' process [];
+    process = acc: a:
+      if builtins.isAttrs a then acc ++ ( lib.cli.toGNUCommandLine {} a ) else
+      if builtins.isList  a then acc ++ ( mkTarFlags a ) else
+      ( acc ++ [( toString a )] );
+    tarFlags = mkTarFlags argsList;
+  in runTar { inherit name tarFlags extraAttrs; src = []; };
+
+
+/* -------------------------------------------------------------------------- */
+
+in { inherit runTar untar tar tarcli; }

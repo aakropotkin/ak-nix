@@ -33,7 +33,7 @@
 
       tarutils = ( eachDefaultSystemMap ( system:
         import ./pkgs/build-support/trivial/tar.nix {
-          inherit system;
+          inherit system lib;
           inherit (nixpkgs.legacyPackages.${system}) gzip gnutar;
         } ) ) // { __functor = _self: system: _self.${system}; };
 

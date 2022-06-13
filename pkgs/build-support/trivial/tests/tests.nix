@@ -58,4 +58,27 @@ in {
     '';
   };
 
+  testTarCli = {
+    expr = let
+      file = builtins.toFile "welcome" "Hello, World!";
+      foo = tarutils.tarcli {
+        name = "foo.tar.gz";
+        argsList = [{
+            c = true;               # Create Archive
+            f = "$out";             # Name Archive "$out" ( replaced later )
+          } {                       # We split to make sure the `foldl' works
+            C = dirOf file;         # Change to directory before archiving
+            xform = "s,^[^-]*-,,";  # Strip store path
+          }
+          ( baseNameOf file )       # Input file, relative to `C' working dir
+        ];
+      };
+      # Now unpack it to make sure it did what we wanted.
+      unpacked = tarutils.untar { tarball = foo.outPath; };
+      # Confirm the file name was preserved
+      # Also, we obviously expect the message to be the same.
+    in builtins.readFile "${unpacked}/welcome";
+    expected = "Hello, World!";
+  };
+
 }

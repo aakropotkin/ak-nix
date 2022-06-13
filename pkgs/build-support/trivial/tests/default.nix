@@ -5,7 +5,7 @@
 , writeText ? pkgs.writeText
 , gnutar    ? pkgs.gnutar
 , gzip      ? pkgs.gzip
-, tarutils  ? import ../tar.nix { inherit system gnutar gzip; }
+, tarutils  ? import ../tar.nix { inherit lib system gnutar gzip; }
 , linkutils ? import ../link.nix { inherit lib system coreutils bash; }
 , coreutils ? pkgs.coreutils
 , bash      ? pkgs.bash
