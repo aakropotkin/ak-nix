@@ -163,6 +163,11 @@ let
   #
   # If a member of `argsList' is not an attrset, we will recurse over lists,
   # and call `toString' on anything else.
+  #
+  # FIXME: you can avoid `runTar' by extending replacement rules in
+  # `toGNUCommandLine' to handle "$out".
+  # The trick is leaving `( builtins.placeholder "out" )' as a thunk until
+  # inside of `derivation { ... }'.
   tarcli = { name, argsList, extraAttrs ? {} }: let
     mkTarFlags = builtins.foldl' process [];
     process = acc: a:
