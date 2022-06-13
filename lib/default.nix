@@ -29,8 +29,9 @@ let
         isAbspath asAbspath extSuffix expandGlob realpathRel categorizePath
         isCoercibleToPath coercePath;
 
-      inherit (final.libstr) matchingLines readLines charN;
-      inherit (final.libstr) linesGrep readGrep readLinesGrep coerceString;
+      inherit (final.libstr)
+        matchingLines readLines charN
+        linesGrep readGrep readLinesGrep coerceString;
 
       inherit (final.libfs)
         baseName' baseNameOfDropExt' listSubdirs listFiles listDir
