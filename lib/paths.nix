@@ -115,6 +115,32 @@ let
 
 /* -------------------------------------------------------------------------- */
 
+  __doc__dropLeadingDotSlash = ''
+    Try to drop leading "./" part of path-like String `p'.
+  '';
+  dropLeadingDotSlash = p: let
+    y = lib.libstr.yank "\\./(.*)" p;
+  in if ( y == null ) then p else y;
+
+
+/* -------------------------------------------------------------------------- */
+
+  __doc__stripComponents = ''
+    Strip `n' count leading directory components from path-like `p'.
+    Returns a path-like string without any "./" components.
+    When stripping, leading "./" components DO COUNT against `n'.
+    Redundant slashes, eg "foo//bar//baz", are counted as a single component,
+    but no "fixup" on repeated slashes is performed on the resulting string.
+  '';
+  stripComponents = n: p: let
+    inherit (builtins) genList concatStringsSep;
+    stripper = ( concatStringsSep "" ( genList ( _: "[^/]*/+" ) n ) ) + "(.*)";
+    s = lib.libstr.yank stripper ( toString p );
+  in if ( s == null ) then ( baseNameOf p ) else s;
+
+
+/* -------------------------------------------------------------------------- */
+
   __doc__extSuffix = ''
     Get file extension.
     This performs non-greedy matching, so `"foo.bar.baz" ==> "bar.baz"'
@@ -179,6 +205,8 @@ in {
     commonParent
     realpathRel'
     realpathRel
+    dropLeadingDotSlash
+    stripComponents
     extSuffix
     extSuffix'
     expandGlobList
@@ -189,18 +217,20 @@ in {
   # nix eval --json -f ./default.nix --apply 'f: f { exportDocs = true; }'  \
   #   |jq -r '.[]|to_entries|map( .key + ":\n" + .value + "\n"  )[]';
   __docs__libpath = {
-      isCoercibleToPath = __doc__isCoercibleToPath;
-      coercePath        = __doc__coercePath;
-      isAbspath         = __doc__isAbspath;
-      asAbspath         = __doc__asAbspath;
-      categorizePath    = __doc__categorizePath;
-      commonParent      = __doc__commonParent;
-      realpathRel'      = __doc__realpathRel';
-      realpathRel       = __doc__realpathRel;
-      extSuffix         = __doc__extSuffix;
-      extSuffix'        = __doc__extSuffix';
-      expandGlobList    = __doc__expandGlobList;
-      expandGlob        = __doc__expandGlob;
+      isCoercibleToPath   = __doc__isCoercibleToPath;
+      coercePath          = __doc__coercePath;
+      isAbspath           = __doc__isAbspath;
+      asAbspath           = __doc__asAbspath;
+      categorizePath      = __doc__categorizePath;
+      commonParent        = __doc__commonParent;
+      realpathRel'        = __doc__realpathRel';
+      realpathRel         = __doc__realpathRel;
+      dropLeadingDotSlash = __doc__dropLeadingDotSlash;
+      stripComponents     = __doc__stripComponents;
+      extSuffix           = __doc__extSuffix;
+      extSuffix'          = __doc__extSuffix';
+      expandGlobList      = __doc__expandGlobList;
+      expandGlob          = __doc__expandGlob;
   };
 
 }

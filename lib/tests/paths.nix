@@ -26,6 +26,28 @@
       expected = "baz";
     };
 
+    testDropLeadingDotSlash = {
+      expr = map dropLeadingDotSlash [
+        "./foo" ".bar" "/baz" "quux/." "sally" "/"
+      ];
+      expected = ["foo" ".bar" "/baz" "quux/." "sally" "/"];
+    };
+
+    testStripComponents = {
+      expr =
+        ( map ( stripComponents 1 ) [
+          "./foo" "bar" "foo/bar" ( /. + "foo/bar/" )
+        ] ) ++ ( map ( stripComponents 2 ) [
+          "./foo" "bar" "foo/bar" ( /. + "foo/bar/" ) "foo/bar/baz/quux"
+          "/foo/bar//baz" "foo/bar//baz"
+        ] );
+      expected = [
+        "foo" "bar" "bar" "foo/bar"
+        "foo" "bar" "bar" "bar" "baz/quux"
+        "bar//baz" "baz"
+      ];
+    };
+
   };  # End tests
 
   harness = libdbg.mkTestHarness ( {
