@@ -5,12 +5,16 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-  __doc__isCoercibleToPath = ''(Pred) Can `x' be coerced to a Path?'';
+  __doc__isCoercibleToPath = ''
+    (Pred) Can `x' be coerced to a Path?
+  '';
   isCoercibleToPath = x:
     ( isPath x ) || ( isString x ) || ( lib.isDerivation x );
 
 
-  __doc__coercePath = ''Force a path-like `x' to be a Path.'';
+  __doc__coercePath = ''
+    Force a path-like `x' to be a Path.
+  '';
   coercePath = x:
     if isPath x then x else
     if lib.isDerivation x then x.outPath else
@@ -32,7 +36,9 @@ let
     ( x != "" ) && ( builtins.substring 0 1 x ) == "/";
 
 
-  __doc__asAbspath = ''Resolve a relative path to an absolute path.'';
+  __doc__asAbspath = ''
+    Resolve a relative path to an absolute path.
+  '';
   asAbspath = path: let
     str = toString path;
   in if ( isAbspath str ) then str else ( ./. + ( "/" + str ) );
@@ -162,26 +168,6 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-  __docs__libpath = {
-    inherit
-      __doc__isCoercibleToPath
-      __doc__coercePath
-      __doc__isAbspath
-      __doc__asAbspath
-      __doc__categorizePath
-      __doc__commonParent
-      __doc__realpathRel'
-      __doc__realpathRel
-      __doc__extSuffix
-      __doc__extSuffix'
-      __doc__expandGlobList
-      __doc__expandGlob
-    ;
-  };
-
-
-/* -------------------------------------------------------------------------- */
-
 in {
 
   inherit
@@ -199,6 +185,22 @@ in {
     expandGlob
   ;
 
-  inherit __docs__libpath;
+  # Dump Docs:
+  # nix eval --json -f ./default.nix --apply 'f: f { exportDocs = true; }'  \
+  #   |jq -r '.[]|to_entries|map( .key + ":\n" + .value + "\n"  )[]';
+  __docs__libpath = {
+      isCoercibleToPath = __doc__isCoercibleToPath;
+      coercePath        = __doc__coercePath;
+      isAbspath         = __doc__isAbspath;
+      asAbspath         = __doc__asAbspath;
+      categorizePath    = __doc__categorizePath;
+      commonParent      = __doc__commonParent;
+      realpathRel'      = __doc__realpathRel';
+      realpathRel       = __doc__realpathRel;
+      extSuffix         = __doc__extSuffix;
+      extSuffix'        = __doc__extSuffix';
+      expandGlobList    = __doc__expandGlobList;
+      expandGlob        = __doc__expandGlob;
+  };
 
 }
