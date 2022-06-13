@@ -28,10 +28,11 @@
     '';
   };
 
-  __mkYanker = e: f: map ( f "(.*[^a-z]+)?([a-z]+)([^a-z]+)" )
-                         ( [" aa " "AaaAAA" "aa bb ZZ" "aa "] ++ e );
-  mkYanker' = __mkYanker [];
-  mkYanker  = __mkYanker ["A"];
+  # Common test pattern for all `testYank*' cases.
+  _mkYanker = e: f: map ( f "(.*[^a-z]+)?([a-z]+)([^a-z]+)" )
+                        ( [" aa " "AaaAAA" "aa bb ZZ" "aa "] ++ e );
+  mkYanker' = _mkYanker [];
+  mkYanker  = _mkYanker ["A"];
 
 
 /* -------------------------------------------------------------------------- */
@@ -80,6 +81,9 @@
 
 /* -------------------------------------------------------------------------- */
 
+
+
+/* -------------------------------------------------------------------------- */
 
 
   }; /* End tests */

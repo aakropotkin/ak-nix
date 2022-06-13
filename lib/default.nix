@@ -1,10 +1,15 @@
-{ lib   ? ( builtins.getFlake "nixpkgs" ).lib
-, utils ? builtins.getFlake "github:numtide/flake-utils"
+{ lib        ? ( builtins.getFlake "nixpkgs" ).lib
+, utils      ? builtins.getFlake "github:numtide/flake-utils"
+, exportDocs ? false
 }:
 let
   lib' = lib.extend ( final: prev:
     let callLibs = file: import file { lib = final; };
     in {
+
+      # Eliminated depratation warnings/errors.
+      systems = removeAttrs prev.systems ["supported"];
+
       libattrs = import   ./attrsets.nix { lib = final; inherit utils; };
       libpath  = callLibs ./paths.nix;
       libjson  = callLibs ./json.nix;
@@ -20,7 +25,7 @@ let
 
       inherit (final.libjson) importJSON';
 
-      inherit (final.libpath)
+      inherit (final.libpath) __docs__libpath
         isAbspath asAbspath extSuffix expandGlob realpathRel categorizePath
         isCoercibleToPath coercePath;
 
@@ -37,4 +42,19 @@ let
 
       inherit (final.libdbg) report checker checkerDrv mkTestHarness;
     } );
-in lib'
+
+  # FIXME: you're leaving behind sub-attributes like `libpath.__docs__libpath'
+  docsParted = let
+    ptd = builtins.partition
+      ( x: lib.hasPrefix "__docs__" x.name )
+      ( lib'.attrsToList lib' );
+    # I intentionally left "__doc_" short on the suffix in case I mistype.
+    throwDoc = k: v: if ( ! lib.hasPrefix "__doc_" k ) then v else
+      throw "Found docstring in lib exports: ${k}";
+    assertNoDocs = builtins.mapAttrs throwDoc;
+  in {
+    docs = builtins.listToAttrs ptd.right;
+    lib  = assertNoDocs ( builtins.listToAttrs ptd.wrong );
+  };
+
+in if exportDocs then docsParted.docs else docsParted.lib

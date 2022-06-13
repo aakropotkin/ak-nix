@@ -16,6 +16,16 @@
       expected = [true true];
     };
 
+    testExtSuffix = {
+      expr = extSuffix "foo.bar.baz";
+      expected = "bar.baz";
+    };
+
+    testExtSuffix' = {
+      expr = extSuffix' "foo.bar.baz";
+      expected = "baz";
+    };
+
   };  # End tests
 
   harness = libdbg.mkTestHarness ( {
