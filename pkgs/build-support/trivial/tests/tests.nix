@@ -89,7 +89,7 @@ in {
   # This is important because if they do, a change to meta-data will wrongly
   # trigger rebuilds.
   testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
-    expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+    expr = let pkg = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
     in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
     expected = { pkg.meta.boy = "howdy"; drv = {}; };
   };

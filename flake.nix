@@ -78,6 +78,29 @@
 
 /* -------------------------------------------------------------------------- */
 
+      checks = eachDefaultSystemMap ( system: let
+        pkgsFor = nixpkgs.legacyPackages.${system};
+      in {
+        trivial = import ./pkgs/build-support/trivial/tests {
+          inherit lib system;
+          inherit (pkgsFor) writeText runCommandNoCC;
+          tarutils = self.tarutils.${system};
+          linkutils = self.linkutils.${system};
+          #inherit nixpkgs;
+          #pkgs = pkgsFor;
+          #inherit (pkgsFor) gnutar gzip coreutils bash;
+
+          outputAttr = "writeRunReport";
+          # See additional configurable options in the `default.nix' file.
+          # We didn't export them here, but if you're modifying this codebase
+          # they may be useful to you.
+        };
+        default = self.checks.${system}.trivial;
+      } );
+
+
+/* -------------------------------------------------------------------------- */
+
       templates = {
         basic.path = ./templates/basic;
         basic.description = "a basic GNU build system package";
