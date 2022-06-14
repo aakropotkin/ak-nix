@@ -88,33 +88,53 @@ in {
   # Assert that `extraAttrs' do not appear in Derivations.
   # This is important because if they do, a change to meta-data will wrongly
   # trigger rebuilds.
-  testExtraAttrs = let
-    inherit (builtins) attrNames;
-    # FIXME: test all of these.
-    fns = ( with linkutils; [runTar tar tarcli untar] ) ++
-          ( with tarutils;  [linkOut linkToPath runLn] );
-    extraAttrs = { meta.boy = "howdy"; };
-    # TODO: runTar
-    # TODO: tarcli
-    # TODO: untar
-    # TODO: linkOut
-    # TODO: linkToPath
-    # TODO: runLn
-  in {
-    expr = let
-      pkg = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
-      #pkgAttrs = attrNames pkg;
-      #drvAttrs = attrNames pkg.drvAttrs;
-    in {
-      pkg = pkg.meta or {};
-      drv = pkg.drvAttrs.meta or {};
-    };
-    expected = {
-      pkg.meta.boy = "howdy";
-      drv = {};
-    };
+  testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+    expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+    in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+    expected = { pkg.meta.boy = "howdy"; drv = {}; };
   };
 
+  # TODO: runTar
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
+
+  # TODO: tarcli
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
+
+  # TODO: untar
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
+
+  # TODO: linkOut
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
+
+  # TODO: linkToPath
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
+
+  # TODO: runLn
+  #testExtraAttrs_tar = let extraAttrs = { meta.boy = "howdy"; }; in {
+  #  expr = let pkgTar = tar ( tarSourceCommonArgs // { inherit extraAttrs; } );
+  #  in { pkg = pkg.meta or {}; drv = pkg.drvAttrs.meta or {}; };
+  #  expected = { pkg.meta.boy = "howdy"; drv = {}; };
+  #};
 
 /* -------------------------------------------------------------------------- */
 
