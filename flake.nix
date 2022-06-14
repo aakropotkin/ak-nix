@@ -102,13 +102,18 @@
 /* -------------------------------------------------------------------------- */
 
       templates = {
+        default = self.templates.basic;
         basic.path = ./templates/basic;
         basic.description = "a basic GNU build system package";
+
         autotools.path = ./templates/autotools;
         autotools.description = "a basic autotools project";
+
+        # FIXME:
+        # update this template with some of the improvements made
+        # to `./pkgs/build-support/trivial/tests/'.
         tests.path = ./templates/tests;
         tests.description = "a test harness for Nix expressions and drvs";
-        default = self.templates.basic;
       };
 
 
