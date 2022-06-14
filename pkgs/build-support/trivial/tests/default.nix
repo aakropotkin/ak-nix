@@ -30,12 +30,12 @@
       Test ${name} Failure: Expectation did not match result.
         expected:
           ---
-            ${indentBlock expected}
+            ${indentBlock ( lib.libstr.coerceString expected )}
           ---
 
         result:
           ---
-            ${indentBlock result}
+            ${indentBlock ( lib.libstr.coerceString result )}
           ---
     '';
   in if pass then "Test ${name} Passes." else msgFail;
