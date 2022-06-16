@@ -48,15 +48,20 @@ let
 
   __doc__categorizePath = ''
     Return inode type for path-like `x', being one of "directory", "regular",
-    "symlink", or "unknown" ( for sockets and other oddities ).
+    "symlink", "symlinkdir", or "unknown" ( for sockets and other oddities ).
     Path-like `x' must exist, and is processed by `coercePath', allowing strings
     and relative paths to be used.
+    If the path is a symlink, `pathExists' will be invoked to detect
+    `symlink' vs. `symlinkdir'.
   '';
   categorizePath = x: let
     p = coercePath x;
-  in assert isCoercibleToPath x;
-     assert pathExists p;
-     ( readDir ( dirOf p ) ).${baseNameOf p};
+    c = ( readDir ( dirOf p ) ).${baseNameOf p};
+    # XXX: This will NOT work without the quotes because the lexer will drop
+    #      the trailing dot from a "raw" path!
+    isSymlinkDir = builtins.pathExists "${toString p}/.";
+  in assert isCoercibleToPath x; assert builtins.pathExists p;
+     if c != "symlink" || ! isSymlinkDir then c else "symlinkdir";
 
 
 /* -------------------------------------------------------------------------- */

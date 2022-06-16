@@ -48,6 +48,13 @@
       ];
     };
 
+    # FIXME: need to make example dir
+    # TODO: check the "symlinkdir" works.
+    #testCategorizePath = {
+    #  expr = map categorizePath [];
+    #  expected = [];
+    #};
+
   };  # End tests
 
   harness = libdbg.mkTestHarness ( {
