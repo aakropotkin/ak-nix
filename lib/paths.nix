@@ -76,7 +76,7 @@ let
     inherit (builtins) split filter isString concatStringsSep;
     a' = filter isString ( split "/" ( asAbspath a ) );
     b' = filter isString ( split "/" ( asAbspath b ) );
-    common = lib.commonPrefix a' b';
+    common = lib.liblist.commonPrefix a' b';
   in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
 
 
@@ -93,7 +93,7 @@ let
     dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
     isSub = ( stringLength p ) < ( stringLength s );
     swapped = realpathRel' s p;
-    dist = lib.count "/" swapped;
+    dist = lib.libstr.count "/" swapped;
     dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
   in if ( p == s ) then "." else if isSub then dropP else dots;
 
@@ -199,6 +199,29 @@ let
 
 /* -------------------------------------------------------------------------- */
 
+  __doc__asDrvRelPath = ''
+    Strip store path prefix from path.
+    Non-store paths are returned "as is".
+    Filepaths ( as opposed to sub-paths ) like `.drv' files yield "".
+
+      /nix/store/5l6qb6jwzqdy7zljrmx0rylavn8awyxi-hello-2.12/bin/hello
+      ==>
+      bin/hello
+
+      /nix/store/5l6qb6jwzqdy7zljrmx0rylavn8awyxi-hello-2.12.drv ==> ""
+
+      ./foo/bar ==> ./foo/bar
+      foo/bar   ==> foo/bar
+  '';
+  asDrvRelPath = p: let
+    a = asAbspath p;
+    m = builtins.match ".*/[${lib.libstr.base32Chars'}]\{32\}-[^/]*/(.*)" a;
+  in if m != null then ( builtins.head m ) else
+     if ! ( lib.isStorePath p ) then p else "";
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
 
   inherit
@@ -216,6 +239,7 @@ in {
     extSuffix'
     expandGlobList
     expandGlob
+    asDrvRelPath
   ;
 
   # Dump Docs:

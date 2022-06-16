@@ -18,30 +18,75 @@ let
       librepl  = callLibs ./repl.nix;
       liblist  = callLibs ./lists.nix;
       libdbg   = callLibs ./debug.nix;
+      libtriv  = callLibs ./trivial.nix;
 
       inherit (final.libattrs)
-        currySystems curryDefaultSystems funkSystems funkDefaultSystems
-        attrsToList;
+        currySystems
+        curryDefaultSystems
+        funkSystems
+        funkDefaultSystems
+        attrsToList
+      ;
 
-      inherit (final.libjson) importJSON';
+      inherit (final.libjson)
+        importJSON';
 
       inherit (final.libpath) __docs__libpath
-        isAbspath asAbspath extSuffix expandGlob realpathRel categorizePath
-        isCoercibleToPath coercePath;
+        isAbspath
+        asAbspath
+        extSuffix
+        expandGlob
+        realpathRel
+        categorizePath
+        isCoercibleToPath
+        coercePath
+        asDrvRelPath
+      ;
 
       inherit (final.libstr)
-        matchingLines readLines charN
-        linesGrep readGrep readLinesGrep coerceString;
+        matchingLines
+        readLines
+        charN
+        linesGrep
+        readGrep
+        readLinesGrep
+        coerceString
+      ;
 
       inherit (final.libfs)
-        baseName' baseNameOfDropExt' listSubdirs listFiles listDir
-        findFileWithSuffix;
+        baseName'
+        baseNameOfDropExt'
+        listSubdirs
+        listFiles
+        listDir
+        findFileWithSuffix
+      ;
 
-      inherit (final.librepl) show ls pwd;
+      inherit (final.librepl)
+        show
+        ls
+        pwd
+      ;
 
-      inherit (final.liblist) takeUntil dropUntil;
+      inherit (final.liblist)
+        takeUntil
+        dropUntil
+      ;
 
-      inherit (final.libdbg) report checker checkerDrv mkTestHarness;
+      inherit (final.libdbg)
+        report
+        checker
+        checkerDrv
+        mkTestHarness
+      ;
+
+      # Other version members are already at `lib' top level from `nixpkgs'.
+      inherit (final.libtriv)
+        sortVersions'
+        sortVersions
+        latestVersion
+      ;
+
     } );
 
   # FIXME: you're leaving behind sub-attributes like `libpath.__docs__libpath'

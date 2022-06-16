@@ -5,6 +5,18 @@ let
 
 /* -------------------------------------------------------------------------- */
 
+  base16Chars' = "012345679abcdef";
+  base16Chars = "012345679abcdefABCDEF";
+  # Omitted: E O U T
+  base32Chars' = "0123456789abcdfghijklmnpqrsvwxyz";
+  base32Chars  = "0123456789abcdfghijklmnpqrsvwxyzABCDFGHIJKLMNPQRSVWXYZ";
+
+  isBase16Str = str: ( builtins.match "[${base16Chars}]+" str ) != null;
+  isBase32Str = str: ( builtins.match "[${base32Chars}]+" str ) != null;
+
+
+/* -------------------------------------------------------------------------- */
+
   # (Pred) Does `str' match `patt'?
   test = patt: str: ( builtins.match patt str ) != null;
 
@@ -98,11 +110,45 @@ let
 /* -------------------------------------------------------------------------- */
 
 in {
-  inherit (lib.strings) commonPrefixLength commonSuffixLength;
-  inherit (lib) splitString hasPrefix hasSuffix hasInfix fileContents;
-  inherit yankN' yank' yankNs' yankN yank yankNs;
-  inherit coerceString;
-  inherit charN count test;
-  inherit commonPrefix commonSuffix;
-  inherit matchingLines linesInfix readLines linesGrep readLinesGrep readGrep;
+
+  inherit (lib)
+    splitString
+    hasPrefix
+    hasSuffix
+    hasInfix
+    fileContents
+  ;
+
+  inherit (lib.strings)
+    commonPrefixLength
+    commonSuffixLength
+  ;
+
+  inherit
+    base16Chars'
+    base16Chars
+    base32Chars'
+    base32Chars
+    isBase16Str
+    isBase32Str
+    yankN'
+    yank'
+    yankNs'
+    yankN
+    yank
+    yankNs
+    coerceString
+    charN
+    count
+    test
+    commonPrefix
+    commonSuffix
+    matchingLines
+    linesInfix
+    readLines
+    linesGrep
+    readLinesGrep
+    readGrep
+  ;
+
 }
