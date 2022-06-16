@@ -12,7 +12,7 @@ let
   in if builtins.isList x then default else fromDrv x;
 
   stripExtension = str:
-    let m = builtins.match "(.*)(\\.(tgz|tar(\\.[gxb]z)?))?" str;
+    let m = builtins.match "(.*)\\.(tgz|tar(\\.[gxb]z)?)" str;
     in if ( m != null ) then ( builtins.head m ) else str;
 
 

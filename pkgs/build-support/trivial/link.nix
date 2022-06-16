@@ -55,7 +55,7 @@ let
     passAsFile = ["buildPhase"];
     buildPhase = ''
       mkdir -p $out/${dirOf to}
-      ln $extraLnFlags -- $src $out/$to
+      eval "ln $extraLnFlags -- $src $out/$to"
     '';
     args = ["-c" ". $buildPhasePath"];
   } ) // extraAttrs;
