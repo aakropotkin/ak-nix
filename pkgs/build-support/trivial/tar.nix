@@ -1,7 +1,7 @@
 # Create/extract gzip tarballs.
 # FIXME: support Xz and bzip2
 
-{ lib, system, gnutar, gzip }:
+{ lib, system, gnutar, gzip, coreutils, bash, findutils }:
 
 let
 
@@ -180,7 +180,85 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-in { inherit runTar untar tar tarcli; }
+  #tarCommand = {
+  #  name
+  #, preTarHook  ? ""
+  #, tarFlags
+  #, postTarHook ? ""
+  #, extraAttrs  ? {}
+  #}: ( derivation {
+  #  inherit name system extraLnFlags src to;
+  #  builder = "${bash}/bin/bash";
+  #  PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${bash}/bin";
+  #  passAsFile = ["buildPhase"];
+  #  buildPhase = ''
+  #    ${preTarHook}
+  #    eval "tar $tarFlags"
+  #    ${postTarHook}
+  #  '';
+  #  args = ["-c" ". $buildPhasePath"];
+  #} ) // extraAttrs;
+
+
+/* -------------------------------------------------------------------------- */
+
+  untarCommand = {
+    tarball
+  , name          ? stripExtension ( getName "source" tarball )
+  , preTar        ? ""
+  , tarFlags      ? ["--no-same-owner" "--no-same-permissions"]
+  , extraTarFlags ? []
+  , postTar       ? ""
+  , extraAttrs    ? {}
+  }: ( derivation {
+    inherit name system tarFlags tarball;
+    builder = "${bash}/bin/bash";
+    PATH =
+      "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${bash}/bin:${findutils}/bin";
+    passAsFile = ["buildPhase"];
+    buildPhase = ''
+      ${preTar}
+
+      eval "tar $tarFlags -xf $tarball"
+
+      ${postTar}
+    '';
+    args = ["-c" ". $buildPhasePath"];
+  } ) // extraAttrs;
+
+
+/* -------------------------------------------------------------------------- */
+
+  # Deal with tarballs which were created by complete danguses by avoiding
+  # various permissions issues.
+  untarSanPerms = {
+    tarball
+  , name          ? stripExtension ( getName "source" tarball )
+  , preTar        ? ""
+  , tarFlags      ? ["--no-same-owner" "--delay-directory-restore"
+                     "--no-same-permissions" "--no-overwrite-dir"]
+  , extraTarFlags ? []
+  , postTar       ? ""
+  , extraAttrs    ? {}
+  }: ( derivation {
+    inherit name system tarFlags tarball;
+    builder = "${bash}/bin/bash";
+    PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${findutils}/bin";
+    passAsFile = ["buildPhase"];
+    buildPhase = ''
+      ${preTar}
+      tar tf $tarball|xargs dirname|sort -u|xargs mkdir -p
+      eval "tar $tarFlags -xf $tarball"
+      mv ./* "$out"||{ mkdir "$out"; mv ./* "$out/"; }
+      ${postTar}
+    '';
+    args = ["-c" ". $buildPhasePath"];
+  } ) // extraAttrs;
+
+
+/* -------------------------------------------------------------------------- */
+
+in { inherit runTar untar tar tarcli untarCommand untarSanPerms; }
 
 
 /* -------------------------------------------------------------------------- */
