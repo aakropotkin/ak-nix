@@ -180,28 +180,6 @@ let
 
 /* -------------------------------------------------------------------------- */
 
-  #tarCommand = {
-  #  name
-  #, preTarHook  ? ""
-  #, tarFlags
-  #, postTarHook ? ""
-  #, extraAttrs  ? {}
-  #}: ( derivation {
-  #  inherit name system extraLnFlags src to;
-  #  builder = "${bash}/bin/bash";
-  #  PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${bash}/bin";
-  #  passAsFile = ["buildPhase"];
-  #  buildPhase = ''
-  #    ${preTarHook}
-  #    eval "tar $tarFlags"
-  #    ${postTarHook}
-  #  '';
-  #  args = ["-c" ". $buildPhasePath"];
-  #} ) // extraAttrs;
-
-
-/* -------------------------------------------------------------------------- */
-
   untarCommand = {
     tarball
   , name          ? stripExtension ( getName "source" tarball )
