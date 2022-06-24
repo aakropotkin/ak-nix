@@ -1,5 +1,4 @@
-{ lib }:
-let
+{ lib }: let
 
   inherit (lib) hasInfix splitString fileContents;
 
@@ -11,8 +10,12 @@ let
   base32Chars' = "0123456789abcdfghijklmnpqrsvwxyz";
   base32Chars  = "0123456789abcdfghijklmnpqrsvwxyzABCDFGHIJKLMNPQRSVWXYZ";
 
+  base64Chars' = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/";
+  base64Chars  = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/=";
+
   isBase16Str = str: ( builtins.match "[${base16Chars}]+" str ) != null;
   isBase32Str = str: ( builtins.match "[${base32Chars}]+" str ) != null;
+  isBase64Str = str: ( builtins.match "[A-Za-z0-9\\+/=]+" str ) != null;
 
 
 /* -------------------------------------------------------------------------- */
@@ -129,8 +132,11 @@ in {
     base16Chars
     base32Chars'
     base32Chars
+    base64Chars'
+    base64Chars
     isBase16Str
     isBase32Str
+    isBase64Str
     yankN'
     yank'
     yankNs'
