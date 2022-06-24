@@ -58,7 +58,7 @@
 /* -------------------------------------------------------------------------- */
 
   # Get character at index `n'.
-  charN' = n: builtins.substring n ( n + 1 );
+  charN' = n: builtins.substring n 1;
 
   # Get character at index `n', wrapping if out of bounds.
   # charN 1 "hey"       ==> "h"
