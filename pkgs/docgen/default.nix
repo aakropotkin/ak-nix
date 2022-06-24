@@ -1,8 +1,8 @@
-{ nixpkgs  ? builtins.getFlake "nixpkgs"
-, system   ? builtins.currentSystem
-, pkgs     ? import nixpkgs.legacyPackages.${system}
-, pandoc   ? pkgs.pandoc
-, texinfo  ? pkgs.texinfo
+{ nixpkgs ? builtins.getFlake "nixpkgs"
+, system  ? builtins.currentSystem
+, pkgs    ? nixpkgs.legacyPackages.${system}
+, pandoc  ? pkgs.pandoc
+, texinfo ? pkgs.texinfo
 , ...
 }:
 let

@@ -19,6 +19,7 @@ let
       liblist  = callLibs ./lists.nix;
       libdbg   = callLibs ./debug.nix;
       libtriv  = callLibs ./trivial.nix;
+      libenc   = callLibs ./encode.nix;
 
       inherit (final.libattrs)
         currySystems
@@ -85,6 +86,15 @@ let
         sortVersions'
         sortVersions
         latestVersion
+      ;
+
+      inherit (final.libenc)
+        toHex fromHex
+        toBase16 fromBase16
+        toBase32 fromBase32
+        toBase64 fromBase64
+        hexToSri
+        sriFile sri256File sri512File
       ;
 
     } );

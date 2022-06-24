@@ -6,7 +6,10 @@
     getVersion
   ;
 
-  inherit (builtins) compareVersions;
+  inherit (builtins)
+    compareVersions
+    foldl'
+  ;
 
 
 /* -------------------------------------------------------------------------- */
@@ -35,6 +38,31 @@
 
 /* -------------------------------------------------------------------------- */
 
+  # Be careful with this, it's easy to exceed 2^64 without realizing it.
+  pow' = x: pow: let
+    counter = builtins.getList ( _: null ) pow;
+  in builtins.foldl' ( acc: _: acc * x ) 1 counter;
+
+  pow = x: pow: let
+    _mulSafe = a: b: let c = a * b; in assert ( c != 0 ); c;
+    counter = builtins.getList ( _: null ) pow;
+    rsl = builtins.foldl' ( acc: _: _mulSafe acc x ) 1 counter;
+  in if x == 0 then 0 else rsl;
+
+  mulSafe = a: b: let
+    c = a * b;
+  in assert ( ( a == 0 ) || ( b == 0 ) ) || ( c != 0 ); c;
+
+
+/* -------------------------------------------------------------------------- */
+
+  baseListToDec' = base: digits: foldl' ( acc: x: acc * base + x ) 0 digits;
+  baseListToDec = base: digits:
+    foldl' ( acc: x: ( mulSafe acc base ) + x ) 0 digits;
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
   inherit
     sortVersions'
@@ -44,5 +72,10 @@ in {
     versionOlder
     versionAtLeast
     getVersion
+    pow'
+    pow
+    mulSafe
+    baseListToDec'
+    baseListToDec
   ;
 }
