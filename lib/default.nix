@@ -21,6 +21,9 @@ let
       libtriv  = callLibs ./trivial.nix;
       libenc   = callLibs ./encode.nix;
 
+      # Avoid overloading the name `fetchurl' even more than it already is.
+      fetchurlDrv = import ./fetchurl.nix;
+
       inherit (final.libattrs)
         currySystems
         curryDefaultSystems
