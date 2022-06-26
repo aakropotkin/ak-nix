@@ -66,7 +66,7 @@ rec {
   # Map Non-Nulls
   mapC = f: xs: map f ( x: builtins.filter ( x != null ) xs );
   # Sieve Non-Nulls from Mapped
-  mapS = f: xs: filter ( x: x != null ) ( map f xs );
+  mapS = f: xs: builtins.filter ( x: x != null ) ( map f xs );
 
 
 /* -------------------------------------------------------------------------- */
