@@ -4,16 +4,18 @@
 
   inputs.utils.url = "github:numtide/flake-utils/master";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
+  inputs.gitignore.url = "github:hercules-ci/gitignore.nix/master";
+  inputs.gitignore.inputs.nixpkgs.follows = "/nixpkgs";
 
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, utils }: let
+  outputs = { self, nixpkgs, utils, gitignore }: let
 
     inherit (utils.lib) eachDefaultSystemMap;
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib { inherit utils; inherit (nixpkgs) lib; };
+    lib = import ./lib {inherit utils gitignore; inherit (nixpkgs) lib; };
 
   in {
 
