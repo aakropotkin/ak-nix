@@ -55,6 +55,10 @@ let
         readGrep
         readLinesGrep
         coerceString
+        lines
+        trim
+        yank
+        yankN
       ;
 
       inherit (final.libfs)
@@ -89,6 +93,8 @@ let
         sortVersions'
         sortVersions
         latestVersion
+        mapC
+        mapS
       ;
 
       inherit (final.libenc)

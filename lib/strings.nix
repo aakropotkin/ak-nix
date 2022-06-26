@@ -45,6 +45,12 @@
 
 /* -------------------------------------------------------------------------- */
 
+  trim  = yank "[\t ]*([^\t ].*[^\t ])[\t ]*";
+  lines = src: builtins.filter builtins.isString ( builtins.split "\n" str );
+
+
+/* -------------------------------------------------------------------------- */
+
   # Force a value to a string.
   coerceString = x: let
     inherit (builtins) toJSON mapAttrs isFunction isAttrs trace typeOf;
@@ -155,6 +161,8 @@ in {
     linesGrep
     readLinesGrep
     readGrep
+    trim
+    lines
   ;
 
 }
