@@ -6,7 +6,8 @@
 let
   lib' = lib.extend ( final: prev: let
     callLibs = file: import file { lib = final; };
-    gitignoreLib = gitignore.lib;
+    gitignoreLib   = gitignore.lib;
+    gitignoreRules = import "${gitignore}/rules.nix" { lib = final; };
   in {
 
     # Eliminated depratation warnings/errors.
@@ -23,7 +24,7 @@ let
     libtriv  = callLibs ./trivial.nix;
     libenc   = callLibs ./encode.nix;
 
-    libgi = gitignoreLib;
+    libgi = gitignoreLib // gitignoreRules;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
