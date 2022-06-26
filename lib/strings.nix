@@ -46,7 +46,7 @@
 /* -------------------------------------------------------------------------- */
 
   trim  = yank "[\t ]*([^\t ].*[^\t ])[\t ]*";
-  lines = src: builtins.filter builtins.isString ( builtins.split "\n" str );
+  lines = str: builtins.filter builtins.isString ( builtins.split "\n" str );
 
 
 /* -------------------------------------------------------------------------- */
