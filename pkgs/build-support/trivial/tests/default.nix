@@ -1,7 +1,7 @@
 { lib            ? builtins.getFlake ( toString ../../../../lib )
 , writeText      ? pkgs.writeText
 , runCommandNoCC ? pkgs.runCommandNoCC
-, tarutils       ? import ../tar.nix { inherit lib system gnutar gzip; }
+, tarutils       ? import ../tar.nix { inherit lib system coreutils gnutar gzip bash findutils; }
 , linkutils      ? import ../link.nix { inherit lib system coreutils bash; }
 
 # Optional: Only required if attrs aboves attempt to fallback.
@@ -11,6 +11,7 @@
 , gnutar         ? pkgs.gnutar
 , gzip           ? pkgs.gzip
 , coreutils      ? pkgs.coreutils
+, findutils      ? pkgs.findutils
 , bash           ? pkgs.bash
 
 # Configurables:

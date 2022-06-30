@@ -1,8 +1,6 @@
 
 # lndir is available under `nixpkgs.legacyPackages.${system}.xorg.lndir'
-{ lib, system, coreutils, bash /* , lndir */ }:
-
-let
+{ lib, system, coreutils, bash /* , lndir */ }: let
 
   inherit (lib.libfs) baseName';
 
