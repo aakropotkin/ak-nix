@@ -63,6 +63,16 @@
 
 /* -------------------------------------------------------------------------- */
 
+  # Wrap a routine with `runHook (pre|post)<TYPE>'
+  withHooks = type: body: let
+    up = let
+      u = lib.toUpper ( builtins.substring 0 1 type );
+    in u + ( builtins.substring 1 ( builtins.stringLength type ) type );
+  in "runHook pre${up}\n${body}\nrunHook post${up}";
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
   inherit
     sortVersions'
@@ -77,5 +87,6 @@ in {
     mulSafe
     baseListToDec'
     baseListToDec
+    withHooks
   ;
 }

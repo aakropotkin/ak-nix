@@ -100,6 +100,7 @@ let
       sortVersions'
       sortVersions
       latestVersion
+      withHooks
     ;
 
     inherit (final.libenc)
