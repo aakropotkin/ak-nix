@@ -69,11 +69,12 @@ let
   , name         ? stripExtension ( getName "source" tarball )
   , tarFlags     ? ["--no-same-owner" "--no-same-permissions"]
   , tarFlagsLate ? []
+  , extraPkgs    ? []
   , extraAttrs   ? {}
   }: ( derivation {
     inherit name system;
     builder = "${gnutar}/bin/tar";
-    PATH    = "${gzip}/bin";
+    PATH    = lib.makeBinPath ( [gzip] ++ extraPkgs );
     args = tarFlags ++ [
       "-xf" "${tarball}"
       "--one-top-level=${builtins.placeholder "out"}"
