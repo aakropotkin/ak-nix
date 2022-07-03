@@ -73,6 +73,32 @@
 
 /* -------------------------------------------------------------------------- */
 
+  # Inclusive
+  semverRange = { from, to }: let
+    x = ( compareVersions to from ) < 0;
+  in if x then { from = to; to = from; } else { inherit to from; };
+
+  semverInRange = { from, to }: v: let
+    f = ( compareVersions from v ) <= 0;
+    t = 0 <= ( compareVersions to v );
+  in f && t;
+
+  # Does not assert that the merge is valid.
+  semverJoinRanges' = a: b: let
+    from = if ( compareVersions a.from b.from ) < 0 then a.from else b.from;
+    to = if 0 < ( compareVersions a.to b.to ) then a.to else b.to;
+  in { inherit from to; };
+
+  semverRangesOverlap = a: b: let
+    af = semverInRange b a.from;
+    at = semverInRange b a.to;
+    bf = semverInRange a b.from;
+    bt = semverInRange a b.to;
+  in af || at || bf || bt;
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
   inherit
     sortVersions'
@@ -88,5 +114,9 @@ in {
     baseListToDec'
     baseListToDec
     withHooks
+    semverRange
+    semverInRange
+    semverJoinRanges'
+    semverRangesOverlap
   ;
 }
