@@ -74,19 +74,29 @@
 /* -------------------------------------------------------------------------- */
 
   # Inclusive
-  semverRange = { from, to }: let
+  semverRange' = { from, to }: let
     x = ( compareVersions to from ) < 0;
   in if x then { from = to; to = from; } else { inherit to from; };
+
+  semverRange = x:
+    if builtins.isAttrs x then semverRange' x else
+      to: semverRange' { from = x; inherit to; };
 
   semverInRange = { from, to }: v: let
     f = ( compareVersions from v ) <= 0;
     t = 0 <= ( compareVersions to v );
   in f && t;
 
-  # Does not assert that the merge is valid.
+  # XXX: Does not assert that the merge is valid.
   semverJoinRanges' = a: b: let
     from = if ( compareVersions a.from b.from ) < 0 then a.from else b.from;
     to = if 0 < ( compareVersions a.to b.to ) then a.to else b.to;
+  in { inherit from to; };
+
+  # XXX: Does not assert that the merge is valid.
+  semverIntersectRanges' = a: b: let
+    from = if ( compareVersions a.from b.from ) < 0 then b.from else a.from;
+    to = if 0 < ( compareVersions a.to b.to ) then b.to else a.to;
   in { inherit from to; };
 
   semverRangesOverlap = a: b: let
@@ -95,6 +105,46 @@
     bf = semverInRange a b.from;
     bt = semverInRange a b.to;
   in af || at || bf || bt;
+
+
+/* -------------------------------------------------------------------------- */
+
+  semverSatRange = semverInRange;
+  semverSatExact = want: have: ( compareVersions want have ) == 0;
+  semverSatTilde = want: have: let
+    w' = lib.yank "([^-]+)-.*" want;
+    h' = lib.yank "([^-]+)-.*" have;
+  in ( compareVersions w' h' ) == 0;
+  semverSatCaret = want: have: let
+    gt = ( compareVersions want have ) <= 0;
+    sm = ( lib.versions.major want ) == ( lib.versions.major have );
+  in gt && sm;
+  semverSatGt  = want: have: ( compareVersions want have ) < 0;
+  semverSatGe  = want: have: ( compareVersions want have ) <= 0;
+  semverSatLt  = want: have: 0 < ( compareVersions want have );
+  semverSatLe  = want: have: 0 <= ( compareVersions want have );
+  semverSatAnd = cond1: cond2: have: ( cond1 have ) && ( cond2 have );
+  semverSatOr  = cond1: cond2: have: ( cond1 have ) || ( cond2 have );
+  semvarSatAny = _: true;
+
+  semverOpFn = op:
+    if op == "range" || op == " - " then semverSatRange else
+    if op == "caret" || op == "^" then semverSatCaret else
+    if op == "or" || op == "||" then semverSatOr else
+    if op == "and" || op == "&&" || op == ", " then semverSatAnd else
+    if op == "exact" || op == "=" then semverSatExact else
+    if op == "any" || op == "*" then  semverSatAny else
+    if op == "le" || op == "<=" then semverSatLe else
+    if op == "lt" || op == "<" then semverSatLt else
+    if op == "ge" || op == ">=" then semverSatGe else
+    if op == "gt" || op == ">" then semverSatGt else
+    throw "Unrecognized op: ${op}";
+
+  semverConst = {
+    op   ? "exact"  # range, or, and, exact, tilde, caret, any, gt, ge, lt, le
+  , arg1 ? null
+  , arg2 ? null
+  }: true;
 
 
 /* -------------------------------------------------------------------------- */
