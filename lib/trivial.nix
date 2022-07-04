@@ -123,9 +123,11 @@
   semverSatGe  = want: have: ( compareVersions want have ) <= 0;
   semverSatLt  = want: have: 0 < ( compareVersions want have );
   semverSatLe  = want: have: 0 <= ( compareVersions want have );
+  # FIXME: Join/Intersect ranges
   semverSatAnd = cond1: cond2: have: ( cond1 have ) && ( cond2 have );
   semverSatOr  = cond1: cond2: have: ( cond1 have ) || ( cond2 have );
   semvarSatAny = _: true;
+  semvarSatFail = _: false;
 
   semverOpFn = op:
     if op == "range" || op == " - " then semverSatRange else
@@ -134,6 +136,7 @@
     if op == "and" || op == "&&" || op == ", " then semverSatAnd else
     if op == "exact" || op == "=" then semverSatExact else
     if op == "any" || op == "*" then  semverSatAny else
+    if op == "fail" then  semverSatFail else
     if op == "le" || op == "<=" then semverSatLe else
     if op == "lt" || op == "<" then semverSatLt else
     if op == "ge" || op == ">=" then semverSatGe else
@@ -141,7 +144,7 @@
     throw "Unrecognized op: ${op}";
 
   semverConst = {
-    op   ? "exact"  # range, or, and, exact, tilde, caret, any, gt, ge, lt, le
+    op   ? "fail"  # range, or, and, exact, tilde, caret, any, gt, ge, lt, le
   , arg1 ? null
   , arg2 ? null
   }: true;
@@ -164,9 +167,25 @@ in {
     baseListToDec'
     baseListToDec
     withHooks
+  ;
+  inherit
     semverRange
     semverInRange
     semverJoinRanges'
+    semverIntersectRanges'
     semverRangesOverlap
+    semverSatRange
+    semverSatExact
+    semverSatTilde
+    semverSatCaret
+    semverSatGt
+    semverSatGe
+    semverSatLt
+    semverSatLe
+    semverSatAnd
+    semverSatOr
+    semverSatAny
+    semverSatFail
+    semverConst
   ;
 }
