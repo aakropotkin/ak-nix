@@ -13,16 +13,17 @@ let
     # Eliminated depratation warnings/errors.
     systems = removeAttrs prev.systems ["supported"];
 
-    libattrs = import   ./attrsets.nix { lib = final; inherit utils; };
-    libpath  = callLibs ./paths.nix;
-    libjson  = callLibs ./json.nix;
-    libstr   = callLibs ./strings.nix;
-    libfs    = callLibs ./filesystem.nix;
-    librepl  = callLibs ./repl.nix;
-    liblist  = callLibs ./lists.nix;
-    libdbg   = callLibs ./debug.nix;
-    libtriv  = callLibs ./trivial.nix;
-    libenc   = callLibs ./encode.nix;
+    libattrs  = import   ./attrsets.nix { lib = final; inherit utils; };
+    libpath   = callLibs ./paths.nix;
+    libjson   = callLibs ./json.nix;
+    libstr    = callLibs ./strings.nix;
+    libfs     = callLibs ./filesystem.nix;
+    librepl   = callLibs ./repl.nix;
+    liblist   = callLibs ./lists.nix;
+    libdbg    = callLibs ./debug.nix;
+    libtriv   = callLibs ./trivial.nix;
+    libenc    = callLibs ./encode.nix;
+    libsemver = callLibs ./semver.nix;
 
     libgi = gitignoreLib // gitignoreRules;
 
