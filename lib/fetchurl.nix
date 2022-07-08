@@ -63,8 +63,11 @@ in
 # This prefetches using the provided hash, calculates SHA, and refetches with
 # as a real derivation.
 , forceSha256 ? pure
+
+, extraAttrs    ? {}
+, extraDrvAttrs ? {}
 }: let
-in derivation {
+in derivation ( {
   inherit name url executable unpack outputHashAlgo outputHash;
   builder = "builtin:fetchurl";
   outputHashMode = if ( unpack || executable ) then "recursive" else "flat";
@@ -80,4 +83,4 @@ in derivation {
   ];
   # To make "nix-prefetch-url" work.
   urls = [url];
-}
+} // extraDrvAttrs ) // extraAttrs
