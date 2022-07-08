@@ -40,7 +40,13 @@ let
   #
   # NOTE: No other shell expansions are supported.
   #
-  runTar = { name, src ? [], tarFlags ? [], extraAttrs ? {} }: let
+  runTar = {
+    name
+  , src           ? []
+  , tarFlags      ? []
+  , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
+  }: let
     sources = map toString ( if builtins.isList src then src else [src] );
     substSrc = args: let
       # XXX: No quoting is performed! Write them in your flags!
@@ -59,18 +65,19 @@ let
       so = builtins.replaceStrings ["$out"] [( builtins.placeholder "out" )];
       subst = arg: substSrc ( so arg );
     in map subst tarFlags;
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
 
   untar = {
     tarball
-  , name         ? stripExtension ( getName "source" tarball )
-  , tarFlags     ? ["--no-same-owner" "--no-same-permissions"]
-  , tarFlagsLate ? []
-  , extraPkgs    ? []
-  , extraAttrs   ? {}
+  , name          ? stripExtension ( getName "source" tarball )
+  , tarFlags      ? ["--no-same-owner" "--no-same-permissions"]
+  , tarFlagsLate  ? []
+  , extraPkgs     ? []
+  , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
   }: ( derivation {
     inherit name system;
     builder = "${gnutar}/bin/tar";
@@ -79,7 +86,7 @@ let
       "-xf" "${tarball}"
       "--one-top-level=${builtins.placeholder "out"}"
     ] ++ tarFlagsLate;
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -102,11 +109,12 @@ let
   # NOTE: You can pass `src = []' and explicitly list files in `tarFlagsLate'.
   tar = {
     src
-  , name         ? ( getName "source" src ) + ext
-  , ext          ? ".tar.gz"
-  , tarFlags     ? ["--no-same-owner" "--no-same-permissions"]
-  , tarFlagsLate ? []
-  , extraAttrs   ? {}
+  , name          ? ( getName "source" src ) + ext
+  , ext           ? ".tar.gz"
+  , tarFlags      ? ["--no-same-owner" "--no-same-permissions"]
+  , tarFlagsLate  ? []
+  , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
   }: let
     sources = if builtins.isList src then src else [src];
   in ( derivation {
@@ -115,7 +123,7 @@ let
     PATH    = "${gzip}/bin";
     args = tarFlags     ++ ["-cf" ( builtins.placeholder "out" )] ++
            tarFlagsLate ++ sources;
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -143,6 +151,7 @@ let
   , tarFlags      ? ["--no-same-owner" "--no-same-permissions"]
   , tarFlagsLate  ? []
   , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
   }: let
     sources = if builtins.isList src then src else [src];
   in ( derivation {
@@ -151,7 +160,7 @@ let
     PATH    = "${gzip}/bin";
     args = tarFlags     ++ ["-cf" ( builtins.placeholder "out" )] ++
            tarFlagsLate ++ sources;
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -169,14 +178,14 @@ let
   # `toGNUCommandLine' to handle "$out".
   # The trick is leaving `( builtins.placeholder "out" )' as a thunk until
   # inside of `derivation { ... }'.
-  tarcli = { name, argsList, extraAttrs ? {} }: let
+  tarcli = { name, argsList, extraAttrs ? {}, extraDrvAttrs ? {} }: let
     mkTarFlags = builtins.foldl' process [];
     process = acc: a:
       if builtins.isAttrs a then acc ++ ( lib.cli.toGNUCommandLine {} a ) else
       if builtins.isList  a then acc ++ ( mkTarFlags a ) else
       ( acc ++ [( toString a )] );
     tarFlags = mkTarFlags argsList;
-  in runTar { inherit name tarFlags extraAttrs; src = []; };
+  in runTar { inherit name tarFlags extraAttrs extraDrvAttrs; src = []; };
 
 
 /* -------------------------------------------------------------------------- */
@@ -186,9 +195,10 @@ let
   , name          ? stripExtension ( getName "source" tarball )
   , preTar        ? ""
   , tarFlags      ? ["--no-same-owner" "--no-same-permissions"]
-  , extraTarFlags ? []
+  , tarFlagsLate  ? []
   , postTar       ? ""
   , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
   }: ( derivation {
     inherit name system tarFlags tarball;
     builder = "${bash}/bin/bash";
@@ -198,12 +208,12 @@ let
     buildPhase = ''
       ${preTar}
 
-      eval "tar $tarFlags -xf $tarball"
+      eval "tar $tarFlags -xf $tarball $tarFlagsLate"
 
       ${postTar}
     '';
     args = ["-c" ". $buildPhasePath"];
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
@@ -219,6 +229,7 @@ let
   , tarFlagsLate  ? []
   , postTar       ? ""
   , extraAttrs    ? {}
+  , extraDrvAttrs ? {}
   }: ( derivation {
     inherit name system tarFlags tarFlagsLate tarball;
     builder = "${bash}/bin/bash";
@@ -232,7 +243,7 @@ let
       ${postTar}
     '';
     args = ["-c" ". $buildPhasePath"];
-  } ) // extraAttrs;
+  } // extraDrvAttrs ) // extraAttrs;
 
 
 /* -------------------------------------------------------------------------- */
