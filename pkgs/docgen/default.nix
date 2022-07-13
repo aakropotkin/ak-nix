@@ -9,7 +9,7 @@ let
   pandocGen     = import ./pandoc { inherit pandoc; };
   infoGen       = import ./makeinfo { inherit texinfo; };
   moduleOptions = import ./module-options.nix {
-    inherit pandocGen infoGen;
+    inherit pandocGen infoGen pkgs nixpkgs;
     inherit (pkgs) linkFarmFromDrvs;
   };
   # NOTE: This is only "okay" because these imports do not clash on any
