@@ -237,7 +237,7 @@ let
     passAsFile = ["buildPhase"];
     buildPhase = ''
       ${preTar}
-      tar tf $tarball|xargs dirname|sort -u|xargs mkdir -p
+      tar tf $tarball|xargs -i dirname '{}'|sort -u|xargs -i mkdir -p '{}'
       eval "tar $tarFlags -xf $tarball $tarFlagsLate"
       mv ./* "$out"||{ mkdir "$out"; mv ./* "$out/"; }
       ${postTar}
