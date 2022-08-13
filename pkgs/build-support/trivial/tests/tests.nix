@@ -1,4 +1,4 @@
-args @ { lib, runCommandNoCC, linkutils, tarutils, ... }: let
+{ lib, runCommandNoCC, linkutils, tarutils, ... } @ args: let
 
   inherit (builtins) typeOf tryEval mapAttrs toJSON readFile toFile;
   inherit (tarutils) runTar tar untar tarcli;

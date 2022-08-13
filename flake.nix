@@ -6,16 +6,18 @@
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
   inputs.gitignore.url = "github:hercules-ci/gitignore.nix/master";
   inputs.gitignore.inputs.nixpkgs.follows = "/nixpkgs";
+  inputs.nix.url = "github:NixOS/nix";
+  inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, utils, gitignore }: let
+  outputs = { self, nixpkgs, utils, gitignore, nix, ... }: let
 
     inherit (utils.lib) eachDefaultSystemMap;
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib {inherit utils gitignore; inherit (nixpkgs) lib; };
+    lib = import ./lib { inherit utils gitignore nix; inherit (nixpkgs) lib; };
 
   in {
 
@@ -69,14 +71,14 @@
 
 /* -------------------------------------------------------------------------- */
 
-    packages = eachDefaultSystemMap ( system: {
-    } );
+    #packages = eachDefaultSystemMap ( system: {} );
+
 
 /* -------------------------------------------------------------------------- */
 
     # Merge input overlays in isolation from one another.
     overlays.ak-nix = final: prev: {
-      lib = import ./lib { inherit (prev) lib; inherit utils; };
+      lib = import ./lib { inherit (prev) lib; inherit utils nix; };
     };
     overlays.default = self.overlays.ak-nix;
 
@@ -97,11 +99,8 @@
       trivial = import ./pkgs/build-support/trivial/tests {
         inherit lib system;
         inherit (pkgsFor) writeText runCommandNoCC;
-        tarutils = self.tarutils.${system};
+        tarutils  = self.tarutils.${system};
         linkutils = self.linkutils.${system};
-        #inherit nixpkgs;
-        #pkgs = pkgsFor;
-        #inherit (pkgsFor) gnutar gzip coreutils bash;
 
         outputAttr = "writeRunReport";
         # See additional configurable options in the `default.nix' file.

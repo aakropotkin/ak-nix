@@ -1,4 +1,5 @@
-/* ========================================================================== */
+# ============================================================================ #
+#
 # Example Usage:
 #   nix-repl> add = curryDefaultSystems' ( system:
 #                     { x, y }: builtins.trace system ( x + y ) )
@@ -15,8 +16,14 @@
 #   nix-repl> ( add { x = 1; y = 2; } ) "x86_64-linux"
 #   trace: x86_64-linux
 #   3
+#
+#
+# ---------------------------------------------------------------------------- #
 
-{ utils ? builtins.getFlake "github:numtide/flake-utils", lib }: let
+{ lib
+, utils ? builtins.getFlake "github:numtide/flake-utils"
+, nix   ? builtins.getFlake "github:NixOS/nix"
+}: let
 
   inherit (utils.lib) eachDefaultSystemMap eachSystemMap defaultSystems;
 
@@ -63,10 +70,37 @@
 
 /* -------------------------------------------------------------------------- */
 
+  # Recommended: `callFlakeWith self.inputs "foo" { someOverride = ...; }'
+  callFlakeWith = autoArgs: path: args: let
+    flake = import "${path}/flake.nix";
+    inputs = let
+      inherit (builtins) functionArgs intersectAttrs;
+      lock       = lib.importJSON "${path}/flake.lock";
+      fetchInput = { locked, ... }: builtins.fetchTree locked;
+      locked     = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
+      all        = locked // autoArgs // { self = fSelf; };
+    in ( intersectAttrs ( functionArgs flake.outputs ) all ) // args;
+    fSelf = flake // ( flake.outputs inputs );
+  in fSelf;
+
+  callFlake = callFlakeWith {};
+
+  # XXX: Not sure if it makes sense to make these implementations align or not.
+  # They basically do the exact same thing though; the main difference is that
+  # `callSubFlake' handles `follows' correct AFAIK.
+  # { lock ? <PATH>, root ? <PATH>, subdir ? <REL-PATH> }
+  callSubFlake' = import ./call-flake-w.nix { inherit nix; };
+
+
+/* -------------------------------------------------------------------------- */
+
 in {
-  inherit currySystems curryDefaultSystems;
-  inherit funkSystems funkDefaultSystems;
-  inherit attrsToList;
+  inherit
+    currySystems curryDefaultSystems
+    funkSystems funkDefaultSystems
+    attrsToList
+    callFlakeWith callFlake
+  ;
 }  /* End `attrsets.nix' */
 
 

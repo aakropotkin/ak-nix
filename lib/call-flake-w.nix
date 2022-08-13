@@ -1,3 +1,7 @@
+# XXX: This basically overlaps with `./attrs.nix:callFlake' except this uses
+# the upstream implementation in Nix.
+# It may not actually make sense to expose both but I'm doing it for now to
+# experiment with them.
 { nix ? builtins.getFlake "github:NixOS/nix/master" }:
 let
 
@@ -9,12 +13,12 @@ let
    *
    *  callFlake { lock = ./flake.lock; root = ./.; }
    */
-  callFlake = let subDir = s: if s == "" || s == null then "" else "${s}/";
-  in args @ {
+  callSubFlake = let subDir = s: if s == "" || s == null then "" else "${s}/";
+  in {
     lock    ? "${root}/${subDir subdir}flake.lock"
   , root    ? ( toString ./. )
   , subdir  ? ""
-  }: let
+  } @ args: let
     inherit (builtins) substring readFile pathExists;
     lockFileStr =
       if isPath lock then readFile lock else
@@ -28,7 +32,7 @@ let
     _raw = import "${nix}/src/libexpr/flake/call-flake.nix";
   in _raw lockFileStr rootSrc subdir;
 
-in callFlake
+in callSubFlake
 
 /**
  * Included for reference, this is obviously subject to change, which is

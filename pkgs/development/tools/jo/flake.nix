@@ -3,11 +3,8 @@
 
   inputs.utils.url = "github:numtide/flake-utils";
   inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
-
-  inputs.jo-src = {
-    url = "github:jpmens/jo/1.6";
-    flake = false;
-  };
+  inputs.jo-src.url = "github:jpmens/jo/1.6";
+  inputs.jo-src.flake = false;
 
   outputs = { self, nixpkgs, utils, jo-src, ... }: {
     packages = utils.lib.eachDefaultSystemMap ( system: {

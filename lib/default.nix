@@ -1,6 +1,7 @@
 { lib        ? ( builtins.getFlake "nixpkgs" ).lib
 , utils      ? builtins.getFlake "github:numtide/flake-utils/master"
 , gitignore  ? builtins.getFlake "github:hercules-ci/gitignore.nix/master"
+, nix        ? builtins.getFlake "github:NixOS/nix"
 , exportDocs ? false
 }:
 let
@@ -13,7 +14,7 @@ let
     # Eliminated depratation warnings/errors.
     systems = removeAttrs prev.systems ["supported"];
 
-    libattrs  = import   ./attrsets.nix { lib = final; inherit utils; };
+    libattrs  = import   ./attrsets.nix { lib = final; inherit utils nix; };
     libpath   = callLibs ./paths.nix;
     libjson   = callLibs ./json.nix;
     libstr    = callLibs ./strings.nix;
@@ -36,10 +37,13 @@ let
       funkSystems
       funkDefaultSystems
       attrsToList
+      callFlakeWith
+      callFlake
     ;
 
     inherit (final.libjson)
-      importJSON';
+      importJSON'
+    ;
 
     inherit (final.libpath) __docs__libpath
       isAbspath
