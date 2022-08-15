@@ -78,10 +78,16 @@
 
     # Merge input overlays in isolation from one another.
     overlays.ak-nix = final: prev: let
-      tarutils  = final.callPackages ./pkgs/build-support/trivial/tar.nix {};
-      linkutils = final.callPackages ./pkgs/build-support/trivial/link.nix {};
-      copyutils = final.callPackages ./pkgs/build-support/trivial/copy.nix {};
-      trivial   = tarutils // linkutils // copyutils;
+      tarutils = import ./pkgs/build-support/trivial/tar.nix {
+        inherit (prev) lib gzip gnutar coreutils bash findutils system;
+      };
+      linkutils = import ./pkgs/build-support/trivial/link.nix {
+        inherit (prev) lib coreutils bash system;
+      };
+      copyutils = import ./pkgs/build-support/trivial/copy.nix {
+        inherit (prev) lib coreutils bash system;
+      };
+      trivial = tarutils // linkutils // copyutils;
     in {
       lib = import ./lib { inherit (prev) lib; inherit utils nix; };
     } // trivial;
