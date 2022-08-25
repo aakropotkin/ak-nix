@@ -3,7 +3,7 @@
 # recommend using `nixpkgs.lib.runTests' here.
 # I have left `runner' as an import to allow users to provide a customized
 # test runtime.`
-args @ { lib, checker ? lib.libdbg.checker, name ? "tests", ... }: let
+args @ { lib, checker ? lib.libdbg.checkerEvalAssert, name ? "tests", ... }: let
   inputs = args // { inherit lib checker name; };
   run    = import ./run.nix inputs;
 in checker name run
