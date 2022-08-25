@@ -49,7 +49,7 @@ let
 
   checkerReport = name: run: let
     # A phony runner used to capture report messages.
-    msgs = [( checkerMsg name run )] ++ ( map report' ( x: _: x ) run );
+    msgs = [( checkerMsg name run )] ++ ( map ( report' ( x: _: x ) ) run );
     msg  = "  " + ( builtins.concatStringsSep "\n  " msgs );
     # The real runner.
     rsl  = checkerDefault name run;
