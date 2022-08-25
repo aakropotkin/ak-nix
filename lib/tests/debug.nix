@@ -1,17 +1,17 @@
+# =========================================================================== #
 
 # Test for your testers so we can test while we test!
 
-{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, withDrv   ? false
+{ lib       ? ( builtins.getFlake "${toString ../..}" ).lib
 , nixpkgs   ? builtins.getFlake "nixpkgs"
 , system    ? builtins.currentSystem
-, pkgs      ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgs.writeText
+, pkgsFor   ? nixpkgs.legacyPackages.${system}
+, writeText ? pkgsFor.writeText
 } @ args: let
 
   inherit (lib) libdbg;
 
-/* -------------------------------------------------------------------------- */
+# --------------------------------------------------------------------------- #
 
   # Tests for our tests.
   innerTests = {
@@ -20,7 +20,7 @@
   };
 
 
-/* -------------------------------------------------------------------------- */
+# --------------------------------------------------------------------------- #
 
   tests = {
 
@@ -44,14 +44,14 @@
 
     # Sanity check that `libdbg.checker' returns `true' when all tests pass.
     testChecker = {
-      expr = libdbg.checker "tests" ( lib.runTests innerTests );
+      expr = libdbg.checkerDefault "tests" ( lib.runTests innerTests );
       expected = true;
     };
 
   };  # End tests
 
 
-/* -------------------------------------------------------------------------- */
+# --------------------------------------------------------------------------- #
 
   # Use the test harness as our driver.
   # FIXME:
@@ -63,13 +63,11 @@
   # doesn't properly detect errors in tests, then it cannot be expected to
   # properly report its own flaws.
   # This is a "who polices the police?" paradox.
-  harness = libdbg.mkTestHarness ( {
-    inherit tests withDrv;
-    name = "test-debug";
-    inputs = args // { inherit lib libdbg tests innerTests; };
-  } // ( if withDrv then { inherit writeText; } else {} ) );
+in libdbg.mkTestHarness { name = "test-debug"; inherit tests writeText; }
 
 
-/* -------------------------------------------------------------------------- */
-
-in harness
+# --------------------------------------------------------------------------- #
+#
+#
+#
+# =========================================================================== #

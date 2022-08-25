@@ -2,33 +2,58 @@
 
 let
 
+  inherit (lib) runTests;  # From Nixpkgs
+
 /* -------------------------------------------------------------------------- */
 
   # Given output from `nixpkgs.lib.runTests', use `trace' to print information
   # about failed test cases.
-  report = test @ { name, expected, result }: let
+  report' = trace: { name, expected, result } @ test: let
     msg = ''
       Test ${name} Failure: Expectation did not match result.
         expected: ${lib.libstr.coerceString expected}
         result:   ${lib.libstr.coerceString result}
     '';
-  in builtins.trace msg test;
+  in trace msg test;
+
+  report = report' builtins.trace;
 
 
 /* -------------------------------------------------------------------------- */
 
-  # Runs tests with tracing, ends in an assertion.
   # Tests are considered "passed" if `runner' returns an empty list, and I
   # recommend using `nixpkgs.lib.runTests' here.
   # I have left `runner' as an argument to allow users to provide a customized
   # test runtime.`
-  checker = name: runner: let
-    ck = map ( t: ( t.result == t.expected ) || ( report t ) ) runner;
-    rsl = ck == [];
-    msg = if rsl then "PASS: ${name}" else "FAIL: ${name}";
-    rsl' = builtins.deepSeq ( builtins.trace msg ) rsl;
+  # NOTE: `run' is a list of "evaluated" test cases which failed.
+  #       They have the fields `{ name, expected, result }'.
+
+  # Returns true/false
+  checkerDefault = name: run:
+    ( map ( t: ( t.result == t.expected ) || ( report t ) ) run ) == [];
+
+  # Returns PASS/FAIL with test-suite name.
+  checkerMsg = name: run:
+    if run == [] then "PASS: ${name}" else "FAIL: ${name}";
+
+  # Runs tests with tracing, ends in an assertion, return `true' if it survives.
+  # This is the only checker where `doTrace' makes sense, because without it
+  # the assertion can kill you before the user sees output.
+  checkerEvalAssert' = doTrace: name: run: let
+    rsl  = checkerDefault name run;
+    msg  = checkerMsg name run;
+    rsl' = if doTrace then builtins.deepSeq ( builtins.trace msg ) rsl else rsl;
   in assert rsl'; rsl';
 
+  checkerEvalAssert = checkerEvalAssert true;
+
+  checkerReport = name: run: let
+    # A phony runner used to capture report messages.
+    msgs = [( checkerMsg name run )] ++ ( map report' ( x: _: x ) run );
+    msg  = "  " + ( builtins.concatStringsSep "\n  " msgs );
+    # The real runner.
+    rsl  = checkerDefault name run;
+  in if rsl then "PASS: ${name}" else "FAIL: ${name}" + msg;
 
   # Produce a dummy output if `check' succeeds.
   # I recommend passing the output of `checker' as the argument `check'.`
@@ -36,8 +61,19 @@ let
   # You'll notice below in `mkTestHarness' I call `writeText' directly so that
   # I can change the name of the output file; but for the convenience of users
   # I've offered up this dinky wrapper.
-  checkerDrv = writeText: check:
-    writeText "test.log" check;
+  mkCheckerDrv = {
+    name       ? "test"
+  , keepFailed ? false
+  , check
+  , writeText
+  }: ( writeText "${name}.log" check ).overrideAttrs ( _: _: {
+    checkPhase = ''
+      if grep -q "^FAIL: " "$out"; then
+        cat "$out" >&2;
+        ${lib.optionalString ( ! keepFailed ) "exit 1;"}
+      fi
+    '';
+  } );
 
 
 /* -------------------------------------------------------------------------- */
@@ -79,30 +115,55 @@ let
    * Again, not particularly useful for interactive dev.
    */
     mkTestHarness = {
-      withDrv   ? ( writeText != null )
-    , writeText ? null
-    , name      ? "tests"
+      name         ? "tests"
     , tests
+    , runner       ? lib.runTests
+    , run          ? runner tests
+    , checker      ? checkerReport
+    , check        ? checker name run
+    , keepFailed   ? false
+    , mkCheckerDrv ? lib.libdbg.mkCheckerDrv
+    , writeText    ? throw "(mkTestHarnedd:${name}): You much provide writeText"
     , ...
-    }@attrs:
+    } @ args:
       assert builtins.isAttrs tests; let
-      attrs'      = removeAttrs attrs ["withDrv" "writeText"];
-      run         = lib.runTests tests;
-      check       = checker name run;
-      common      = { inherit run check; } // attrs';
-      checkDrv    = writeText "${name}.log" check;
-      __functor   = self: self.checkDrv;
-      addCheckDrv = wt: common // {
-        checkDrv = writeText "${name}.log" check;
-        inherit __functor;
+      # Additional args get passed through to be members of output attrset.
+      extraArgs = let
+        needArgs = lib.functionArgs mkTestHarness;
+      in removeAttrs args ( builtins.attrNames needArgs );
+      # Minimum args needed by `mkCheckerDrv'
+      args' = { inherit name check; } // args;
+      mkCheckerDrv' = lib.callPackageWith args' mkCheckerDrv;
+      # A functor that overrides itself, adding `writeText' to the callWith.
+      # This allows you to inject it later in a call pipeline which can be
+      # convenient for flakes.
+      # If `writeText' was already given it's just the `checkDrv' call.`
+      funk = if args ? writeText then {
+        checkDrv = mkCheckerDrv' {};
+        __functor  = self: mkCheckerDrv';
+      } else {
+        __functor = self: x: if builtins.isFunction x then self // {
+          checkDrv = mkCheckerDrv' { writeText = x; };
+          __functor = self: let
+            nuargs = args' // { writeText = x; };
+          in lib.makeCallPackagesWith nuargs mkCheckerDrv;
+        } else mkCheckerDrv' x;
       };
-      drvExtras   = if withDrv then { inherit checkDrv __functor; }
-                               else { inherit addCheckDrv; };
-    in common // drvExtras;
+    in extraArgs // { inherit name run check tests; } // funk;
 
 
 /* -------------------------------------------------------------------------- */
 
 in {
-  inherit report checker checkerDrv mkTestHarness;
+  inherit
+    report'
+    report
+    checkerDefault
+    checkerMsg
+    checkerReport
+    checkerEvalAssert'
+    checkerEvalAssert
+    mkCheckerDrv
+    mkTestHarness
+  ;
 } // lib.debug

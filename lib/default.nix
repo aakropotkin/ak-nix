@@ -95,8 +95,8 @@ let
 
     inherit (final.libdbg)
       report
-      checker
-      checkerDrv
+      checkerReport
+      mkCheckerDrv
       mkTestHarness
     ;
 

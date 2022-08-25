@@ -1,5 +1,6 @@
+# ============================================================================ #
+
 { lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, withDrv   ? false
 , nixpkgs   ? builtins.getFlake "nixpkgs"
 , system    ? builtins.currentSystem
 , pkgs      ? nixpkgs.legacyPackages.${system}
@@ -8,6 +9,8 @@
 } @ args: let
 
   inherit (lib) libdbg libpath;
+
+# ---------------------------------------------------------------------------- #
 
   tests = with libpath; {
 
@@ -57,10 +60,11 @@
 
   };  # End tests
 
-  harness = libdbg.mkTestHarness ( {
-    inherit tests withDrv;
-    name = "test-paths";
-    inputs = args // { inherit lib system nixpkgs pkgs; };
-  } // ( if withDrv then { inherit writeText; } else {} ) );
+in libdbg.mkTestHarness { name = "test-paths"; inherit tests writeText; }
 
-in harness
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

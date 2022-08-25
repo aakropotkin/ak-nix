@@ -1,18 +1,27 @@
-{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, withDrv   ? true
-, nixpkgs   ? builtins.getFlake "nixpkgs"
-, system    ? builtins.currentSystem
-, pkgs      ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgs.writeText
+# =========================================================================== #
+
+{ lib              ? ( builtins.getFlake "${toString ../..}" ).lib
+, nixpkgs          ? builtins.getFlake "nixpkgs"
+, system           ? builtins.currentSystem
+, pkgsFor          ? nixpkgs.legacyPackages.${system}
+, writeText        ? pkgsFor.writeText
+, linkFarmFromDrvs ? pkgsFor.linkFarmFromDrvs
 , ...
 } @ args: let
-  inputs = args // { inherit lib withDrv nixpkgs system pkgs writeText; };
+  inputs = args // { inherit lib nixpkgs system pkgsFor writeText; };
   checkFile = file:
     builtins.trace "Checking ${file}"
                    ( import ( ./. +  "/${file}" ) inputs ).checkDrv;
-  checkAll = pkgs.linkFarmFromDrvs "tests-all" [
+  checkAll = linkFarmFromDrvs "tests-all" [
     ( checkFile "strings.nix" )
     ( checkFile "debug.nix" )
     ( checkFile "paths.nix" )
   ];
 in checkAll
+
+
+# --------------------------------------------------------------------------- #
+#
+#
+#
+# =========================================================================== #
