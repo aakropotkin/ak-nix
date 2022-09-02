@@ -72,6 +72,7 @@
 # ---------------------------------------------------------------------------- #
 
 in {
+  inherit pp;
   spp = showp;
   inherit show showp;
   inherit pwd' pwd;
