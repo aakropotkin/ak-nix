@@ -1,24 +1,41 @@
-{ lib }:
-let
-/* -------------------------------------------------------------------------- */
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
 
-  showList = xs: let
-    inherit (builtins) concatStringsSep trace;
-    lines = concatStringsSep "\n" ( map lib.libstr.coerceString xs );
-  in trace ( "\n" + lines ) true;
+{ lib }: let
+
+# ---------------------------------------------------------------------------- #
+
+  pp = lib.generators.toPretty { allowPrettyValues = true; };
+
+# ---------------------------------------------------------------------------- #
+
+  showList' = printer: xs: let
+    lines = builtins.concatStringsSep "\n" ( map printer xs );
+  in builtins.trace ( "\n" + lines ) true;
+  showList  = showList' lib.libstr.coerceString;
+  showListP = showList' pp;
 
   # Uses trace to print arbitrary values to the console.
   # If passed a list, each element will be printed on a line.
-  show = x: showList ( if ( builtins.isList x ) then x else [x] );
+  show  = x: showList  ( if ( builtins.isList x ) then x else [x] );
+  showp = x: showListP ( if ( builtins.isList x ) then x else [x] );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
+
+  pargs = fn: showp ( lib.functionArgs fn );
+
+
+# ---------------------------------------------------------------------------- #
 
   pwd' = builtins.getEnv "PWD";
   pwd  = toString ./.;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   unGlob = path:
     builtins.head ( builtins.split "\\*" ( toString path ) );
@@ -52,12 +69,20 @@ let
     in show relLines;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
 in {
-  inherit show;
+  spp = showp;
+  inherit show showp;
   inherit pwd' pwd;
   # FIXME: Handle globs in the middle of paths, and names.
   ls' = lsDirGlob' "";
   ls  = lsDirGlob';
 }
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

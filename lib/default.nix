@@ -81,6 +81,7 @@ let
     ;
 
     inherit (final.librepl)
+      pp
       show
       ls
       pwd
