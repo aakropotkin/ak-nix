@@ -26,7 +26,11 @@
     # Not effected by systems:
     inherit lib;
     # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
-    repl = ( lib // { inNixRepl = true; } ) // lib.librepl // builtins;
+    repl =
+      ( lib // { inNixRepl = true; } ) //
+      lib.librepl                      //
+      builtins                         //
+      ( { npFor = nixpkgs.legacyPackages.${builtins.currentSystem}; } );
 
     # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
     docgen = ( eachDefaultSystemMap ( system: import ./pkgs/docgen {
