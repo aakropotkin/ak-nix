@@ -14,19 +14,32 @@
 
   showList' = printer: xs: let
     lines = builtins.concatStringsSep "\n" ( map printer xs );
-  in builtins.trace ( "\n" + lines ) true;
+  in builtins.trace ( "\n" + lines ) "";
   showList  = showList' lib.libstr.coerceString;
-  showListP = showList' pp;
+  showListP = showList' ( lst: "\n${pp lst}\n" );
 
   # Uses trace to print arbitrary values to the console.
   # If passed a list, each element will be printed on a line.
   show  = x: showList  ( if ( builtins.isList x ) then x else [x] );
-  showp = x: showListP ( if ( builtins.isList x ) then x else [x] );
+
+  showPretty = x: showListP ( if ( builtins.isList x ) then x else [x] );
+  showPrettyCurried = {
+    __curr = x: x;
+    __functor = self: x: let
+      y = self.__curr x;
+    in if builtins.isFunction y then self // { __curr = y; }
+                                else showPretty y;
+  };
 
 
 # ---------------------------------------------------------------------------- #
 
-  pargs = fn: showp ( lib.functionArgs fn );
+  prettyArgs = fn: let
+    args     = lib.functionArgs fn;
+    allBools = builtins.all builtins.isBool ( builtins.attrValues args );
+    showOpt  = builtins.mapAttrs ( _: v: if v then "Optional" else "Mandatory" )
+                                 args;
+  in showPretty ( if allBools then showOpt else args );
 
 
 # ---------------------------------------------------------------------------- #
@@ -72,10 +85,21 @@
 # ---------------------------------------------------------------------------- #
 
 in {
-  inherit pp pargs;
-  spp = showp;
-  inherit show showp;
-  inherit pwd' pwd;
+  inherit
+    pp
+
+    show
+    showPretty
+    showPrettyCurried
+    prettyArgs
+
+    pwd'
+    pwd
+  ;
+  showp = showPretty;
+  spp   = showPrettyCurried;
+  spa   = prettyArgs;
+
   # FIXME: Handle globs in the middle of paths, and names.
   ls' = lsDirGlob' "";
   ls  = lsDirGlob';
