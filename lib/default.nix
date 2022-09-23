@@ -25,6 +25,7 @@ let
     libtriv   = callLibs ./trivial.nix;
     libenc    = callLibs ./encode.nix;
     libsemver = callLibs ./semver.nix;
+    libfunk   = callLibs ./funk.nix;
 
     libgi = gitignoreLib // gitignoreRules;
 
@@ -116,6 +117,11 @@ let
       toBase64 fromBase64
       hexToSri
       sriFile sri256File sri512File
+    ;
+
+    inherit (final.libfunk)
+      canPassStrict
+      canCallStrict
     ;
 
   } );
