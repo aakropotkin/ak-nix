@@ -26,6 +26,7 @@ let
     libenc    = callLibs ./encode.nix;
     libsemver = callLibs ./semver.nix;
     libfunk   = callLibs ./funk.nix;
+    libflake  = callLibs ./flake-registry.nix;
 
     libgi = gitignoreLib // gitignoreRules;
 
