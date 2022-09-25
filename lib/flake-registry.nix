@@ -54,30 +54,80 @@
 
 # ---------------------------------------------------------------------------- #
 
-  toValue = x:
-    if ! ( builtins.isAttrs x ) then x else
-    if x ? __toValue then x.__toValue x else
-    builtins.mapAttrs toValue x;
-
-  _pp = lib.generators.toPretty { allowPrettyValues = true; };
-
-  toPrettyV = x: let
-    val  = toValue x;
-    pVal = if ! ( builtins.isAttrs val ) then val else
-           builtins.mapAttrs toValue ( builtins.intersectAttrs val x );
+  toValue = x: let
+    members = let
+      fallback = if x ? val then {} else
+        lib.filterAttrs ( k: v: ! ( lib.hasPrefix "__" k ) ) x;
+    in x.members or fallback;
+    val = x.val or ( lib.mapAttrs ( _: toValue ) members );
   in if ! ( builtins.isAttrs x ) then x else
-     if ( x ? __pretty ) && ( x ? val ) then x else
-     if x ? __toPretty then x.__toPretty x else x;
+     if x ? __toValue then x.__toValue x else
+     val;
+
+
+# ---------------------------------------------------------------------------- #
+
+  inherit (lib.generators) toPretty;
+
+# ---------------------------------------------------------------------------- #
+
+  # NOTE: Options have subtypes that can be inferred from their `name' field.
+  typeOf = x: let
+    fromBuiltin = builtins.typeOf x;
+    fromString =
+      if lib.isStorePath     then "store-path"          else
+      if builtins.hasContext then "string-with-context" else
+      fromBuiltin;
+    fromAttrs =
+      if x ? _type          then x._type      else
+      if lib.isDerivation x then "derivation" else
+      if lib.isFunction x   then "function"   else  # Distinct from "lambda"
+      fromBuiltin;
+  in if fromBuiltin == "string" then fromString else
+     if fromBuiltin == "set"    then fromAttrs  else
+     fromBuiltin;
   
 
+# ---------------------------------------------------------------------------- #
+
+  defToPretty' = {
+    _type      ? lib.typeOf attrs
+  , __toPretty ?  self: {
+      val      = toValue self;
+      __pretty = toPretty { allowPrettyValues = true; };
+    }
+  , ...
+  } @ attrs: attrs // { inherit __toPretty _type; };
+
+  defToPretty = {
+    # FIXME: fill rest of `__functionMeta'.
+    __functionMeta.argTypes = ["anything"];
+    __functionArgs = lib.functionArgs defToPretty';
+    __functor = self: x:
+      if builtins.isAttrs x then defToPretty' x else defToPretty' {
+        _type = typeOf x;
+        val   = x;
+      };
+  };
+
+
+# ---------------------------------------------------------------------------- #
+
+  # FIXME: For options you can use their `show' member function.
+  toPrettyV = x:
+    if ( x ? __pretty ) && ( x ? val ) then { inherit (x) __pretty val; } else 
+    if x ? __toPretty then x.__toPretty x else
+    toPrettyV ( defToPretty x );
+
+# ---------------------------------------------------------------------------- #
+
   mkIndirectFlakeRef = x: let
-    fromAttrs = { id, ref ? null, ... } @ ent: {
+    fromAttrs = { id, ref ? null, ... } @ ent: defToPretty' {
       _type = "flake-ref";
       __toString = self: let
         v = toValue self;
       in if self ? val.ref then "${v.id}/${v.ref}" else v.id;
       __toValue = self: self.val;
-      __pretty = _pp;
       val = {
         type = "indirect";
         inherit id;
@@ -89,21 +139,20 @@
     in fromAttrs { id = builtins.head m; inherit ref; };
   in assert ( builtins.isAttrs x ) || ( builtins.isString x );
      if builtins.isString x then parse x else
-     if ( x ? _type ) && ( x._type == "flake-ref" ) then x else
+     if lib.isType "flake-ref" x then x else
      fromAttrs x;
 
 
-  mkFlakeRegistryAlias = { from, to }: {
-    _type = "flake-registry-entry";
-    __toString = self: "${toString self.val.from} -> ${toString self.val.to}";
-    __toValue  = self: builtins.mapAttrs toValue self.members;
-    __toPretty = self: {
-      __pretty = _pp;
-      val      = builtins.mapAttrs toPrettyV self.members;
+  mkFlakeRegistryAlias = { from, to }:
+    defToPretty' {
+      _type      = "flake-registry-entry";
+      __toString = self: let
+        v = self.members;
+      in "${toString v.from} -> ${toString v.to}";
+      __toValue  = self: builtins.mapAttrs toValue self.members;
+      members.from = mkIndirectFlakeRef from;
+      members.to   = mkIndirectFlakeRef to;
     };
-    members.from = mkIndirectFlakeRef from;
-    members.to   = mkIndirectFlakeRef to;
-  };
 
 
 
@@ -112,6 +161,11 @@
 in {
 
   inherit
+    toValue
+    toPrettyV
+    typeOf
+    defToPretty
+
     mkIndirectFlakeRef
     mkFlakeRegistryAlias
   ;
@@ -119,8 +173,6 @@ in {
 } // ( lib.optionalAttrs ( ! lib.inPureEvalMode ) {
 
   inherit
-    toValue
-    toPrettyV
     registries
     registryFlakes
   ;
