@@ -54,49 +54,55 @@
 
 # ---------------------------------------------------------------------------- #
 
-  serializeVal = v:
-    if ! ( ( builtins.isAttrs v ) && ( v ? __serial ) ) then v else
-    if ( v ? __serial ) && ( lib.isFunction v.__serial ) then v.__serial v else
-    v.__serial;
+  toValue = x:
+    if ! ( builtins.isAttrs x ) then x else
+    if x ? __toValue then x.__toValue x else
+    builtins.mapAttrs toValue x;
 
-  ppVal = v:
-    if ! ( v ? __toPretty )  then
-      lib.generators.toPretty { allowPrettyValues = true; } ( serializeVal v )
-    else if lib.isFunction v.__toPretty then v.__toPretty v
-    else v.__toPretty;
+  _pp = lib.generators.toPretty { allowPrettyValues = true; };
+
+  toPrettyV = x: let
+    val  = toValue x;
+    pVal = if ! ( builtins.isAttrs val ) then val else
+           builtins.mapAttrs toValue ( builtins.intersectAttrs val x );
+  in if ! ( builtins.isAttrs x ) then x else
+     if ( x ? __pretty ) && ( x ? val ) then x else
+     if x ? __toPretty then x.__toPretty x else x;
+  
 
   mkIndirectFlakeRef = x: let
-    forAttrs = { id, ref ? null, ... } @ ent: {
+    fromAttrs = { id, ref ? null, ... } @ ent: {
       _type = "flake-ref";
-      type  = "indirect";
-      __toString = self:
-        if self ? ref then "${self.id}/${self.ref}" else self.id;
-      __serial = self: builtins.intersectAttrs {
-        type = true;
-        id   = true;
-        ref  = true;
-      } self;
-      __toPretty = self: ppVal ( self.__serial self );
-      inherit id;
-    } // ( lib.optionalAttrs ( ref != null ) { inherit ref; } );
-    fromString = let
-      m   = builtins.match "([^/]+)(/([^/]+))?" x;
+      __toString = self: let
+        v = toValue self;
+      in if self ? val.ref then "${v.id}/${v.ref}" else v.id;
+      __toValue = self: self.val;
+      __pretty = _pp;
+      val = {
+        type = "indirect";
+        inherit id;
+      } // ( lib.optionalAttrs ( ref != null ) { inherit ref; } );
+    };
+    parse = str: let
+      m   = builtins.match "([^/]+)(/([^/]+))?" str;
       ref = builtins.elemAt m 2;
-    in forAttrs { id = builtins.head m; inherit ref; };
+    in fromAttrs { id = builtins.head m; inherit ref; };
   in assert ( builtins.isAttrs x ) || ( builtins.isString x );
-     if builtins.isAttrs x then ( forAttrs x ) else fromString;
+     if builtins.isString x then parse x else
+     if ( x ? _type ) && ( x._type == "flake-ref" ) then x else
+     fromAttrs x;
 
 
   mkFlakeRegistryAlias = { from, to }: {
     _type = "flake-registry-entry";
-    __toString = self: "${toString self.from} -> ${toString self.to}";
-    __serial = self: {
-      from = serializeVal self.from;
-      to   = serializeVal self.to;
+    __toString = self: "${toString self.val.from} -> ${toString self.val.to}";
+    __toValue  = self: builtins.mapAttrs toValue self.members;
+    __toPretty = self: {
+      __pretty = _pp;
+      val      = builtins.mapAttrs toPrettyV self.members;
     };
-    __toPretty = self: ppVal ( self.__serial self );
-    from  = mkIndirectFlakeRef from;
-    to    = mkIndirectFlakeRef to;
+    members.from = mkIndirectFlakeRef from;
+    members.to   = mkIndirectFlakeRef to;
   };
 
 
@@ -113,6 +119,8 @@ in {
 } // ( lib.optionalAttrs ( ! lib.inPureEvalMode ) {
 
   inherit
+    toValue
+    toPrettyV
     registries
     registryFlakes
   ;
