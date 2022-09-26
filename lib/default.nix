@@ -1,4 +1,4 @@
-{ lib        ? ( builtins.getFlake "nixpkgs" ).lib
+{ lib        ? ( builtins.getFlake "github:NixOS/nixpkgs?dir=lib" ).lib
 , utils      ? builtins.getFlake "github:numtide/flake-utils/master"
 , gitignore  ? builtins.getFlake "github:hercules-ci/gitignore.nix/master"
 , nix        ? builtins.getFlake "github:NixOS/nix"
