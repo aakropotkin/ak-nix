@@ -98,7 +98,7 @@
 /* -------------------------------------------------------------------------- */
 
   # Count the number of matches in a string.
-  count = splitter: string:
+  countMatches = splitter: string:
     let inherit (builtins) length split filter isList; in
     length ( filter isList ( split splitter string ) );
 
@@ -151,7 +151,7 @@ in {
     yankNs
     coerceString
     charN
-    count
+    countMatches
     test
     commonPrefix
     commonSuffix

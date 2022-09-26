@@ -93,7 +93,7 @@ let
     dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
     isSub = ( stringLength p ) < ( stringLength s );
     swapped = realpathRel' s p;
-    dist = lib.libstr.count "/" swapped;
+    dist = lib.libstr.countMatches "/" swapped;
     dots = concatStringsSep "/" ( builtins.genList ( _: ".." ) dist );
   in if ( p == s ) then "." else if isSub then dropP else dots;
 
