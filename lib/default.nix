@@ -25,7 +25,7 @@ let
     libtriv   = callLibs ./trivial.nix;
     libenc    = callLibs ./encode.nix;
     libsemver = callLibs ./semver.nix;
-    libfunk   = callLibs ./funk.nix;
+    libfunk   = ( callLibs ./funk.nix ) // ( callLibs ./thunk.nix );
     libflake  = callLibs ./flake-registry.nix;
 
     libgi = gitignoreLib // gitignoreRules;
