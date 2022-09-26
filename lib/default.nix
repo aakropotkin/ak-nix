@@ -92,8 +92,8 @@ let
     inherit (final.liblist)
       takeUntil
       dropUntil
-      mapC
-      mapS
+      mapNoNulls
+      mapDropNulls
     ;
 
     inherit (final.libdbg)

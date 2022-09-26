@@ -1,21 +1,19 @@
-{ lib }:
-rec {
+{ lib }: let
 
   inherit (lib) take drop reverseList;
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
-/**
- * This could also be done with a functor:
- *   let adder = { x = 0; __functor = self: x: self // { x = self.x + x; }; };
- *   in ( builtins.foldl' ( acc: acc ) adder [1 2 3] ).rsl
- */
+ # This could also be done with a functor:
+ #   let adder = { x = 0; __functor = self: x: self // { x = self.x + x; }; };
+ #   in ( builtins.foldl' ( acc: acc ) adder [1 2 3] ).rsl
   takeUntil = cond: lst:
     let taker = acc: x:  # acc ::= { rsl : list; stop : bool; }
           if acc.stop then acc else
           if ( cond x ) then ( acc // { stop = true; } ) else
           ( acc // { rsl = acc.rsl ++ [x]; } );
     in ( builtins.foldl' taker { stop = false; rsl = []; } lst ).rsl;
+
 
   dropAfter = cond: lst:
     let
@@ -26,7 +24,7 @@ rec {
        if ( rsl == [] ) then [last] else ( rsl ++ [last] );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   dropUntil = cond: lst:
     let dropper = acc: x:  # acc ::= { rsl : list; start : bool; }
@@ -35,12 +33,13 @@ rec {
           acc;
     in ( builtins.foldl' dropper { start = false; rsl = []; } lst ).rsl;
 
+
   takeAfter = cond: lst:
     let rsl = dropUntil cond lst; in
     if rsl == [] then [] else ( builtins.tail rsl );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   commonPrefix = a: b:
     let
@@ -55,20 +54,37 @@ rec {
     in take ( length commons ) a';
 
 
-/* -------------------------------------------------------------------------- */
-
   commonSuffix = a: b:
     reverseList ( commonPrefix ( reverseList a ) ( reverseList b ) );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Map Non-Nulls
-  mapC = f: xs: map f ( x: builtins.filter ( x != null ) xs );
+  mapNoNulls = f: xs: map f ( x: builtins.filter ( x != null ) xs );
+
   # Sieve Non-Nulls from Mapped
-  mapS = f: xs: builtins.filter ( x: x != null ) ( map f xs );
+  mapDropNulls = f: xs: builtins.filter ( x: x != null ) ( map f xs );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
+in  {
+  inherit
+    takeUntil
+    dropAfter
+    dropUntil
+    takeAfter
+    commonPrefix
+    commonSuffix
+    mapNoNulls
+    mapDropNulls
+  ;
 }
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #
