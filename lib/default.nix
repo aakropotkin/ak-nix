@@ -25,26 +25,10 @@ let
     in builtins.foldl' part { doc = {}; fns = {}; }
                             ( builtins.attrNames sublib );
 
-
-    # Detect sublibs which attempt to override existing definitions.
-    detectOverrides = sublib: let
-      matches = builtins.intersectAttrs prev sublib;
-      conflicts = fname:
-        ( builtins.unsafeGetAttrPos fname prev ) !=
-        ( builtins.unsafeGetAttrPos fname sublib );
-    in lib.filterAttrs ( fname: _: conflicts fname ) matches;
-
     # Full post-processing for sublibs
     scrubLib = sublib: let
       noDocs = ( processDocs sublib ).fns;
-      overrides = builtins.attrNames ( detectOverrides noDocs );
-      noConflicts =
-        if overrides != [] then
-          throw "conflicting function definitions in ak-nix libs: ${
-            builtins.concatStringsSep " " overrides
-          }"
-        else noDocs;
-    in noConflicts;
+    in noDocs;
 
 
 # ---------------------------------------------------------------------------- #
@@ -184,7 +168,6 @@ let
 
     __docs = processDocs.docs;
 
-  # Prevent overriding previously defined functions.
-  } // prev );
+  } );
 
 in if exportDocs then lib'.__docs else removeAttrs lib' ["__docs"]
