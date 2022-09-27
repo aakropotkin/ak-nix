@@ -37,7 +37,13 @@ let
     # Full post-processing for sublibs
     scrubLib = sublib: let
       noDocs = ( processDocs sublib ).fns;
-      noConflicts = assert ( detectOverrides noDocs ) == {}; noDocs;
+      overrides = builtins.attrNames ( detectOverrides noDocs );
+      noConflicts =
+        if overrides != [] then
+          throw "conflicting function definitions in ak-nix libs: ${
+            builtins.concatStringsSep " " overrides
+          }"
+        else noDocs;
     in noConflicts;
 
 
@@ -178,6 +184,7 @@ let
 
     __docs = processDocs.docs;
 
-  } );
+  # Prevent overriding previously defined functions.
+  } // prev );
 
 in if exportDocs then lib'.__docs else removeAttrs lib' ["__docs"]
