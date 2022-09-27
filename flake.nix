@@ -8,7 +8,7 @@
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, utils, nix, ... }: let
+  outputs = { self, nixpkgs, nix, ... }: let
 
     # An extension to `nixpkgs.lib'.
     lib = import ./lib { inherit nix; inherit (nixpkgs) lib; };
@@ -90,7 +90,7 @@
       };
       trivial = tarutils // linkutils // copyutils;
     in {
-      lib = import ./lib { inherit (prev) lib; inherit utils nix; };
+      lib = import ./lib { inherit (prev) lib; inherit nix; };
     } // trivial;
     overlays.default = self.overlays.ak-nix;
 
