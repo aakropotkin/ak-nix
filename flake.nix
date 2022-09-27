@@ -2,22 +2,18 @@
 
   description = "Misc Nix derivations and expressions";
 
-  inputs.utils.url = "github:numtide/flake-utils/master";
-  inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
-  inputs.gitignore.url = "github:hercules-ci/gitignore.nix/master";
-  inputs.gitignore.inputs.nixpkgs.follows = "/nixpkgs";
   inputs.nix.url = "github:NixOS/nix";
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, utils, gitignore, nix, ... }: let
-
-    inherit (utils.lib) eachDefaultSystemMap;
+  outputs = { self, nixpkgs, utils, nix, ... }: let
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib { inherit utils gitignore nix; inherit (nixpkgs) lib; };
+    lib = import ./lib { inherit nix; inherit (nixpkgs) lib; };
+
+    inherit (lib) eachDefaultSystemMap;
 
   in {
 

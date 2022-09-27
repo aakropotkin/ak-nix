@@ -20,12 +20,26 @@
 #
 # ---------------------------------------------------------------------------- #
 
-{ lib
-, utils ? builtins.getFlake "github:numtide/flake-utils"
-, nix   ? builtins.getFlake "github:NixOS/nix"
-}: let
+{ lib }: let
 
-  inherit (utils.lib) eachDefaultSystemMap eachSystemMap defaultSystems;
+# ---------------------------------------------------------------------------- #
+
+  # Cribbed from `flake-utils', vendored to skip a redundant fetch.
+
+  defaultSystems = [
+    "x86_64-linux" "x86_64-darwin"
+    "aarch64-linux" "aarch64-darwin"
+    "i686-linux"
+  ];
+
+  # Apply `fn' to each `system', forming an attrset keyed by system names.
+  eachSystemMap = systems: fn:
+    builtins.foldl' ( acc: sys: acc // { ${sys} = fn sys; } ) {} systems;
+
+  eachDefaultSystemMap = eachSystemMap defaultSystems;
+
+
+# ---------------------------------------------------------------------------- #
 
   currySystems = supportedSystems: fn: args: let
     inherit (builtins) functionArgs isString elem;
@@ -46,7 +60,7 @@
   curryDefaultSystems = currySystems defaultSystems;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   funkSystems = supportedSystems: fn: let
     fas    = builtins.functionArgs fn;
@@ -61,47 +75,74 @@
   funkDefaultSystems = funkSystems defaultSystems;
    
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
+  # Convert an attrset to a list of `{ name : string, value }' pairs.
   attrsToList = as: let
     inherit (builtins) attrValues mapAttrs;
   in attrValues ( mapAttrs ( name: value: { inherit name value; } ) as );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
-  # Recommended: `callFlakeWith self.inputs "foo" { someOverride = ...; }'
-  callFlakeWith = autoArgs: path: args: let
-    flake = import "${path}/flake.nix";
-    inputs = let
-      inherit (builtins) functionArgs intersectAttrs;
-      lock       = lib.importJSON "${path}/flake.lock";
-      fetchInput = { locked, ... }: builtins.fetchTree locked;
-      locked     = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
-      all        = locked // autoArgs // { self = fSelf; };
-    in ( intersectAttrs ( functionArgs flake.outputs ) all ) // args;
-    fSelf = flake // ( flake.outputs inputs );
-  in fSelf;
-
-  callFlake = callFlakeWith {};
-
-  # XXX: Not sure if it makes sense to make these implementations align or not.
-  # They basically do the exact same thing though; the main difference is that
-  # `callSubFlake' handles `follows' correct AFAIK.
-  # { lock ? <PATH>, root ? <PATH>, subdir ? <REL-PATH> }
-  callSubFlake' = import ./call-flake-w.nix { inherit nix; };
+  # Merges an attset or list of attrsets to a single set.
+  joinAttrs = x: let
+    asList = if builtins.isList x then x else builtins.attrValues x;
+  in builtins.foldl' ( a: b: a // b ) {} asList;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
+
+  # Rename keys in `attrs' using mapping in `kmap : { oldName = newName; ... }'.
+  # Unmapped keys are not modified.
+  remapKeys = kmap: attrs: let
+    proc = acc: key:
+      acc // { ${kmap.${key} or key} = attrs.${key}; };
+  in builtins.foldl' proc ( builtins.attrNames attrs );
+
+  # Remap keys using function `remap : string -> (string|null)'.
+  # If remap returns `null' key will not be modified.
+  remapKeysWith = remap: attrs: let
+    proc = acc: key: let
+      r   = remap key;
+      new = if r == null then key else r;
+    in acc // { ${r} = attrs.${key}; };
+  in builtins.foldl' proc {} ( builtins.attrNames attrs );
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Convert a list of attrs to and attrset keyed using `field'.
+  listToAttrsBy = field: list: let
+    proc = acc: value: acc // { ${value.${field}} = value; };
+  in builtins.foldl' proc {} list;
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Reduce an attrset using function `op' with prototype where `R' and `T' are
+  # typenames of "Return" and "From".
+  #   foldAttrs :: ( op : lambda ) -> ( nul : R ) -> ( attrs : { F } ) -> R
+  #   op        :: ( acc : R ) -> ( key : string ) -> ( value : F ) -> R
+  foldAttrsl = op: nul: attrs: let
+    proc = acc: name: op acc name attrs.${name};
+  in builtins.foldl' proc nul ( builtins.attrNames attrs );
+
+
+# ---------------------------------------------------------------------------- #
 
 in {
   inherit
+    eachSystemMap eachDefaultSystemMap defaultSystems
     currySystems curryDefaultSystems
-    funkSystems funkDefaultSystems
+    funkSystems  funkDefaultSystems
     attrsToList
-    callFlakeWith callFlake
+    joinAttrs
+    remapKeys remapKeysWith
+    listToAttrsBy
+    foldAttrsl
   ;
-}  /* End `attrsets.nix' */
+}
 
 
 /* ========================================================================== */
