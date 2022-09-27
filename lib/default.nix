@@ -177,13 +177,6 @@ let
     ;
 
     __docs = processDocs.docs;
-    __meta = {
-      inherit
-        processDocs
-        detectOverrides
-        scrubLib
-      ;
-    };
 
   } );
 
