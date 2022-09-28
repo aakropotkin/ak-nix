@@ -75,7 +75,7 @@
         if meta ? processArgs then lib.functionArgs processArgs else
         if meta ? function then lib.functionArgs function else
         if meta ? functor  then lib.functionArgs functor  else
-        ["unspecified"]
+        {}
     , processArgs  ? x: x
     , argTypes     ? ["unspecified"] ++ ( lib.optional ( meta ? vargs ) "set" )
     , returnTypes  ? ["unspecified"]
@@ -199,7 +199,16 @@
         ${override}           = true;  # ? `makeOverrideable' field
         ${overrideDerivation} = true;  # ? `makeOverrideable' field
       };
-      ${function} = defThunkedFunk';
+
+      ${function} = args: let
+        core = defFunkCore args;
+      in lib.recursiveUpdate core {
+        ${functionMeta}.thunkMembers =
+          args.${functionMeta} or
+          ( builtins.attrNames ( args.${thunk} or {} ) );
+        ${thunk} = args.${thunk} or {};
+      };
+      # FIXME:
       ${processArgs} = self: renameAsDefault;
       __functor = self: args:
         self.${function} ( self.${processArgs} self args );
@@ -223,6 +232,11 @@ in {
   inherit
     defFunkerWithNames
     defaultFunker
+  ;
+
+  inherit (defaultFunker)
+    defFunkCore
+    defFnMeta
   ;
 
 }
