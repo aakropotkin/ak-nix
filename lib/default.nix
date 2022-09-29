@@ -78,7 +78,7 @@ let
     libsemver = callLib  ./semver.nix;
     libfunk   = callLibs [./funk.nix ./thunk.nix];
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
-    libyants  = callLibs yants-src.outPath;
+    libyants  = callLib  yants-src.outPath;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
