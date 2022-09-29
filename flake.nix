@@ -5,13 +5,19 @@
   inputs.nix.url = "github:NixOS/nix";
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
+  inputs.yants-src = {
+    type  = "file";
+    url   = "https://code.tvl.fyi/plain/nix/yants/default.nix";
+    flake = false;
+  };
+
 
 /* -------------------------------------------------------------------------- */
 
-  outputs = { self, nixpkgs, nix, ... }: let
+  outputs = { self, nixpkgs, nix, yants-src, ... }: let
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib { inherit nix; inherit (nixpkgs) lib; };
+    lib = import ./lib { inherit nix yants-src; inherit (nixpkgs) lib; };
 
     inherit (lib) eachDefaultSystemMap;
 

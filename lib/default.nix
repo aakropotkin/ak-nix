@@ -1,5 +1,7 @@
 { lib        ? ( builtins.getFlake "github:NixOS/nixpkgs?dir=lib" ).lib
 , nix        ? builtins.getFlake "github:NixOS/nix"
+, yants-src  ? builtins.fetchurl
+                 "https://code.tvl.fyi/plain/nix/yants/default.nix"
 , exportDocs ? false
 }:
 let
@@ -76,6 +78,7 @@ let
     libsemver = callLib  ./semver.nix;
     libfunk   = callLibs [./funk.nix ./thunk.nix];
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
+    libyants  = callLibs yants-src.outPath;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
