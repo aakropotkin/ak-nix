@@ -1,47 +1,57 @@
+# ============================================================================ #
+#
+# A dank flake starter kit.
+#
+#
+# ---------------------------------------------------------------------------- #
+
 {
-  # FIXME: replace BASIC and OWNER with real info
-  description = "a basic package";
+  description = "A dank starter flake";
 
-  inputs.utils.url = "github:numtide/flake-utils";
-  inputs.utils.inputs.nixpkgs.follows = "/nixpkgs";
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/master";
+  inputs.ak-nix.url  = "github:aakropotkin/ak-nix/main";
+  inputs.ak-nix.inputs.nixpkgs.follows = "/nixpkgs";
 
-  inputs.BASIC-src.url   = "github:OWNER/BASIC";
-  inputs.BASIC-src.flake = false;
+# ---------------------------------------------------------------------------- #
 
-  outputs = { self, nixpkgs, utils, BASIC-src }: let
-    inherit (utils.lib) eachDefaultSystemMap;
-  in {
+  outputs = { self, nixpkgs, ak-nix, ... }: let
+    lib = ak-nix.lib.extend self.overlays.lib;
+    pkgsForSys = system: nixpkgs.legacyPackages.${system};
+  in {  # Begin Outputs
 
-    packages = eachDefaultSystemMap ( system: let
-      pkgsFor = nixpkgs.legacyPackages.${system};
+# ---------------------------------------------------------------------------- #
+
+    # Pure `lib' extensions.
+    overlays.lib  = final: prev: {};
+    # Nixpkgs overlay: Builders, Packages, Overrides, etc.
+    overlays.pkgs = final: prev: let
+      callPackagesWith = auto: prev.lib.callPackagesWith ( final // auto );
+      callPackageWith  = auto: prev.lib.callPackageWith ( final // auto );
+      callPackages     = callPackagesWith {};
+      callPackage      = callPackageWith {};
     in {
-      BASIC = pkgsFor.stdenv.mkDerivation {
-        pname = "BASIC";
-        version = "0.0.0";
-        src = BASIC-src;
-        nativeBuildInputs = with pkgsFor; [
-          # pkg-config
-          # help2man
-          # texinfoInteractive
-          autoreconfHook
-        ];
-        buildInputs = with pkgsFor; [
-          # zlib.dev
-        ];
-      };
+      lib = prev.lib.extend self.overlays.lib;
+    };
+    # By default, compose with out deps into a single overlay.
+    overlays.default = self.overlays.pkgs;
 
-      default = self.packages.${system}.BASIC;
-    } );  # End Packages
 
-  };
+# ---------------------------------------------------------------------------- #
+
+    # Installable Packages for Flake CLI.
+    packages = lib.eachDefaultSystemMap ( system: let
+      pkgsFor = pkgsForSys system;
+    in {} );
+
+
+# ---------------------------------------------------------------------------- #
+
+  };  # End Outputs
 }
-# NOTE: This approach to building is not compatible with overlays.
-# This is fine for the vast majority of use cases, but if you need to add
-# your package to the `nixpkgs.legacyPackages' set you'll need to write
-# an overlay which references `nixpkgs' by `final' and `prev'.
-# Cases where the overlay is useful are:
-#   1. I want `stdenv' modifiers such as `pkgsCross' and `pkgsStatic' to work
-#      on my package.
-#   2. My package is a module for an interpreter, and I want it to be
-#      available globally for functions like `mk<Lang>Package'.
-#      This largely effects Python and Haskell.
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

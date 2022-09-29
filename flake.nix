@@ -138,8 +138,15 @@
 
     templates = {
       default = self.templates.basic;
+
       basic.path = ./templates/basic;
-      basic.description = "a basic GNU build system package";
+      basic.description = "a dank starter flake";
+
+      meaty.path = ./templates/meaty;
+      meaty.description = "a meaty starter flake";
+
+      basic-pkg.path = ./templates/basic-pkg;
+      basic-pkg.description = "a basic GNU build system package";
 
       autotools.path = ./templates/autotools;
       autotools.description = "a basic autotools project";
