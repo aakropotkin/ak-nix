@@ -52,6 +52,17 @@ let
     # Eliminated depratation warnings/errors.
     systems = removeAttrs prev.systems ["supported"];
 
+    # Cribbed from `flake-utils', vendored to skip a redundant fetch.
+    defaultSystems = [
+      "x86_64-linux" "x86_64-darwin"
+      "aarch64-linux" "aarch64-darwin"
+      "i686-linux"
+    ];
+
+
+# ---------------------------------------------------------------------------- #
+
+    # Import sub-libs
     libattrs  = callLib  ./attrsets.nix;
     libpath   = callLib  ./paths.nix;
     libjson   = callLib  ./json.nix;
@@ -70,13 +81,8 @@ let
     fetchurlDrv = import ./fetchurl.nix;
 
     inherit (final.libattrs)
-      defaultSystems
       eachSystemMap
       eachDefaultSystemMap
-      currySystems
-      curryDefaultSystems
-      funkSystems
-      funkDefaultSystems
       attrsToList
       remapKeys
       remapKeysWith
@@ -105,14 +111,12 @@ let
       matchingLines
       readLines
       charN
-      linesGrep
-      readGrep
-      readLinesGrep
       coerceString
       lines
       trim
       yank
       yankN
+      test
     ;
 
     inherit (final.libfs)
@@ -163,8 +167,11 @@ let
     ;
 
     inherit (final.libfunk)
+      currySystems
+      funkSystems
       canPassStrict
       canCallStrict
+      setFunctionArgProcessor
     ;
 
     __docs = processDocs.docs;

@@ -1,8 +1,12 @@
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
+
 { lib }: let
 
-  inherit (lib) hasInfix splitString fileContents;
-
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   base16Chars' = "012345679abcdef";
   base16Chars = "012345679abcdefABCDEF";
@@ -18,7 +22,7 @@
   isBase64Str = str: ( builtins.match "[A-Za-z0-9\\+/=]+" str ) != null;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # (Pred) Does `str' match `patt'?
   test = patt: str: ( builtins.match patt str ) != null;
@@ -43,13 +47,13 @@
   in if m == null then null else map ( builtins.elemAt m ) ns;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   trim  = yank "[\t ]*([^\t ].*[^\t ])[\t ]*";
   lines = str: builtins.filter builtins.isString ( builtins.split "\n" str );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Force a value to a string.
   coerceString = x: let
@@ -61,7 +65,7 @@
         ( trace "Unable to stringify type ${typeOf x}" "<???>" );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Get character at index `n'.
   charN' = n: builtins.substring n 1;
@@ -75,7 +79,7 @@
   in charN' n' str;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   pattHasCaret  = patt: ( charN' 1 patt ) == "^";
   pattHasDollar = patt: ( charN ( -1 ) patt ) == "$";
@@ -87,15 +91,42 @@
   in pre + patt + post;
 
   matchingLines = re: lines: builtins.filter ( test re ) lines;
-  linesInfix    = re: lines: builtins.filter ( l: hasInfix re l ) lines;
-  readLines     = f: splitString "\n" ( fileContents f );
+  linesInfix    = re: lines: builtins.filter ( l: lib.hasInfix re l ) lines;
+  readLines     = f: lib.splitString "\n" ( lib.fileContents f );
 
   linesGrep     = re: lines: matchingLines ( pattForLine re ) lines;
   readLinesGrep = re: f: linesGrep re ( readLines f );
   readGrep      = re: f: builtins.concatStringsSep "\n" ( readLinesGrep re f );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
+
+  applyToLines = f: x: let
+    inherit (builtins) isString isPath isList concatStringsSep readFile;
+    _lines = str: builtins.filter builtins.isString ( builtins.split "\n" str );
+    asList = if ( isList x ) then x
+      else if ( isString x ) then _lines x
+      else if ( isPath x )   then lib.readLines x
+      else throw ( "Cannot convert type ${builtins.typeOf x} to a list" +
+                    " of strings" );
+  in lib.concatMapStringsSep "\n" f asList;
+
+
+# ---------------------------------------------------------------------------- #
+
+  removeSlashSlashComment' = line:
+    let ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])//.*" line;
+    in if ( ms == null ) then line else ( builtins.head ms );
+
+  removePoundComment' = line:
+    let ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])#.*" line;
+    in if ( ms == null ) then line else ( builtins.head ms );
+
+  removeSlashSlashComments = applyToLines removeSlashSlashComment';
+  removePoundComments = applyToLines removePoundComment';
+
+
+# ---------------------------------------------------------------------------- #
 
   # Count the number of matches in a string.
   countMatches = splitter: string:
@@ -103,7 +134,7 @@
     length ( filter isList ( split splitter string ) );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Return the longest common prefix for strings `a' and `b'.
   commonPrefix = a: b: let
@@ -116,7 +147,7 @@
   in builtins.substring ( l - 1 ) ( builtins.stringLength a ) a;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
 in {
 
@@ -165,4 +196,18 @@ in {
     lines
   ;
 
+  inherit
+    applyToLines
+    removeSlashSlashComment'
+    removeSlashSlashComments
+    removePoundComments'
+    removePoundComments
+  ;
+
 }
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

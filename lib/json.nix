@@ -1,14 +1,33 @@
-{ lib }:
-rec {
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
 
-  stripCommentsJSONStr = str:
-    let inherit (builtins) concatStringsSep filter isString split; in
-    concatStringsSep "" ( filter isString ( split "(//[^\n]*)\n" str ) );
+{ lib }: let
 
-  importJSON' = x:
-    let inherit (builtins) isAttrs isString fromJSON readFile; in
-    if ( isAttrs x ) then x
-    else if ( isString x ) then fromJSON x
-    else fromJSON ( stripCommentsJSONStr ( readFile x ) );
+# ---------------------------------------------------------------------------- #
 
+  # This wipes out any C style comments in JSON files that were written by
+  # sub-humans that cannot abide by simple file format specifications.
+  # Later this function will be revised to schedule chron jobs which send
+  # daily emails to offending projects' authors - recommending various
+  # re-education programs they may enroll in.
+  importJSON' = file: let
+    f = lib.libstr.removeSlashSlashComments ( builtins.readFile file );
+  in builtins.fromJSON f;
+
+
+# ---------------------------------------------------------------------------- #
+
+in {
+  inherit
+    importJSON'
+  ;
 }
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

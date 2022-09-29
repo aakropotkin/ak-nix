@@ -24,56 +24,12 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # Cribbed from `flake-utils', vendored to skip a redundant fetch.
-
-  defaultSystems = [
-    "x86_64-linux" "x86_64-darwin"
-    "aarch64-linux" "aarch64-darwin"
-    "i686-linux"
-  ];
-
   # Apply `fn' to each `system', forming an attrset keyed by system names.
   eachSystemMap = systems: fn:
     builtins.foldl' ( acc: sys: acc // { ${sys} = fn sys; } ) {} systems;
 
-  eachDefaultSystemMap = eachSystemMap defaultSystems;
+  eachDefaultSystemMap = eachSystemMap lib.defaultSystems;
 
-
-# ---------------------------------------------------------------------------- #
-
-  currySystems = supportedSystems: fn: args: let
-    inherit (builtins) functionArgs isString elem;
-    fas    = functionArgs fn;
-    callAs = system: fn ( { inherit system; } // args );
-    callV  = system: fn system args;
-    isSys  = ( isString args ) && ( elem args supportedSystems );
-    callF  = _: args': fn args args';  # Flip
-    apply  =
-      if ( fas == {} ) then if isSys then callF else callV else
-      if ( fas ? system ) then callAs else
-      throw "provided function cannot accept system as an arg";
-    sysAttrs = eachSystemMap supportedSystems apply;
-    curried  = { __functor = self: system: self.${system}; };
-    curriedF = { __functor = self: args': self.${args} args'; };
-  in sysAttrs // ( if isSys then curriedF else curried );
-
-  curryDefaultSystems = currySystems defaultSystems;
-
-
-# ---------------------------------------------------------------------------- #
-
-  funkSystems = supportedSystems: fn: let
-    fas    = builtins.functionArgs fn;
-    callAs = system: fn { inherit system; };
-    callV  = system: fn system;
-    apply  = if ( fas == {} ) then callV else if ( fas ? system ) then callAs
-             else throw "provided function cannot accept system as an arg";
-    sysAttrs = eachSystemMap supportedSystems apply;
-    curried  = { __functor = self: system: self.${system}; };
-  in sysAttrs // curried;
-
-  funkDefaultSystems = funkSystems defaultSystems;
-   
 
 # ---------------------------------------------------------------------------- #
 
@@ -144,9 +100,7 @@
 
 in {
   inherit
-    eachSystemMap eachDefaultSystemMap defaultSystems
-    currySystems curryDefaultSystems
-    funkSystems  funkDefaultSystems
+    eachSystemMap eachDefaultSystemMap
     attrsToList
     joinAttrs
     remapKeys remapKeysWith
