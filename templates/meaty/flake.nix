@@ -71,7 +71,7 @@
     # Reccomended for multiple input overlays:
     #   lib.composeManyExtensions [ak-nix.overlays.ak-nix ...];
 
-    # By default, compose with out deps into a single overlay.
+    # By default, compose with our deps into a single overlay.
     overlays.default = lib.composeManyExtensions [
       self.overlays.deps
       self.overlays.pkgs

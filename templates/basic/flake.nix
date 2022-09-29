@@ -31,7 +31,7 @@
     in {
       lib = prev.lib.extend self.overlays.lib;
     };
-    # By default, compose with out deps into a single overlay.
+    # Recommended: Compose with deps into a single overlay.
     overlays.default = self.overlays.pkgs;
 
 
