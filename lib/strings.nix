@@ -200,7 +200,7 @@ in {
     applyToLines
     removeSlashSlashComment'
     removeSlashSlashComments
-    removePoundComments'
+    removePoundComment'
     removePoundComments
   ;
 
