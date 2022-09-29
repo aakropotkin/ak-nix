@@ -151,6 +151,9 @@
       autotools.path = ./templates/autotools;
       autotools.description = "a basic autotools project";
 
+      sublib.path = ./templates/sublib;
+      sublib.description = "a sub library file";
+
       # FIXME:
       # update this template with some of the improvements made
       # to `./pkgs/build-support/trivial/tests/'.
