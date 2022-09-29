@@ -85,10 +85,21 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # Merges an attset or list of attrsets to a single set.
-  joinAttrs = x: let
-    asList = if builtins.isList x then x else builtins.attrValues x;
-  in builtins.foldl' ( a: b: a // b ) {} asList;
+  # Merges an attrset or list of sub-attrsets to a single attrset
+  joinAttrs = {
+    __funcitonMeta = {
+      name = "joinAttrs";
+      doc  = "Merges an attrset or list of sub-attrsets to a single attrset.";
+      argc = 1;
+      argsType = with lib.types;
+        either ( listOf ( attrsOf anything ) )
+               ( attrsOf ( attrsOf anything ) );
+      returnType = with lib.types; attrsOf anything;
+    };
+    __processArgs = x: if builtins.isList x then x else builtins.attrValues x;
+    __innerFunction = builtins.foldl' ( a: b: a // b ) {};
+    __functor = self: x: self.__innerFunction ( self.__processArgs x );
+  };
 
 
 # ---------------------------------------------------------------------------- #

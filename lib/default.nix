@@ -82,6 +82,7 @@ let
       remapKeysWith
       listToAttrsBy
       foldAttrsl
+      joinAttrs
     ;
 
     inherit (final.libjson)

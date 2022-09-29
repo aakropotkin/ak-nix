@@ -130,6 +130,19 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Strictly wrap a function with an argument handler/pre-processor.
+  # NOTE: No `self' reference allowed during arg processing; the arg processor
+  # is not a functor.
+  #
+  # Ex:
+  # let incFloored = setFunctionArgProcess ( x: x + 1 ) builtins.floor;
+  # in  map incFloored [1 1.1 1.9 2]
+  # ==> [2 2 2 3]
+  setFunctionArgProcessor = f: pa: {
+    __processArgs   = pa;
+    __innerFunction = f;
+    __functor = self: args: self.__innerFunction ( self.__processArgs args );
+  };
 
 
 # ---------------------------------------------------------------------------- #
@@ -139,6 +152,7 @@ in {
   inherit
     canPassStrict
     canCallStrict
+    setFunctionArgProcessor
   ;
 
 }
