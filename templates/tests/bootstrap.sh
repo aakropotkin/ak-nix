@@ -20,7 +20,7 @@ export PROJECT SUB_NAME ROOT;
 
 usage() {
   {
-    echo "$_AS_ME [-p PROJECT] [-s SUB_NAME] -r ROOT";
+    echo "$_AS_ME [-p PROJECT] [-s SUB_NAME] [-r ROOT]";
     echo "-p|--proj  project name";
     echo "-s|--sub   test subdir name";
     echo "-r|--root  path to project root ( with flake.nix )";
