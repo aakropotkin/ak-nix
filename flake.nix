@@ -151,14 +151,14 @@
       autotools.path = ./templates/autotools;
       autotools.description = "a basic autotools project";
 
-      sublib.path = ./templates/sublib;
-      sublib.description = "a sub library file";
+      lib-sub.path = ./templates/lib-sub;
+      lib-sub.description = "a sub library file";
 
-      # FIXME:
-      # update this template with some of the improvements made
-      # to `./pkgs/build-support/trivial/tests/'.
       tests.path = ./templates/tests;
       tests.description = "a test harness for Nix expressions and drvs";
+
+      tests-sub.path = ./templates/tests-sub;
+      tests-sub.description = "a subset of tests for the `ak-nix' Test harness";
     };
 
 
