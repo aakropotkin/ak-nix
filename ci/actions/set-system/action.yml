@@ -1,0 +1,24 @@
+
+name: Set SYSTEM
+description: Sets the env var SYSTEM to the Nix platform double for the active runner.
+
+runs:
+  using: "composite"
+  steps:
+    - name: Define System
+      shell: bash
+      run: |
+        {
+          printf 'SYSTEM=';
+          case "${{ runner.arch }}" in
+            X64)   printf 'x86_64-'; ;;
+            ARM64) printf 'aarch64-'; ;;
+            *) exit 1; ;;
+          esac
+          case "${{ runner.os }}" in
+            Linux) echo "linux"; ;;
+            maxOS) echo "darwin"; ;;
+            *) exit 1; ;;
+          esac
+        } >> $GITHUB_ENV
+    - run: echo "SYSTEM=$SYSTEM"
