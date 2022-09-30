@@ -6,10 +6,36 @@
 
 { lib }: let
 
+  yt = lib.libyants;
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Alpha + Digit
+  alnum_s  = with yt; restrict string ( lib.test "[[:alnum:]]+" );
+  alpha_s  = with yt; restrict string ( lib.test "[[:alpha:]]+" );
+  blank_s  = with yt; restrict string ( lib.test "[[:blank:]]+" );
+  cntrl_s  = with yt; restrict string ( lib.test "[[:cntrl:]]+" );
+  digit_s  = with yt; restrict string ( lib.test "[[:digit:]]+" );
+  # Print - Space
+  graph_s  = with yt; restrict string ( lib.test "[[:graph:]]+" );
+  lower_s  = with yt; restrict string ( lib.test "[[:lower:]]+" );
+  # ! Cntrl
+  print_s  = with yt; restrict string ( lib.test "[[:print:]]+" );
+  # Graphical - AlNum
+  punct_s  = with yt; restrict string ( lib.test "[[:punct:]]+" );
+  space_s  = with yt; restrict string ( lib.test "[[:space:]]+" );
+  upper_s  = with yt; restrict string ( lib.test "[[:upper:]]+" );
+  # Base 16 Chars
+  xdigit_s = with yt; restrict string ( lib.test "[[:xdigit:]]+" );
+
+  # TODO: URIs  https://www.ietf.org/rfc/rfc2396.txt
+
+
 # ---------------------------------------------------------------------------- #
 
   base16Chars' = "012345679abcdef";
-  base16Chars = "012345679abcdefABCDEF";
+  base16Chars  = "012345679abcdefABCDEF";
   # Omitted: E O U T
   base32Chars' = "0123456789abcdfghijklmnpqrsvwxyz";
   base32Chars  = "0123456789abcdfghijklmnpqrsvwxyzABCDFGHIJKLMNPQRSVWXYZ";
@@ -17,9 +43,13 @@
   base64Chars' = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/";
   base64Chars  = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/=";
 
-  isBase16Str = str: ( builtins.match "[${base16Chars}]+" str ) != null;
-  isBase32Str = str: ( builtins.match "[${base32Chars}]+" str ) != null;
-  isBase64Str = str: ( builtins.match "[A-Za-z0-9\\+/=]+" str ) != null;
+  isBase16Str = ( lib.test "[${base16Chars}]+" );
+  isBase32Str = ( lib.test "[${base32Chars}]+" );
+  isBase64Str = ( lib.test "[A-Za-z0-9\\+/=]+" );
+
+  base16_s = with yt; restrict string isBase16Str;
+  base32_s = with yt; restrict string isBase32Str;
+  base64_s = with yt; restrict string isBase64Str;
 
 
 # ---------------------------------------------------------------------------- #
@@ -81,10 +111,11 @@
 
 # ---------------------------------------------------------------------------- #
 
-  pattHasCaret  = patt: ( charN' 1 patt ) == "^";
-  pattHasDollar = patt: ( charN ( -1 ) patt ) == "$";
+  pattHasCaret  = lib.test "^.*";
+  pattHasDollar = lib.test ".*$";
 
   # Create a `grep' style matcher from `patt'.
+  # FIXME: pattForLine = patt: "^.*${lib.yank "\\^?(.*)\\$?" patt}.*$";
   pattForLine = patt: let
     pre  = if pattHasCaret  patt then "" else "^.*";
     post = if pattHasDollar patt then "" else ".*$";
@@ -203,6 +234,13 @@ in {
     removePoundComment'
     removePoundComments
   ;
+
+  yTypes = {
+    inherit
+      alnum_s alpha_s blank_s cntrl_s digit_s graph_s lower_s print_s punct_s
+      space_s upper_s xdigit_s base16_s base32_s base64_s
+    ;
+  };
 
 }
 

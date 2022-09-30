@@ -7,11 +7,11 @@
 #
 # ---------------------------------------------------------------------------- #
 
-{ lib       ? PROJECT.lib or nixpkgs.lib
+{ lib       ? PROJECT.lib or pkgsFor.lib
 , pkgsFor   ? ( PROJECT.legacyPackages or nixpkgs.legacyPackages ).${system}
 , writeText ? pkgsFor.writeText
 , system    ? builtins.currentSystem
-, PROJECT   ? builtins.getFlake ( toString ../. )
+, PROJECT   ? builtins.getFlake ( toString ../.. )
 , nixpkgs   ? builtins.getFlake "nixpkgs"
 
 # Options
@@ -33,7 +33,7 @@
     in assert builtins.isAttrs ts;
        ts.tests or ts;
   in builtins.foldl' ( ts: file: ts // ( testsFrom file ) ) {} [
-    ./sub
+    ./tests.nix
   ];
 
 # ---------------------------------------------------------------------------- #
@@ -42,7 +42,7 @@
   # is why we have explicitly provided an alternative `check' as a part
   # of `mkCheckerDrv'.
   harness = let
-    name = "all-tests";
+    name = "@NAME@-tests";
   in lib.libdbg.mkTestHarness {
     inherit name keepFailed tests writeText;
     mkCheckerDrv = args: lib.libdbg.mkCheckerDrv {
