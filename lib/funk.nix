@@ -186,7 +186,7 @@
 
   callWith = autoArgs: x: let
     f = if lib.isFunction x then x else import x;
-  in f ( builtins.intersectAttrs ( lib.functionArgs f ) );
+  in f ( builtins.intersectAttrs ( lib.functionArgs f ) autoArgs );
 
 
 # ---------------------------------------------------------------------------- #
