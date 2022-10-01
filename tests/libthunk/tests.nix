@@ -51,8 +51,6 @@
         keywords = [];
         name = "inc";
         returnTypes = ["int"];
-        # FIXME:
-        terminalArgs = ["unspecified"];
         vargs = false;
       };
     };
