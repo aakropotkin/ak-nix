@@ -20,9 +20,22 @@
 
 # ---------------------------------------------------------------------------- #
 
+  importJSONOr = fallback: file:
+    if lib.inPureEvalMode then fallback else
+    if builtins.pathExists file then lib.importJSON file else fallback;
+
+  importJSONOr' = fallback: file:
+    if lib.inPureEvalMode then fallback else
+    if builtins.pathExists file then lib.importJSON' file else fallback;
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     importJSON'
+    importJSONOr
+    importJSONOr'
   ;
 }
 

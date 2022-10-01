@@ -73,6 +73,27 @@
 
 # ---------------------------------------------------------------------------- #
 
+  getEnvOr = fallback: var: let
+    val = builtins.getEnv var;
+  in if lib.inPureEvalMode then fallback else
+     if val == "" then fallback else val;
+
+
+  nixEnvVars = let
+    lookup = var: fb: lib.getEnvOr fb var;
+    vars = self:
+      builtins.mapAttrs lookup {
+        NIX_CONF_DIR = "/etc/nix/nix.conf";
+        NIX_USER_CONF_FILES = builtins.concatStringsSep " " [
+          self.XDG_CONFIG_DIRS
+          self.XDG_CONFIG_HOME
+        ];
+        XDG_CONFIG_DIRS = "/etc/xdg";
+        XDG_CONFIG_HOME = "${self.HOME}/.config";
+        XDG_CACHE_HOME  = "${self.HOME}/.cache";
+        NIX_CONFIG      = "";
+      };
+  in if lib.inPureEvalMode then {} else lib.fix vars;
 
 
 # ---------------------------------------------------------------------------- #
@@ -92,5 +113,7 @@ in {
     baseListToDec'
     baseListToDec
     withHooks
+    getEnvOr
+    nixEnvVars
   ;
 }

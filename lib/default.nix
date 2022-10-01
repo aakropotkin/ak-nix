@@ -96,6 +96,8 @@ let
 
     inherit (final.libjson)
       importJSON'
+      importJSONOr'
+      importJSONOr
     ;
 
     inherit (final.libpath)
@@ -158,6 +160,8 @@ let
       sortVersions
       latestVersion
       withHooks
+      getEnvOr
+      nixEnvVars
     ;
 
     inherit (final.libenc)
