@@ -3,7 +3,7 @@ let
   inherit (builtins) isString typeOf;
   inherit (builtins) readDir isPath pathExists;
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__isCoercibleToPath = ''
     Can `x' be coerced to a Path?
@@ -23,7 +23,7 @@ let
     if isAbspath x then ( /. + x ) else ( ./. + "/${x}" );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__isAbspath = ''
     Is path-like `x' an absolute path?
@@ -44,7 +44,7 @@ let
   in if ( isAbspath str ) then str else ( ./. + ( "/" + str ) );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__categorizePath = ''
     Return inode type for path-like `x', being one of "directory", "regular",
@@ -64,7 +64,7 @@ let
      if c != "symlink" || ! isSymlinkDir then c else "symlinkdir";
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__commonParent = ''
     Return the nearest common parent directory for path-likes `a' and `b'.
@@ -80,7 +80,7 @@ let
   in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__realpathRel' = ''
     Get relative path between parent and subdir.
@@ -118,7 +118,7 @@ let
   in sanE ( sanF san );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__dropLeadingDotSlash = ''
     Try to drop leading "./" part of path-like String `p'.
@@ -128,7 +128,7 @@ let
   in if ( y == null ) then p else y;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__stripComponents = ''
     Strip `n' count leading directory components from path-like `p'.
@@ -144,7 +144,7 @@ let
   in if ( s == null ) then ( baseNameOf p ) else s;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__extSuffix = ''
     Get file extension.
@@ -164,7 +164,7 @@ let
   in if builtins.isNull ms then "" else builtins.head ms;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__expandGlobList = ''
     Path -> [PathGlobElem] -> [Path]
@@ -197,7 +197,7 @@ let
   expandGlob = base: glob: expandGlobList base ( lib.splitString "/" glob );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   __doc__asDrvRelPath = ''
     Strip store path prefix from path.
@@ -220,7 +220,7 @@ let
      if ! ( lib.isStorePath p ) then p else "";
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
 in {
 

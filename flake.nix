@@ -12,7 +12,7 @@
   };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   outputs = { self, nixpkgs, nix, yants-src, ... }: let
 
@@ -23,16 +23,33 @@
 
   in {
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     # Not effected by systems:
     inherit lib;
+
     # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
-    repl =
-      ( lib // { inNixRepl = true; } ) //
-      lib.librepl                      //
-      builtins                         //
-      ( { npFor = nixpkgs.legacyPackages.${builtins.currentSystem}; } );
+    repl = let
+      pkgsFor = nixpkgs.legacyPackages.${builtins.currentSystem};
+    in lib.joinAttrs [
+      ( lib.extend ( _: _: { inNixRepl = true; } ) )
+      lib.librepl
+      builtins
+      {
+        flake-registry = let
+          # FIXME: use "import if exists"
+          ureg = lib.importJSON
+                   "${builtins.getEnv "HOME"}/.config/nix/registry.json";
+          nv = { from, to, ... }: {
+            # FIXME: any `from.ref' will bite you
+            name = from.id;
+            value = to;
+          };
+        in builtins.listToAttrs ( map nv ureg.flakes );
+        inherit pkgsFor;
+        np = pkgsFor;
+      }
+    ];
 
     # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
     docgen = ( eachDefaultSystemMap ( system: import ./pkgs/docgen {
@@ -40,7 +57,7 @@
     } ) ) // { __functor = _self: system: _self.${system}; };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     tarutils = ( eachDefaultSystemMap ( system:
       import ./pkgs/build-support/trivial/tar.nix {
@@ -50,7 +67,7 @@
       } ) ) // { __functor = _self: system: _self.${system}; };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     linkutils = ( eachDefaultSystemMap ( system:
       import ./pkgs/build-support/trivial/link.nix {
@@ -59,7 +76,7 @@
       } ) ) // { __functor = _self: system: _self.${system}; };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     copyutils = ( eachDefaultSystemMap ( system:
       import ./pkgs/build-support/trivial/copy.nix {
@@ -68,7 +85,7 @@
       } ) ) // { __functor = _self: system: _self.${system}; };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     trivial = ( eachDefaultSystemMap ( system:
       self.tarutils.${system} // self.linkutils.${system} //
@@ -76,12 +93,12 @@
     ) ) // { __functor = _self: system: _self.${system}; };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     #packages = eachDefaultSystemMap ( system: {} );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     # Merge input overlays in isolation from one another.
     overlays.ak-nix = final: prev: let
@@ -101,7 +118,7 @@
     overlays.default = self.overlays.ak-nix;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     nixosModules.ak-nix  = { config, ... }: {
       overlays = [self.overlays.ak-nix];
@@ -109,7 +126,7 @@
     nixosModules.default = self.nixosModules.ak-nix;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     # FIXME: these blow up on `aarch64-darwin' for some reason; there's an issue
     # with how `system' is being passed to the test suite.
@@ -134,7 +151,7 @@
     #} );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
     templates = {
       default = self.templates.basic;
@@ -162,7 +179,7 @@
     };
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   };
 }

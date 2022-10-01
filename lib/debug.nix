@@ -4,7 +4,7 @@ let
 
   inherit (lib) runTests;  # From Nixpkgs
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Given output from `nixpkgs.lib.runTests', use `trace' to print information
   # about failed test cases.
@@ -19,7 +19,7 @@ let
   report = report' builtins.trace;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   # Tests are considered "passed" if `runner' returns an empty list, and I
   # recommend using `nixpkgs.lib.runTests' here.
@@ -76,7 +76,7 @@ let
   } );
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
   /**
    * `mkTestHarness' extends original arguments with `run', `check', and
@@ -152,7 +152,7 @@ let
     in extraArgs // { inherit name run check tests; } // funk;
 
 
-/* -------------------------------------------------------------------------- */
+# ---------------------------------------------------------------------------- #
 
 in {
   inherit
