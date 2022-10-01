@@ -44,12 +44,28 @@
 
 # ---------------------------------------------------------------------------- #
 
-  registryFlakes = let
-    asAttrs = { from, to }: { name = from.id; value = to; };
+  registryFlakeRefs = let
     flakes  = ( registries.global.flakes or [] ) ++
               ( registries.system.flakes or [] ) ++
               ( registries.user.flakes or [] );
+    asAttrs = { from, to }: {
+      name  = if from ? ref then "${from.id}/${from.ref}" else from.id;
+      value = to;
+    };
   in builtins.listToAttrs ( map asAttrs flakes );
+
+  # The real trees produced by flakes have no indication of `dir' in
+  # their fields.
+  # The only way you can tell is literally to poke around with `readDir'.
+  # Here we just take our original args addin `outPath' and `sourceInfo'.
+  #
+  # FIXME: follow  indirect -> indirect -> ... -> real
+  registryFlakeTrees = let
+    # XXX: this preserves `dir' at top level.
+    ftf = _: fra: let
+      sourceInfo = builtins.fetchTree ( removeAttrs fra ["dir"] );
+    in fra // { inherit sourceInfo; inherit (sourceInfo) outPath; };
+  in builtins.mapAttrs ftf registryFlakeRefs;
 
 
 # ---------------------------------------------------------------------------- #
@@ -174,7 +190,8 @@ in {
 
   inherit
     registries
-    registryFlakes
+    registryFlakeRefs
+    registryFlakeTrees
   ;
 
 } )

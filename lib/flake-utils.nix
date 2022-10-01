@@ -10,18 +10,37 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # Recommended: `callFlakeWith self.inputs "foo" { someOverride = ...; }'
-  callFlakeWith = autoArgs: path: args: let
-    flake = import "${path}/flake.nix";
+  # Like `callPackageWith' but for flakes.
+  # This allows you to stash a "thunk" of auto-called args, and pass overrides
+  # at the end.
+  #
+  # An example of re-calling `ak-nix' flake from some other flake
+  # using the inputs of the caller "self" as a base, then overriding `nixpkgs'
+  # to make `ak-nix' follow one of our inputs' instance.
+  #   ak-nix-custom = callFlakeWith self.inputs  {
+  #     nixpkgs = self.inputs.bar.inputs.nixpkgs;
+  #   };
+  #
+  # Also try calling with your registries ( see [[file:./flake-registry.nix]] ):
+  #   builtins.mapAttrs ( _: builtins.fetchTree ) lib.libflake.registryFlakeRefs
+  callFlakeWith = autoArgs: refOrDir: extraArgs: let
+    ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
+    fromFt   = if refOrDir ? dir then "${ftSrc}/dir" else ftSrc;
+    flakeDir =
+      if ( lib.isStorePath refOrDir )   then refOrDir else
+      if lib.isCoercibleToPath refOrDir then refOrDir else
+      if builtins.isAttrs refOrDir then fromFt else
+      throw "This doesn't look like a path";
+    flake  = import "${flakeDir}/flake.nix";
     inputs = let
       inherit (builtins) functionArgs intersectAttrs;
-      lock       = lib.importJSON "${path}/flake.lock";
+      lock       = lib.importJSONOr { nodes = {}; } "${flakeDir}/flake.lock";
       fetchInput = { locked, ... }: builtins.fetchTree locked;
       locked     = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
-      all        = locked // autoArgs // { self = fSelf; };
-    in ( intersectAttrs ( functionArgs flake.outputs ) all ) // args;
-    fSelf = flake // ( flake.outputs inputs );
-  in fSelf;
+      stdArgs    = locked // autoArgs // { inherit self; };
+    in lib.canPassStrict stdArgs flake.outputs;
+    self = flake // ( flake.outputs ( inputs // extraArgs ) );
+  in self;
 
   callFlake = callFlakeWith {};
 

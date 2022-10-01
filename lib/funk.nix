@@ -45,7 +45,7 @@
     lib.filterAttrs ( name: optional: ! optional ) ( lib.functionArgs fn );
 
   # Taken from Nixpkgs' `lib.callPackageWith'
-  missingArgsStrict = fn: args: let
+  missingArgsStrict = args: fn: let
     sat = name: optional: ! ( optional || ( args ? ${name} ) );
   in lib.filterAttrs sat ( lib.functionArgs fn );
 
@@ -55,11 +55,11 @@
   # These are "strict" insofar as they do not attempt to access thunks
   # or other auto-args.
 
-  canPassStrict = fn: args: let
+  canPassStrict = args: fn: let
     fa = lib.functionArgs fn;
-  in lib.intersectAttrs fa args;
+  in builtins.intersectAttrs fa args;
 
-  canCallStrict = fn: args: ( missingArgsStrict fn args ) == {};
+  canCallStrict = args: fn: ( missingArgsStrict args fn ) == {};
 
 
 # ---------------------------------------------------------------------------- #
