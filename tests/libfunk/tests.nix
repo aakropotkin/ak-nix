@@ -1,6 +1,6 @@
 # ============================================================================ #
 #
-# General tests for `libthunk' routines.
+# General tests for `libfunk' routines.
 #
 # ---------------------------------------------------------------------------- #
 
@@ -10,13 +10,18 @@
 # ---------------------------------------------------------------------------- #
 
   inherit (lib.libfunk)
-    defFunkerWithNames
-
-    defaultFunker
-    defFunkCore
     defFnMeta
+    defFunkCore
+    defThunkedFunk
 
-    defThunkedFunk'
+    callWith
+    currySystems
+    funkSystems
+    mandatoryArgsStrict
+    missingArgsStrict
+    canPassStrict
+    canCallStrict
+    setFunctionArgProcessor
   ;
 
 
@@ -26,12 +31,14 @@
 
     inherit
       lib
-      defFunkerWithNames
-
-      defaultFunker
-      defFunkCore
-      defFnMeta
-
+      callWith
+      currySystems
+      funkSystems
+      mandatoryArgsStrict
+      missingArgsStrict
+      canPassStrict
+      canCallStrict
+      setFunctionArgProcessor
     ;
 
 # ---------------------------------------------------------------------------- #

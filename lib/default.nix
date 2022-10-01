@@ -180,6 +180,7 @@ let
       canPassStrict
       canCallStrict
       setFunctionArgProcessor
+      callWith
     ;
 
     __docs = processDocs.docs;

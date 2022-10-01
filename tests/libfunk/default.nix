@@ -39,7 +39,7 @@
   # is why we have explicitly provided an alternative `check' as a part
   # of `mkCheckerDrv'.
   harness = let
-    name = "libthunk-tests";
+    name = "libfunk-tests";
   in lib.libdbg.mkTestHarness {
     inherit name keepFailed tests writeText;
     mkCheckerDrv = args: lib.libdbg.mkCheckerDrv {

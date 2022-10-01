@@ -184,6 +184,13 @@
 
 # ---------------------------------------------------------------------------- #
 
+  callWith = autoArgs: x: let
+    f = if lib.isFunction x then x else import x;
+  in f ( builtins.intersectAttrs ( lib.functionArgs f ) );
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit
@@ -197,6 +204,7 @@ in {
     canPassStrict
     canCallStrict
     setFunctionArgProcessor
+    callWith
   ;
 
 }
