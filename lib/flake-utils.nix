@@ -27,7 +27,7 @@
     ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
     fromFt   = if refOrDir ? dir then "${ftSrc}/dir" else ftSrc;
     flakeDir =
-      if ( lib.isStorePath refOrDir )   then refOrDir else
+      if lib.isStorePath refOrDir       then refOrDir else
       if lib.isCoercibleToPath refOrDir then refOrDir else
       if builtins.isAttrs refOrDir then fromFt else
       throw "This doesn't look like a path";
