@@ -19,8 +19,8 @@
           url = "https://github.com/NixOS/flake-registry";
         };
       in "${repo}/flake-registry.json";
-      system = "/etc/nix/registry.json";
-      user   = "${builtins.getEnv "HOME"}/.config/nix/registry.json";
+      system = "${lib.nixEnvVars.NIX_CONF_DIR}/registry.json";
+      user   = "${lib.nixEnvVars._NIX_USER_CONF_DIR}/registry.json";
     };
     fileExists = path:
       ( ! lib.inPureEvalMode ) && ( builtins.pathExists path );

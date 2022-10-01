@@ -8,7 +8,6 @@
 
   yt = lib.libyants;
 
-
 # ---------------------------------------------------------------------------- #
 
   # Alpha + Digit
@@ -29,7 +28,8 @@
   # Base 16 Chars
   xdigit_s = with yt; restrict string ( lib.test "[[:xdigit:]]+" );
 
-  # TODO: URIs  https://www.ietf.org/rfc/rfc2396.txt
+  # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt
+  # NOTE: this is being done in `github:aakropotkin/rime'.
 
 
 # ---------------------------------------------------------------------------- #
@@ -87,12 +87,13 @@
 
   # Force a value to a string.
   coerceString = x: let
-    inherit (builtins) toJSON mapAttrs isFunction isAttrs trace typeOf;
-    coerceAs = as: toJSON ( mapAttrs ( _: v: coerceString v ) as );
-  in if ( lib.strings.isCoercibleToString x ) then ( toString x ) else
-     if ( isFunction x ) then "<LAMBDA>" else
-     if ( isAttrs x )    then ( coerceAs x ) else
-        ( trace "Unable to stringify type ${typeOf x}" "<???>" );
+    emitWarnThen = lib.warn "Unable to stringify type ${builtins.typeOf x}";
+    coerceAs = as:
+      builtins.toJSON ( builtins.mapAttrs ( _: v: coerceString v ) as );
+  in if lib.strings.isCoercibleToString x then toString x else
+     if lib.isFunction x   then "<LAMBDA>" else
+     if builtins.isAttrs x then coerceAs x else
+        emitWarnThen  "<???>";
 
 
 # ---------------------------------------------------------------------------- #
@@ -133,11 +134,10 @@
 # ---------------------------------------------------------------------------- #
 
   applyToLines = f: x: let
-    inherit (builtins) isString isPath isList concatStringsSep readFile;
     _lines = str: builtins.filter builtins.isString ( builtins.split "\n" str );
-    asList = if ( isList x ) then x
-      else if ( isString x ) then _lines x
-      else if ( isPath x )   then lib.readLines x
+    asList = if ( builtins.isList x ) then x
+      else if ( builtins.isString x ) then _lines x
+      else if ( builtins.isPath x )   then lib.readLines x
       else throw ( "Cannot convert type ${builtins.typeOf x} to a list" +
                     " of strings" );
   in lib.concatMapStringsSep "\n" f asList;
@@ -145,16 +145,27 @@
 
 # ---------------------------------------------------------------------------- #
 
-  removeSlashSlashComment' = line:
-    let ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])//.*" line;
-    in if ( ms == null ) then line else ( builtins.head ms );
+  removeSlashSlashComment' = line: let
+    ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])?//.*" line;
+    h  = builtins.head ms;
+  in if ( ms == null ) then line else
+     if h  == null then "" else h;
 
-  removePoundComment' = line:
-    let ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])#.*" line;
-    in if ( ms == null ) then line else ( builtins.head ms );
+  removePoundComment' = line: let
+    ms = builtins.match "([^\"]*(\"[^\"]*\")*[^\"]*[^\\\"])?#.*" line;
+    h  = builtins.head ms;
+  in if ms == null then line else
+     if h  == null then "" else h;
 
   removeSlashSlashComments = applyToLines removeSlashSlashComment';
-  removePoundComments = applyToLines removePoundComment';
+  removePoundComments      = applyToLines removePoundComment';
+
+  removePoundDropEmpty = str: let
+    proc = acc: l: let
+      s = lib.libstr.removePoundComments l;
+    in if ( builtins.isList l ) || ( s == "" ) then acc else
+       if acc == "" then s else acc + "\n" + s;
+  in builtins.foldl' proc "" ( builtins.split "\n" str );
 
 
 # ---------------------------------------------------------------------------- #
@@ -233,6 +244,7 @@ in {
     removeSlashSlashComments
     removePoundComment'
     removePoundComments
+    removePoundDropEmpty
   ;
 
   yTypes = {

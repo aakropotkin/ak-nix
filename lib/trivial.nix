@@ -81,19 +81,39 @@
 
   nixEnvVars = let
     lookup = var: fb: lib.getEnvOr fb var;
+    localstatedir = "/nix/var";
     vars = self:
       builtins.mapAttrs lookup {
-        NIX_CONF_DIR = "/etc/nix/nix.conf";
-        NIX_USER_CONF_FILES = builtins.concatStringsSep " " [
-          self.XDG_CONFIG_DIRS
-          self.XDG_CONFIG_HOME
-        ];
+        HOME            = "/home-shelter";
         XDG_CONFIG_DIRS = "/etc/xdg";
         XDG_CONFIG_HOME = "${self.HOME}/.config";
         XDG_CACHE_HOME  = "${self.HOME}/.cache";
-        NIX_CONFIG      = "";
+        NIX_STORE_DIR   = self.NIX_STORE;
+        NIX_STORE       = "/nix/store";
+        NIX_CONF_DIR    = "/etc/nix";
+        # NOTE: searched in reverse order
+        NIX_USER_CONF_FILES = builtins.concatStringsSep ":" [
+          self.XDG_CONFIG_DIRS
+          self.XDG_CONFIG_HOME
+        ];
+        NIX_CONFIG = "";
+        # Legacy `nix-env' CLI uses this
+        NIX_PROFILE = "${localstatedir}/nix/profiles/default";
+        # Set by Daemon
+        NIX_PROFILES = [
+          "${localstatedir}/nix/profiles/default"
+          "${self.HOME}/.nix-profile"
+        ];
+        IN_NIX_SHELL = "";
+        IN_NIX_REPL  = "";
       };
-  in if lib.inPureEvalMode then {} else lib.fix vars;
+    vals = ( lib.fix vars ) // {
+      # This is made up, I use it for convenience.
+      _NIX_USER_CONF_DIR = let
+        m = builtins.match "(.*:)?([^:]+)" vals.NIX_USER_CONF_FILES;
+      in if m == null then vals.XDG_CONFIG_HOME else builtins.elemAt m 1;
+    };
+  in if lib.inPureEvalMode then {} else vals;
 
 
 # ---------------------------------------------------------------------------- #
