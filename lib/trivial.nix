@@ -93,8 +93,8 @@
         NIX_CONF_DIR    = "/etc/nix";
         # NOTE: searched in reverse order
         NIX_USER_CONF_FILES = builtins.concatStringsSep ":" [
-          self.XDG_CONFIG_DIRS
-          self.XDG_CONFIG_HOME
+          "${self.XDG_CONFIG_DIRS}/nix"
+          "${self.XDG_CONFIG_HOME}/nix"
         ];
         NIX_CONFIG = "";
         # Legacy `nix-env' CLI uses this
