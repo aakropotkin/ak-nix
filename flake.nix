@@ -6,8 +6,7 @@
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
   inputs.yants-src = {
-    type  = "file";
-    url   = "https://code.tvl.fyi/plain/nix/yants/default.nix";
+    url = "git+https://code.tvl.fyi/depot.git:/nix/yants.git";
     flake = false;
   };
 
@@ -95,7 +94,13 @@
 
 # ---------------------------------------------------------------------------- #
 
-    #packages = eachDefaultSystemMap ( system: {} );
+    packages = eachDefaultSystemMap ( system: let
+      pkgsFor = self.legacyPackages.${system};
+    in {
+      tests = ( pkgsFor.callPackage ./tests {
+        inherit pkgsFor lib nixpkgs system;
+      } ).checkDrv;
+    } );
 
 
 # ---------------------------------------------------------------------------- #
@@ -120,35 +125,17 @@
 
 # ---------------------------------------------------------------------------- #
 
-    nixosModules.ak-nix  = { config, ... }: {
-      overlays = [self.overlays.ak-nix];
-    };
-    nixosModules.default = self.nixosModules.ak-nix;
+  legacyPackages = eachDefaultSystemMap ( system:
+    nixpkgs.legacyPackages.${system}.extend self.overlays.ak-nix
+  );
 
 
 # ---------------------------------------------------------------------------- #
 
-    # FIXME: these blow up on `aarch64-darwin' for some reason; there's an issue
-    # with how `system' is being passed to the test suite.
-    #checks = eachDefaultSystemMap ( system: let
-    #  pkgsFor = nixpkgs.legacyPackages.${system};
-    #in {
-    #  trivial = import ./pkgs/build-support/trivial/tests {
-    #    inherit lib system nixpkgs;
-    #    inherit (pkgsFor)
-    #      writeText runCommandNoCC
-    #      gnutar gzip coreutils findutils bash
-    #    ;
-    #    tarutils  = self.tarutils.${system};
-    #    linkutils = self.linkutils.${system};
-
-    #    outputAttr = "writeRunReport";
-    #    # See additional configurable options in the `default.nix' file.
-    #    # We didn't export them here, but if you're modifying this codebase
-    #    # they may be useful to you.
-    #  };
-    #  default = self.checks.${system}.trivial;
-    #} );
+    nixosModules.ak-nix  = { config, ... }: {
+      overlays = [self.overlays.ak-nix];
+    };
+    nixosModules.default = self.nixosModules.ak-nix;
 
 
 # ---------------------------------------------------------------------------- #
