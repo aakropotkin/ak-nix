@@ -5,8 +5,7 @@
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
   inputs.yants-src = {
-    type  = "file";
-    url   = "https://code.tvl.fyi/plain/nix/yants/default.nix";
+    url = "git+https://code.tvl.fyi/depot.git:/nix/yants.git";
     flake = false;
   };
   

@@ -40,12 +40,12 @@
 
   # Be careful with this, it's easy to exceed 2^64 without realizing it.
   pow' = x: pow: let
-    counter = builtins.getList ( _: null ) pow;
+    counter = builtins.genList ( _: null ) pow;
   in builtins.foldl' ( acc: _: acc * x ) 1 counter;
 
   pow = x: pow: let
     _mulSafe = a: b: let c = a * b; in assert ( c != 0 ); c;
-    counter = builtins.getList ( _: null ) pow;
+    counter = builtins.genList ( _: null ) pow;
     rsl = builtins.foldl' ( acc: _: _mulSafe acc x ) 1 counter;
   in if x == 0 then 0 else rsl;
 

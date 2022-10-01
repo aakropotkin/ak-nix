@@ -10,40 +10,9 @@
 
 # ---------------------------------------------------------------------------- #
 
-  defFnMeta = let
-    #defFnMeta' = {
-    #  argTypes     ? ["unspecified"] ++ ( lib.optional ( meta ? vargs ) "set" )
-    #, returnTypes  ? ["unspecified"]
-    #, argc         ? 1
-    #, vargs        ? false  # Only include for fns that accept a set
-    #, name         ? "unspecified"
-    #, terminalArgs ? {}
-    #, ...
-    #} @ meta: {
-    #  inherit argTypes returnTypes;
-    #};
-    terminalArgs = let
-      mandatory = lib.filterAttrs ( _: optional: ! optional ) __functionArgs;
-      inferred  = if mandatory == {} then ["unspecified"] else
-                  builtins.AttrNames mandatory;
-    in meta.terminalArgs or inferred;
-    keywords = let
-      infers = {
-        #functor     = ( meta ? functor ) || ( meta ? processArgs );
-        #wrapper     = meta ? processArgs;
-        polymorphic = 1 < ( builtins.length argTypes );
-        thunk       = meta ? thunkMembers;
-        vargs       = ( meta ? vargs ) && vargs;
-        curried     = ( meta ? argc ) && ( 1 < argc );
-        #strict      = ( functionArgs != {} ) &&
-        #              ( builtins.all builtins.isBool
-        #                             ( builtins.attrValues functionArgs ) );
-      };
-      fallback = builtins.attrNames ( lib.filterAttrs ( _: c: c ) infers );
-    in meta.keywords or fallback;
-  in {
+  defFnMeta = {
     __functionMeta = {
-      name         = genFnName "defFnMeta";
+      name         = "defFnMeta";
       argc         = 1;
       vargs        = true;
       argTypes     = ["set"];
@@ -58,83 +27,86 @@
       keywords        = true;
       terminalArgs    = true;
     };
-    __innerFunction = FIXME;
-    __functor = self: args:
-      self.__innerFunction ( self.__processArgs self args );
+    __functor = self: self.__innerFunction;
+    __innerFunction = meta: {
+      keywords = let
+        infers = {
+          #functor     = ( meta ? functor ) || ( meta ? __processArgs );
+          #wrapper     = meta ? __processArgs;
+          #polymorphic = 1 < ( builtins.length meta.argTypes );
+          thunk       = meta ? thunkMembers;
+          vargs       = ( meta ? vargs ) && meta.vargs;
+          curried     = ( meta ? argc ) && ( 1 < meta.argc );
+          #strict      = ( meta.__functionArgs != {} ) &&
+          #              ( builtins.all builtins.isBool
+          #                  ( builtins.attrValues meta.__functionArgs ) );
+        };
+        fallback = builtins.attrNames ( lib.filterAttrs ( _: c: c ) infers );
+      in meta.keywords or fallback;
+    } // meta;
   };
 
 
 # ---------------------------------------------------------------------------- #
     
   defFunkCore = {
-    ${functionMeta} = {
-      name         = genFnName "defFunkCore";
+    __functionMeta = {
+      name         = "defFunkCore";
       argc         = 1;
       vargs        = false;
       argTypes     = ["set"];
       returnTypes  = ["function"];
     };
-    ${functionArgs} = {
-      ${function}     = true;
-      ${functor}      = true;
-      ${functionArgs} = true;
-      ${functionMeta} = true;
-      ${processArgs}  = true;
+    __functionArgs = {
+      __innerFunction = true;
+      __functor       = true;
+      __functionArgs  = true;
+      __functionMeta  = true;
+      __processArgs   = true;
     };
     __functor = self: args: let
-      dargs = renameAsDefault args;
       margs = builtins.intersectAttrs {
-        function     = true;
-        functor      = true;
-        functionArgs = true;
-        processArgs  = true;
-      } dargs;
-    in ( if functor == "__functor" then {
-      __functor = self: args: let
-        targs = if ! ( self ? ${processArgs} ) then args else
-                self.${processArgs} self args;
-      in self.${function} targs;
-    } else {
-      ${functor} = functor;
-      __functor  = self: self.${functor} self;
-    } ) // {
-      ${functionMeta} = defFnMeta margs;
-    };
+        __function     = true;
+        __functor      = true;
+        __functionArgs = true;
+        __processArgs  = true;
+      } args;
+      targs = if ! ( self ? __processArgs ) then args else
+              self.__processArgs self args;
+    in self.__innerFunction ( targs // {
+      __functionMeta = defFnMeta margs;
+    } );
   };
 
 
 # ---------------------------------------------------------------------------- #
 
-  defThunkedFunk' = {
-    ${functionMeta} = {
-      name         = genFnName "defThunkedFunk";
+  defThunkedFunk = {
+    __functionMeta = {
+      name         = "defThunkedFunk";
       argc         = 1;
       vargs        = false;
       argTypes     = ["set"];
       returnTypes  = ["function"];
     };
-    ${functionArgs} = {
-      ${thunk}              = true;  # ? {}
-      ${function}           = true;  # ? functor ; NO `processArgs'
-      ${processArgs}        = true;  # ? Merge thunk with args
-      ${functor}            = true;  # ? pargs -> makeOverridable
-      ${functionMeta}       = true;  # ? {}
-      ${override}           = true;  # ? `makeOverrideable' field
-      ${overrideDerivation} = true;  # ? `makeOverrideable' field
+    __functionArgs = {
+      __thunk            = true;  # ? {}
+      __innerFunction    = true;  # ? functor ; NO `processArgs'
+      __processArgs      = true;  # ? Merge thunk with args
+      __functor          = true;  # ? pargs -> makeOverridable
+      __functionMeta     = true;  # ? {}
+      override           = true;  # ? `makeOverrideable' field
+      overrideDerivation = true;  # ? `makeOverrideable' field
     };
-
-    ${function} = args: let
+    __functor = self: self.__innerFunction self;
+    __innerFunction = args: let
       core = defFunkCore args;
     in lib.recursiveUpdate core {
-      ${functionMeta}.thunkMembers =
-        args.${functionMeta} or
-        ( builtins.attrNames ( args.${thunk} or {} ) );
-      ${thunk} = args.${thunk} or {};
+      __functionMeta.thunkMembers =
+        args.__functionMeta or
+        ( builtins.attrNames ( args.__thunk or {} ) );
+      __thunk = args.__thunk or {};
     };
-    # FIXME:
-    ${processArgs} = self: renameAsDefault;
-    __functor = self: args:
-      self.${function} ( self.${processArgs} self args );
   };
 
 
@@ -144,6 +116,8 @@ in {
 
   inherit
     defFnMeta
+    defFunkCore
+    defThunkedFunk
   ;
 
 }
