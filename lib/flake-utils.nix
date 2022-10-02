@@ -25,7 +25,7 @@
   #   builtins.mapAttrs ( _: builtins.fetchTree ) lib.libflake.registryFlakeRefs
   callFlakeWith = autoArgs: refOrDir: extraArgs: let
     ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
-    fromFt   = if refOrDir ? dir then "${ftSrc}/${dir}" else ftSrc;
+    fromFt   = if refOrDir ? dir then "${ftSrc}/${refOrDir.dir}" else ftSrc;
     flakeDir =
       if lib.isStorePath refOrDir       then refOrDir else
       if lib.isCoercibleToPath refOrDir then refOrDir else
