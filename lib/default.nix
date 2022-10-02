@@ -81,6 +81,7 @@ let
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
     libyants  = callLib  "${yants-src}/default.nix";
     libtag    = callLib  ./tags.nix;
+    libtypes  = callLib  ./types.nix;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
