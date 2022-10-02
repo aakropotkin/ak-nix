@@ -48,13 +48,26 @@
 # ---------------------------------------------------------------------------- #
 
   defPrettyXFns = ytypes: X: let
-    toStr' = if ! ( X ? this.string ) then {} else {
-      toString = self: X.this.string;
+    name = ytypes.this.name;
+    tc = from: to: let
+      tts = if from == "any" then "coerce${lib.libstr.titleCase name}" else
+            "from${lib.libstr.titleCase from}";
+      fts = if to == "any" then null else "to${lib.libstr.titleCase to}";
+    in if from == "this" then fts else
+       if to   == "this" then tts else null;
+    defPrettyX = from: to: let
+      pn = tc from to;
+    in if pn == null then {} else {
+      ${pn} = yt.defun [ytypes.${from} ytypes.${to}] X.${from}.${to};
     };
-    fromStr' = if ! ( X ? string.this ) then {} else {
-      fromString = self: X.string.this;
+    proc = { acc, from }: to: {
+      inherit from; acc = acc // ( defPrettyX from to );
     };
-  in
+    forF = from: xts: let
+      tos = builtins.attrNames xts;
+    in ( builtins.foldl' proc { acc = {}; inherit from; } tos ).acc;
+    froms = builtins.attrNames X;
+  in builtins.foldl' ( acc: from: acc // ( forF from X.${from} ) ) {} froms;
 
 
 # ---------------------------------------------------------------------------- #
@@ -62,6 +75,7 @@
 in {
   inherit
     defXTypes
+    defPrettyXFns
   ;
 }
 
