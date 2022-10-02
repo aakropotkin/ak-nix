@@ -47,6 +47,17 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # As above, but create a single set of "pretty" names as:
+  # ytypes = { this.name = "bar"; ... };
+  # X      = { this.foo = ...; any.this = ...; quux.this = ...; }
+  #   ==> { toFoo = ...; coerceBar = ...; fromQuux = ...; }
+  #
+  # NOTE: any appearance of `this' in attr names is substituted with
+  # `ytypes.this.name', so be sure that's set.
+  # NOTE: certain converters are skipped, for example `this.any', since it is
+  # kind of non-sensical.
+  # The real use case here is to generate `(to|from)(String|Attrs)' and
+  # `coerce<NAME>' functions.
   defPrettyXFns = ytypes: X: let
     name = ytypes.this.name;
     tc = from: to: let
