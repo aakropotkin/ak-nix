@@ -37,7 +37,8 @@
   #        { success = false; value = false; }]
   defXTypes = ytypes: X: let
     defX = from: to: yt.defun [ytypes.${from} ytypes.${to}] X.${from}.${to};
-    proc = { acc, from }: to: acc // { ${to} = ( defX from to ); };
+    proc = { acc, from }: to:
+      { acc = acc // { ${to} = ( defX from to ); }; inherit from; };
     forF = from: xts: let
       tos = builtins.attrNames xts;
     in builtins.foldl' proc { acc = {}; inherit from; } tos;
