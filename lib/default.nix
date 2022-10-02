@@ -80,6 +80,7 @@ let
     libfunk   = callLibs [./funk.nix ./thunk.nix];
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
     libyants  = callLib  "${yants-src}/default.nix";
+    libtag    = callLib  ./tags.nix;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
@@ -181,6 +182,13 @@ let
       canCallStrict
       setFunctionArgProcessor
       callWith
+    ;
+
+    inherit (final.libtag)
+      discr
+      discrDef
+      matchLam
+      matchTag
     ;
 
     __docs = processDocs.docs;

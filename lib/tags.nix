@@ -1,34 +1,40 @@
-
+# ============================================================================ #
+#
 # These helpers were graciously expropriated from
-# The Virus Lounge: https://code.tvl.fyi/tree/ 
+# The Virus Lounge: https://code.tvl.fyi/tree
+#
+# ---------------------------------------------------------------------------- #
+#
+# The MIT License (MIT)
+#
+# Copyright (c) 2019 Vincent Ambo
+# Copyright (c) 2020-2021 The TVL Authors
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+#
+# ---------------------------------------------------------------------------- #
 
-/*
-The MIT License (MIT)
+{ lib }: let
 
-Copyright (c) 2019 Vincent Ambo
-Copyright (c) 2020-2021 The TVL Authors
+# ---------------------------------------------------------------------------- #
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-*/
-
-{ lib }:
-let
   # Takes a tag, checks whether it is an attrset with one element,
   # if so sets `isTag` to `true` and sets the name and value.
   # If not, sets `isTag` to `false` and sets `errmsg`.
@@ -74,6 +80,8 @@ let
     { inherit (res) name val; };
 
 
+# ---------------------------------------------------------------------------- #
+
   # Discriminator for values.
   # Goes through a list of tagged predicates `{ <tag> = <pred>; }`
   # and returns the value inside the tag
@@ -110,6 +118,9 @@ let
     assert lib.assertMsg (res != null)
       "tag.discr: No predicate found that matches ${lib.generators.toPretty {} v}";
     res;
+
+
+# ---------------------------------------------------------------------------- #
 
   # The canonical pattern matching primitive.
   # A sum value is an attribute set with one element,
@@ -149,6 +160,9 @@ let
             (builtins.attrNames matcher)}");
     matcher.${case} sum.${case};
 
+
+# ---------------------------------------------------------------------------- #
+
   # A `match` with the arguments flipped.
   # “Lam” stands for “lambda”, because it can be used like the
   # `\case` LambdaCase statement in Haskell, to create a curried
@@ -168,6 +182,8 @@ let
   #   => "whoo it was big!";
   matchLam = matcher: sum: match sum matcher;
 
+
+# ---------------------------------------------------------------------------- #
  
 in
 {
@@ -179,5 +195,13 @@ in
     discrDef
     match
     matchLam
-    ;
+  ;
+  matchTag = match;
 }
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #
