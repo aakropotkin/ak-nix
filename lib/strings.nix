@@ -10,30 +10,6 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # Alpha + Digit
-  alnum_s  = with yt; restrict string ( lib.test "[[:alnum:]]+" );
-  alpha_s  = with yt; restrict string ( lib.test "[[:alpha:]]+" );
-  blank_s  = with yt; restrict string ( lib.test "[[:blank:]]+" );
-  cntrl_s  = with yt; restrict string ( lib.test "[[:cntrl:]]+" );
-  digit_s  = with yt; restrict string ( lib.test "[[:digit:]]+" );
-  # Print - Space
-  graph_s  = with yt; restrict string ( lib.test "[[:graph:]]+" );
-  lower_s  = with yt; restrict string ( lib.test "[[:lower:]]+" );
-  # ! Cntrl
-  print_s  = with yt; restrict string ( lib.test "[[:print:]]+" );
-  # Graphical - AlNum
-  punct_s  = with yt; restrict string ( lib.test "[[:punct:]]+" );
-  space_s  = with yt; restrict string ( lib.test "[[:space:]]+" );
-  upper_s  = with yt; restrict string ( lib.test "[[:upper:]]+" );
-  # Base 16 Chars
-  xdigit_s = with yt; restrict string ( lib.test "[[:xdigit:]]+" );
-
-  # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt
-  # NOTE: this is being done in `github:aakropotkin/rime'.
-
-
-# ---------------------------------------------------------------------------- #
-
   base16Chars' = "012345679abcdef";
   base16Chars  = "012345679abcdefABCDEF";
   # Omitted: E O U T
@@ -47,9 +23,33 @@
   isBase32Str = ( lib.test "[${base32Chars}]+" );
   isBase64Str = ( lib.test "[A-Za-z0-9\\+/=]+" );
 
-  base16_s = with yt; restrict string isBase16Str;
-  base32_s = with yt; restrict string isBase32Str;
-  base64_s = with yt; restrict string isBase64Str;
+# ---------------------------------------------------------------------------- #
+
+  ytypes.Strings = {
+    # Alpha + Digit
+    alnum  = yt.restrict "alnum"  yt.string ( lib.test "[[:alnum:]]+" );
+    alpha  = yt.restrict "alpha"  yt.string ( lib.test "[[:alpha:]]+" );
+    blank  = yt.restrict "blank"  yt.string ( lib.test "[[:blank:]]+" );
+    cntrl  = yt.restrict "cntrl"  yt.string ( lib.test "[[:cntrl:]]+" );
+    digit  = yt.restrict "digit"  yt.string ( lib.test "[[:digit:]]+" );
+    # Print - Space
+    graph  = yt.restrict "graph"  yt.string ( lib.test "[[:graph:]]+" );
+    lower  = yt.restrict "lower"  yt.string ( lib.test "[[:lower:]]+" );
+    # ! Cntrl
+    print  = yt.restrict "print"  yt.string ( lib.test "[[:print:]]+" );
+    # Graphical - AlNum
+    punct  = yt.restrict "punct"  yt.string ( lib.test "[[:punct:]]+" );
+    space  = yt.restrict "space"  yt.string ( lib.test "[[:space:]]+" );
+    upper  = yt.restrict "upper"  yt.string ( lib.test "[[:upper:]]+" );
+    # Base 16 Chars
+    xdigit = yt.restrict "xdigit" yt.string ( lib.test "[[:xdigit:]]+" );
+    base16 = yt.restrict "base16" yt.string lib.libstring.isBase16Str;
+    base32 = yt.restrict "base32" yt.string lib.libstring.isBase32Str;
+    base64 = yt.restrict "base64" yt.string lib.libstring.isBase64Str;
+  };
+
+  # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt
+  # NOTE: this is being done in `github:aakropotkin/rime'.
 
 
 # ---------------------------------------------------------------------------- #
@@ -191,6 +191,25 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Convert "foo bar.baz", "foo_bar baz", or "foo-bar_baz" to "fooBarBaz".
+  # Convert "foo" to "Foo".
+  titleCase = str: let
+    words = builtins.split "[. _-]" str;
+    proc  = acc: w: let
+      m = builtins.match "(.)(.*)" w;
+      h = if ( builtins.head m ) == null then "" else
+          lib.toUpper ( builtins.head m );
+      t = if ( builtins.elemAt m 1 ) == null then "" else
+          builtins.elemAt m 1;
+    in if acc == null then w else
+       if builtins.isList w then acc else
+       acc + h + t;
+    i = if ( builtins.length words ) < 2 then "" else null;
+  in builtins.foldl' proc i words;
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit (lib)
@@ -245,14 +264,10 @@ in {
     removePoundComment'
     removePoundComments
     removePoundDropEmpty
+    titleCase
   ;
 
-  yTypes = {
-    inherit
-      alnum_s alpha_s blank_s cntrl_s digit_s graph_s lower_s print_s punct_s
-      space_s upper_s xdigit_s base16_s base32_s base64_s
-    ;
-  };
+  inherit ytypes;
 
 }
 

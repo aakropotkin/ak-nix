@@ -44,6 +44,19 @@
     in ( builtins.foldl' proc { acc = {}; inherit from; } tos ).acc;
   in builtins.mapAttrs forF X;
 
+
+# ---------------------------------------------------------------------------- #
+
+  defPrettyXFns = ytypes: X: let
+    toStr' = if ! ( X ? this.string ) then {} else {
+      toString = self: X.this.string;
+    };
+    fromStr' = if ! ( X ? string.this ) then {} else {
+      fromString = self: X.string.this;
+    };
+  in
+
+
 # ---------------------------------------------------------------------------- #
 
 in {
