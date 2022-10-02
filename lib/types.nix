@@ -41,7 +41,7 @@
       { acc = acc // { ${to} = ( defX from to ); }; inherit from; };
     forF = from: xts: let
       tos = builtins.attrNames xts;
-    in builtins.foldl' proc { acc = {}; inherit from; } tos;
+    in ( builtins.foldl' proc { acc = {}; inherit from; } tos ).acc;
   in builtins.mapAttrs forF X;
 
 # ---------------------------------------------------------------------------- #
