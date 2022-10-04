@@ -6,8 +6,6 @@
 
 { lib }: let
 
-  yt = lib.libyants;
-
 # ---------------------------------------------------------------------------- #
 
   base16Chars' = "012345679abcdef";
@@ -25,27 +23,29 @@
 
 # ---------------------------------------------------------------------------- #
 
-  ytypes.Strings = {
+  ytypes.Strings = let
+    yt = lib.ytypes.Core // lib.ytypes.Prim;
+  in {
     # Alpha + Digit
-    alnum  = yt.restrict "alnum"  yt.string ( lib.test "[[:alnum:]]+" );
-    alpha  = yt.restrict "alpha"  yt.string ( lib.test "[[:alpha:]]+" );
-    blank  = yt.restrict "blank"  yt.string ( lib.test "[[:blank:]]+" );
-    cntrl  = yt.restrict "cntrl"  yt.string ( lib.test "[[:cntrl:]]+" );
-    digit  = yt.restrict "digit"  yt.string ( lib.test "[[:digit:]]+" );
-    # Print - Space
-    graph  = yt.restrict "graph"  yt.string ( lib.test "[[:graph:]]+" );
-    lower  = yt.restrict "lower"  yt.string ( lib.test "[[:lower:]]+" );
-    # ! Cntrl
-    print  = yt.restrict "print"  yt.string ( lib.test "[[:print:]]+" );
-    # Graphical - AlNum
-    punct  = yt.restrict "punct"  yt.string ( lib.test "[[:punct:]]+" );
-    space  = yt.restrict "space"  yt.string ( lib.test "[[:space:]]+" );
-    upper  = yt.restrict "upper"  yt.string ( lib.test "[[:upper:]]+" );
-    # Base 16 Chars
-    xdigit = yt.restrict "xdigit" yt.string ( lib.test "[[:xdigit:]]+" );
-    base16 = yt.restrict "base16" yt.string lib.libstring.isBase16Str;
-    base32 = yt.restrict "base32" yt.string lib.libstring.isBase32Str;
-    base64 = yt.restrict "base64" yt.string lib.libstring.isBase64Str;
+    alnum  = yt.restrict "alnum" ( lib.test "[[:alnum:]]+" ) yt.string;
+    alpha  = yt.restrict "alpha" ( lib.test "[[:alpha:]]+" ) yt.string;
+    blank  = yt.restrict "blank" ( lib.test "[[:blank:]]+" ) yt.string;
+    cntrl  = yt.restrict "cntrl" ( lib.test "[[:cntrl:]]+" ) yt.string;
+    digit  = yt.restrict "digit" ( lib.test "[[:digit:]]+" ) yt.string;
+    # Print - Space                                                    
+    graph  = yt.restrict "graph" ( lib.test "[[:graph:]]+" ) yt.string;
+    lower  = yt.restrict "lower" ( lib.test "[[:lower:]]+" ) yt.string;
+    # ! Cntrl                                                          
+    print  = yt.restrict "print" ( lib.test "[[:print:]]+" ) yt.string;
+    # Graphical - AlNum                                                
+    punct  = yt.restrict "punct" ( lib.test "[[:punct:]]+" ) yt.string;
+    space  = yt.restrict "space" ( lib.test "[[:space:]]+" ) yt.string;
+    upper  = yt.restrict "upper" ( lib.test "[[:upper:]]+" ) yt.string;
+    # Base 16 Chars                                                    
+    xdigit = yt.restrict "xdigit" ( lib.test "[[:xdigit:]]+" ) yt.string;
+    base16 = yt.restrict "base16" isBase16Str yt.string;
+    base32 = yt.restrict "base32" isBase32Str yt.string;
+    base64 = yt.restrict "base64" isBase64Str yt.string;
   };
 
   # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt

@@ -79,7 +79,6 @@ let
     libsemver = callLib  ./semver.nix;
     libfunk   = callLibs [./funk.nix ./thunk.nix];
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
-    libyants  = callLib  "${yants-src}/default.nix";
     libtag    = callLib  ./tags.nix;
     libtypes  = callLib  ./types.nix;
 
@@ -195,14 +194,16 @@ let
 
 # ---------------------------------------------------------------------------- #
 
-    ytypes = prev.makeExtensible ( _: {
-      inherit (final.lib.libstr.ytypes) Strings;
+    ytypes = prev.makeExtensible ( _: let
+      libyants = callLib "${yants-src}/default.nix";
+    in {
+      inherit (final.libstr.ytypes) Strings;
       Prim = {
-        inherit (final.libyants)
+        inherit (libyants)
           any unit int bool float string path drv function type
         ;
       };
-      Core = removeAttrs final.libyants [
+      Core = removeAttrs libyants [
         "any" "unit" "int" "bool" "float" "string" "path" "drv"
         "function" "type"
       ];

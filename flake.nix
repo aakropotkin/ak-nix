@@ -122,6 +122,8 @@
     } // trivial;
     overlays.default = self.overlays.ak-nix;
 
+    overlays.ytypes = final: prev: lib.ytypes // prev;
+
 
 # ---------------------------------------------------------------------------- #
 

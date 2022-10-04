@@ -1,0 +1,58 @@
+name: All Tests
+on:
+  push:
+    branches:
+      -  main
+    paths:
+      - .github/workflows/all-tests.yml
+      - flake.nix
+      - tests/**
+      - types/**
+      - lib/**
+      - '!**/README*'
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - .github/workflows/all-tests.yml
+      - flake.nix
+      - tests/**
+      - types/**
+      - lib/**
+      - '!**/README*'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  all-tests:
+    runs-on: ubuntu-latest
+    env:
+      SYSTEM: x86_64-linux
+    steps:
+      - uses: cachix/install-nix-action@d64e0553100205688c0fb2fa16edb0fc8663c590
+        with:
+          extra_nix_config: |
+            experimental-features = nix-command flakes
+            substituters = https://cache.nixos.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+            max-jobs = auto
+            cores = 0
+            
+      - name: Setup
+        run: |
+          echo "# ============================================================================ #" >&2;
+          { printf '    bash   version: '; bash   --version|head -n1; } >&2;
+          { printf '    nix    version: '; nix    --version; } >&2;
+          echo "# ---------------------------------------------------------------------------- #" >&2;
+          nix registry add head "github:${{ github.repository }}/$GITHUB_REF";
+
+      - name: All Checks
+        run: |
+          nix flake check --show-trace;
+          nix flake check --show-trace --impure;
+
+      - name: All Tests
+        run: |
+          nix build head#tests --show-trace;
+          nix build head#tests --show-trace --impure;
