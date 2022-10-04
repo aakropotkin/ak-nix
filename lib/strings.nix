@@ -210,6 +210,21 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Pretty Print a date string like the one produce by `fetchTree' for
+  # `lastModifiedDate' to be "<MONTH>/<DATE>/<YEAR> <HR>:<MIN>:<SEC>".
+  ppDate = lmd: let
+    m      = builtins.match "(....)(..)(..)(..)(..)(..)" lmd;
+    year   = builtins.head m;
+    month  = builtins.elemAt m 1;
+    day    = builtins.elemAt m 2;
+    hour   = builtins.elemAt m 3;
+    minute = builtins.elemAt m 4;
+    second = builtins.elemAt m 5;
+  in "${month}/${day}/${year} ${hour}:${minute}:${second}";
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit (lib)
@@ -265,6 +280,7 @@ in {
     removePoundComments
     removePoundDropEmpty
     titleCase
+    ppDate
   ;
 
   inherit ytypes;
