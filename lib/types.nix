@@ -6,7 +6,7 @@
 
 { lib }: let
 
-  yt = lib.libyants;
+  yt = lib.ytypes // lib.ytypes.Prim // lib.ytypes.Core;
 
 # ---------------------------------------------------------------------------- #
 
