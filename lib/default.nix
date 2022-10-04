@@ -192,16 +192,21 @@ let
       matchTag
     ;
 
-    # FIXME: use a real merge like you do for docs.
-    ytypes = ( prev.ytypes or {} ) // {
-      Strings = ( prev.ytypes.Strings or {} ) //
-                final.lib.libstr.ytypes.Strings;
+
+# ---------------------------------------------------------------------------- #
+
+    ytypes = prev.makeExtensible ( _: {
+      inherit (final.lib.libstr.ytypes) Strings;
       Prim = {
         inherit (final.libyants)
           any unit int bool float string path drv function type
         ;
       };
-    };
+      Core = removeAttrs final.libyants [
+        "any" "unit" "int" "bool" "float" "string" "path" "drv"
+        "function" "type"
+      ];
+    } );
 
     __docs = processDocs.docs;
 
