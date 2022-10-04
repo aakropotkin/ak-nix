@@ -35,16 +35,6 @@
       lib.librepl
       builtins
       {
-        flake-registry = let
-          # FIXME: use "import if exists"
-          ureg = lib.importJSON
-                   "${builtins.getEnv "HOME"}/.config/nix/registry.json";
-          nv = { from, to, ... }: {
-            # FIXME: any `from.ref' will bite you
-            name = from.id;
-            value = to;
-          };
-        in builtins.listToAttrs ( map nv ureg.flakes );
         inherit pkgsFor;
         np = pkgsFor;
       }
