@@ -118,7 +118,7 @@
       };
       trivial = tarutils // linkutils // copyutils;
     in {
-      lib = import ./lib { inherit (prev) lib; inherit nix; };
+      lib = import ./lib { inherit (prev) lib; inherit nix yants-src; };
     } // trivial;
     overlays.default = self.overlays.ak-nix;
 
