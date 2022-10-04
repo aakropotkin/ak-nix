@@ -49,8 +49,8 @@ jobs:
 
       - name: All Checks
         run: |
-          nix flake check --show-trace;
-          nix flake check --show-trace --impure;
+          nix flake check head --show-trace;
+          nix flake check head --show-trace --impure;
 
       - name: All Tests
         run: |
