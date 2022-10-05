@@ -13,7 +13,7 @@
 
 # ---------------------------------------------------------------------------- #
 
-  outputs = { self, nixpkgs, nix, yants-src, ... }: let
+  outputs = { self, nixpkgs, nix, yants-src }: let
 
     # An extension to `nixpkgs.lib'.
     lib = import ./lib { inherit nix yants-src; inherit (nixpkgs) lib; };
