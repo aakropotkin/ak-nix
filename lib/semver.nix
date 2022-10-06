@@ -1,3 +1,28 @@
+# ============================================================================ #
+#
+# Semantic version range and comparator evaluator, and SAT predicates.
+#
+# These are divided into three categories of function:
+#   1. typeclass constructors:
+#      - create range objects, and constraint predicate builders.
+#   2. range object and predicate optimization routines:
+#      - detect if ranges are inclusive, exclusive, or overlapping.
+#      - detect if a range constraint is equivalent to a
+#        ( Gt && Lt ) expression.
+#      - short circuit `COND && false', `true && COND',
+#      - these allow us reduce gramatically distinct but semantically
+#        equivalent statements without evaluating the expressions themselves.
+#      - TODO: simplify ( Gt && Lt ) to range object.
+#   3. "satisfies" predicates for all of the various semver operators.
+#      - expressions bottom out to calling these.
+#      - the predicates can be run directly, the evaluator is a layer on top.
+#
+# NOTE: see the test suite for examples of how expressions are constructed.
+#
+# TODO: you can easily drop dependence on `lib', making this standalone.
+#
+# ---------------------------------------------------------------------------- #
+
 { lib }: let
 
 # ---------------------------------------------------------------------------- #
@@ -346,4 +371,12 @@ in {
 
     semverConstRangeEq
   ;
+
 }
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #
