@@ -11,7 +11,7 @@
 , system      ? builtins.currentSystem
 , pkgsFor     ? nixpkgs.legacyPackages.${system}
 , writeText   ? pkgsFor.writeText
-, lib         ? import ../lib { inherit (nixpkgs) lib; }
+, lib         ? import ../../lib { inherit (nixpkgs) lib; }
 , keepFailed  ? false  # Useful if you run the test explicitly.
 , doTrace     ? true   # We want this disabled for `nix flake check'
 , ...
@@ -20,9 +20,7 @@
 # ---------------------------------------------------------------------------- #
 
   # Used to import test files.
-  autoArgs = {
-    inherit lib;
-  } // args;
+  autoArgs = { inherit lib; } // args;
 
   tests = let
     testsFrom = file: let
@@ -32,11 +30,7 @@
     in assert builtins.isAttrs ts;
        ts.tests or ts;
   in builtins.foldl' ( ts: file: ts // ( testsFrom file ) ) {} [
-    ./libsemver
-    ./libfunk
-    ./debug.nix
-    ./strings.nix
-    ./paths.nix
+    ./tests.nix
   ];
 
 # ---------------------------------------------------------------------------- #
@@ -45,7 +39,7 @@
   # is why we have explicitly provided an alternative `check' as a part
   # of `mkCheckerDrv'.
   harness = let
-    name = "all-tests";
+    name = "semver-tests";
   in lib.libdbg.mkTestHarness {
     inherit name keepFailed tests writeText;
     mkCheckerDrv = args: lib.libdbg.mkCheckerDrv {
