@@ -16,7 +16,7 @@ Run all tests:
 This test suite is meant for testing the build infrastructue itself, not the underlying code.
 
 Code such as unit tests and integration tests for JS or TS or Go or whatever the kids are into these days belongs in those projects; not here.
-Any test data you see in this tree that is pulled from real Tulip projects is just being cached to test various parsers, processing pipelines, and builders.
+Any test data you see in this tree that is pulled from real projects is just being cached to test various parsers, processing pipelines, and builders.
 
 * Running Tests
 :PROPERTIES:
@@ -54,15 +54,9 @@ The following forms are equivalent:
 The final example is what allows ~nix build .#tests~ to work.
 
 **** Extra Credit: Nix CLI, default args, and =__functor=
-For context, the Nix CLI commands such as ~nix build~, and any others
-which accept ~nix CMD --arg var 1 ...;~ as flags actually pass those
-to expressions as an attrset ( ~{ val = 1; }~ for example ); this
-is why a =default.nix= with fallback arguments "works", since it gets
-passed ~{}~.
+For context, the Nix CLI commands such as ~nix build~, and any others which accept ~nix CMD --arg var 1 ...;~ as flags actually pass those to expressions as an attrset ( ~{ val = 1; }~ for example ); this is why a =default.nix= with fallback arguments "works", since it gets passed ~{}~.
 
-If you look in the =__functor= definition you'll see
-=builtins.currentSystem= is a fallback; so just when it receives ~{}~ as
-an argument it will fall back to =builtins.currentSystem=.
+If you look in the =__functor= definition you'll see =builtins.currentSystem= is a fallback; so just when it receives ~{}~ as an argument it will fall back to =builtins.currentSystem=.
 
 *** "Building" all tests ( derivation )
 Produces a ~./result~ file with "PASS"/"FAIL" logs.
