@@ -176,9 +176,8 @@
     sr = semverRange' { from = a; to = b; };
   in semverConst {
     op   = "range";
-    arg1 = sr.from;
-    arg2 = sr.to;
-    argc = 2;
+    arg1 = sr;
+    argc = 1;
     sat  = semverSatRange;
   };
 
@@ -292,16 +291,17 @@
 # ---------------------------------------------------------------------------- #
 
   semverConstRangeEq = rc: oc: let
-    isEqRange = ( oc.op == "range" ) &&
-                ( rc.arg1 == oc.arg1 ) && ( rc.arg2l == oc.arg2 );
+    isEqRange = ( oc.op == "range" ) && ( rc.arg1 == oc.arg1 );
     ocAndGeLe = ( oc.op == "and" ) &&
                 ( oc.arg1.op == "ge" ) && ( oc.arg2.op == "le" ) &&
-                ( rc.arg1 == oc.arg1.arg1 ) && ( rc.arg2 == oc.arg2.arg1 );
+                ( rc.arg1.from == oc.arg1.arg1 ) &&
+                ( rc.arg1.to   == oc.arg2.arg1 );
     ocAndLeGe = ( oc.op == "and" ) &&
                 ( oc.arg1.op == "le" ) && ( oc.arg2.op == "ge" ) &&
-                ( rc.arg1 == oc.arg2.arg1 ) && ( rc.arg2 == oc.arg1.arg1 );
+                ( rc.arg1.to == oc.arg2.arg1 ) &&
+                ( rc.arg1.to == oc.arg1.arg1 );
   in assert rc.op == "range";
-      isEqRange || ocAndGeLe || ocAndLeGe;
+     isEqRange || ocAndGeLe || ocAndLeGe;
 
 
 # ---------------------------------------------------------------------------- #
@@ -330,5 +330,20 @@ in {
   ;
   inherit
     semverConst
+    semverConstsEq
+    semverConstRange
+    semverConstExact
+    semverConstTilde
+    semverConstCaret
+    semverConstGt
+    semverConstGe
+    semverConstLt
+    semverConstLe
+    semverConstAnd
+    semverConstOr
+    semverConstAny
+    semverConstFail
+
+    semverConstRangeEq
   ;
 }

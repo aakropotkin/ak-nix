@@ -32,6 +32,22 @@
   ;
   inherit (lib.libsemver)
     semverConst
+    semverConstsEq
+    semverConstRange
+    semverConstExact
+    semverConstTilde
+    semverConstCaret
+    semverConstGt
+    semverConstGe
+    semverConstLt
+    semverConstLe
+
+    semverConstAny
+    semverConstFail
+
+    semverConstAnd
+    semverConstOr
+    semverConstRangeEq
   ;
 
 
@@ -251,6 +267,8 @@
 
 # ---------------------------------------------------------------------------- #
 
+    # Constraint typeclass basics
+
     testSemverConst_pred_0 = {
       expr = ( semverConst { op = "exact"; arg1 = "1.0.0"; } ) "1.0.0";
       expected = true;
@@ -273,6 +291,139 @@
       expr = ( semverConst { op = "range"; } )
              { from = "1.0.0"; to = "1.1.0"; } "1.0.1";
       expected = true;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testSemverConstRange_0 = {
+      expr     = semverConstRange "1.0.0" "0.0.1" "0.5.0";
+      expected = true;
+    };
+
+    testSemverConstExact_0 = {
+      expr     = semverConstExact "1.0.0" "1.0.0";
+      expected = true;
+    };
+
+    testSemverConstTilde_0 = {
+      expr     = semverConstTilde "1.0.0" "1.0.0-pre";
+      expected = true;
+    };
+
+    testSemverConstCaret_0 = {
+      expr     = semverConstCaret "1.2.0" "1.3.0";
+      expected = true;
+    };
+
+    testSemverConstGt_0 = {
+      expr     = semverConstGt "1.2.0" "1.3.0";
+      expected = true;
+    };
+
+    testSemverConstLt_0 = {
+      expr     = semverConstLt "1.2.0" "1.3.0";
+      expected = false;
+    };
+
+    testSemverConstAny_0 = {
+      expr     = semverConstAny "1.2.0";
+      expected = true;
+    };
+
+    testSemverConstFail_0 = {
+      expr     = semverConstFail "1.2.0";
+      expected = false;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testSemverConstAnd_0 = {
+      #  1.0.0 < x < 1.0.2
+      expr = ( semverConstAnd ( semverConstGt "1.0.0" )
+                              ( semverConstLt "1.0.2" )
+             ) "1.0.1";
+      expected = true;
+    };
+
+    testSemverConstAnd_1 = {
+      #  1.0.0 < x < 1.0.2
+      expr = ( semverConstAnd ( semverConstGt "1.0.0" )
+                              ( semverConstLt "1.0.2" )
+             ) "1.0.3";
+      expected = false;
+    };
+
+    testSemverConstAnd_2 = {
+      # Ensure that we short circuit
+      expr = ( semverConstAnd ( semverConstAny // { op = _: throw "FAIL"; } )
+                              ( semverConstGt "1.0.0" )
+             ) "1.0.1";
+      expected = true;
+    };
+
+    testSemverConstAnd_3 = {
+      # Ensure that we short circuit
+      expr = ( semverConstAnd ( semverConstFail // { op = _: throw "FAIL"; } )
+                              ( semverConstFail // { op = _: throw "FAIL"; } )
+             ) "1.0.1";
+      expected = false;
+    };
+
+    testSemverConstOr_0 = {
+      # Ensure that we short circuit
+      expr = ( semverConstOr ( semverConstGt "1.0.0" )
+                             ( semverConstAny // { op = _: throw "FAIL"; } )
+             ) "1.0.1";
+      expected = true;
+    };
+
+    testSemverConstOr_1 = {
+      # Ensure that we short circuit
+      expr = ( semverConstOr ( semverConstAny // { op = _: throw "FAIL"; } )
+                             ( semverConstAny // { op = _: throw "FAIL"; } )
+             ) "1.0.1";
+      expected = true;
+    };
+
+    testSemverConstOr_2 = {
+      # Ensure that we short circuit
+      expr = ( semverConstOr ( semverConstFail // { op = _: throw "FAIL"; } )
+                             ( semverConstGt "1.0.0" )
+             ) "1.0.1";
+      expected = true;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testSemverConstRangeEq_0 = {
+      expr = semverConstRangeEq ( semverConstRange "1.0.0" "1.1.0" )
+                                ( semverConstRange "1.0.0" "1.1.0"  );
+      expected = true;
+    };
+
+    testSemverConstRangeEq_1 = {
+      expr = semverConstRangeEq ( semverConstRange "1.0.0" "1.1.0" )
+                                ( semverConstRange "1.0.0" "1.1.1" );
+      expected = false;
+    };
+
+    testSemverConstRangeEq_2 = {
+      #  <= 1.1.0
+      expr = semverConstRangeEq ( semverConstRange "1.0.0" "1.1.0" )
+                                ( semverConstAnd ( semverConstGe "1.0.0" )
+                                                 ( semverConstLe "1.1.0" ) );
+      expected = true;
+    };
+
+    testSemverConstRangeEq_3 = {
+      #  < 1.1.0
+      expr = semverConstRangeEq ( semverConstRange "1.0.0" "1.1.0" )
+                                ( semverConstAnd ( semverConstGe "1.0.0" )
+                                                 ( semverConstLt "1.1.0" ) );
+      expected = false;
     };
 
 
