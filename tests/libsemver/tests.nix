@@ -129,6 +129,40 @@
 
 # ---------------------------------------------------------------------------- #
 
+    testIntersectRanges_0 = {
+      expr = semverIntersectRanges' { from = "1.0.0"; to = "1.0.2"; }
+                                    { from = "1.0.0"; to = "1.0.3"; };
+      expected = { from = "1.0.0"; to = "1.0.2"; };
+    };
+
+    testIntersectRanges_1 = {
+      expr = semverIntersectRanges' { from = "1.0.0"; to = "1.0.2"; }
+                                    { from = "1.0.1"; to = "1.0.3"; };
+      expected = { from = "1.0.1"; to = "1.0.2"; };
+    };
+
+    testIntersectRanges_2 = {
+      expr = semverIntersectRanges' { from = "0.9.9"; to = "1.0.2"; }
+                                    { from = "1.0.0"; to = "1.0.3"; };
+      expected = { from = "1.0.0"; to = "1.0.2"; };
+    };
+
+    testIntersectRanges_3 = {
+      expr = semverIntersectRanges' { from = "1.0.0"; to = "1.0.4"; }
+                                    { from = "1.0.1"; to = "1.0.3"; };
+      expected = { from = "1.0.1"; to = "1.0.3"; };
+    };
+
+    testIntersectRanges_4 = {
+      expr = semverIntersectRanges' { from = "1.0.1"; to = "1.0.3"; }
+                                    { from = "1.0.0"; to = "1.0.4"; };
+      expected = { from = "1.0.1"; to = "1.0.3"; };
+    };
+
+
+
+# ---------------------------------------------------------------------------- #
+
   };  # End Tests
 
 
