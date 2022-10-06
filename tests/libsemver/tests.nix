@@ -160,6 +160,44 @@
     };
 
 
+# ---------------------------------------------------------------------------- #
+
+    testRangesOverlap_0 = {
+      expr = semverRangesOverlap { from = "1.0.0"; to = "1.0.2"; }
+                                 { from = "1.0.0"; to = "1.0.3"; };
+      expected = true;
+    };
+
+    testRangesOverlap_1 = {
+      expr = semverRangesOverlap { from = "1.0.0"; to = "1.0.2"; }
+                                 { from = "1.0.1"; to = "1.0.3"; };
+      expected = true;
+    };
+
+    testRangesOverlap_2 = {
+      expr = semverRangesOverlap { from = "0.9.9"; to = "1.0.2"; }
+                                 { from = "1.0.0"; to = "1.0.3"; };
+      expected = true;
+    };
+
+    testRangesOverlap_3 = {
+      expr = semverRangesOverlap { from = "1.0.0"; to = "1.0.4"; }
+                                 { from = "1.0.1"; to = "1.0.3"; };
+      expected = true;
+    };
+
+    testRangesOverlap_4 = {
+      expr = semverRangesOverlap { from = "2.0.0"; to = "2.0.1"; }
+                                 { from = "1.0.0"; to = "1.0.1"; };
+
+      expected = false;
+    };
+
+    testRangesOverlap_5 = {
+      expr = semverRangesOverlap { from = "1.0.0"; to = "1.0.1"; }
+                                 { from = "2.0.0"; to = "2.0.1"; };
+      expected = false;
+    };
 
 # ---------------------------------------------------------------------------- #
 
