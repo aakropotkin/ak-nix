@@ -43,25 +43,31 @@
 # ---------------------------------------------------------------------------- #
 
   semverSatRange = semverInRange;
+
   semverSatExact = want: have: ( compareVersions want have ) == 0;
+
   semverSatTilde = want: have: let
     w' = lib.yank "([^-]+)-.*" want;
     w  = if w' == null then want else w';
     h' = lib.yank "([^-]+)-.*" have;
     h  = if h' == null then have else h';
   in ( compareVersions w h ) == 0;
+
+  # FIXME: `0.x' and `0.0.x' are special cases.
   semverSatCaret = want: have: let
     gt = ( compareVersions want have ) <= 0;
     sm = ( lib.versions.major want ) == ( lib.versions.major have );
   in gt && sm;
+
   semverSatGt  = want: have: ( compareVersions want have ) < 0;
   semverSatGe  = want: have: ( compareVersions want have ) <= 0;
   semverSatLt  = want: have: 0 < ( compareVersions want have );
   semverSatLe  = want: have: 0 <= ( compareVersions want have );
+
   # FIXME: Join/Intersect ranges
-  semverSatAnd = cond1: cond2: have: ( cond1 have ) && ( cond2 have );
-  semverSatOr  = cond1: cond2: have: ( cond1 have ) || ( cond2 have );
-  semverSatAny = _: true;
+  semverSatAnd  = cond1: cond2: have: ( cond1 have ) && ( cond2 have );
+  semverSatOr   = cond1: cond2: have: ( cond1 have ) || ( cond2 have );
+  semverSatAny  = _: true;
   semverSatFail = _: false;
 
 
@@ -262,7 +268,7 @@
        #if hasSame then const1          else
        standard;
 
-  # FIXME: check for range constessions which can be merged.
+  # FIXME: check for range consts which can be merged.
   semverConstOr = const1: const2:
     assert ( const1._type == "semverConst" );
     assert ( const2._type == "semverConst" ); let

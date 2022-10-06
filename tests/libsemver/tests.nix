@@ -226,6 +226,55 @@
     };
 
 
+# ---------------------------------------------------------------------------- #
+
+    testSemverSatCaret_0 = {
+      expr = semverSatCaret "1.1.0" "1.0.0";
+      expected = false;
+    };
+
+    testSemverSatCaret_1 = {
+      expr = semverSatCaret "1.1.0" "1.1.0";
+      expected = true;
+    };
+
+    testSemverSatCaret_2 = {
+      expr = semverSatCaret "1.1.0" "1.2.0";
+      expected = true;
+    };
+
+    testSemverSatCaret_3 = {
+      expr = semverSatCaret "1.1.0" "2.0.0";
+      expected = false;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testSemverConst_pred_0 = {
+      expr = ( semverConst { op = "exact"; arg1 = "1.0.0"; } ) "1.0.0";
+      expected = true;
+    };
+
+    testSemverConst_pred_1 = {
+      expr = ( semverConst { op = "exact"; } ) "1.0.0" "1.0.1";
+      expected = false;
+    };
+
+    testSemverConst_bin_0 = {
+      expr = ( semverConst {
+        op = "range";
+        arg1 = { from = "1.0.0"; to = "1.1.0"; };
+      } ) "1.0.1";
+      expected = true;
+    };
+
+    testSemverConst_bin_1 = {
+      expr = ( semverConst { op = "range"; } )
+             { from = "1.0.0"; to = "1.1.0"; } "1.0.1";
+      expected = true;
+    };
+
 
 # ---------------------------------------------------------------------------- #
 
