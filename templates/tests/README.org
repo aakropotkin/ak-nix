@@ -142,7 +142,8 @@ This might seem like a mess up here at the top level, but really the flake entry
 "Legacy" isn't to be read as a negative here, it just refers to the "classic" Nix CLI ( no flakes ) that runs without eval caches.
 This option is nice for when we are doing active development and don't actually care if the results are cached.
 
-To run these from the CLI just add the ~nix CMD -f .;~ flag, indicating to nix to evalue ~./default.nix~ instead of search for a =flake.nix= file. You can still target specific attributes as we do with the flake, but you don't need to specify your system, and you don't need the =#= separator.
+To run these from the CLI just add the ~nix CMD -f .;~ flag, indicating to nix to evalue ~./default.nix~ instead of search for a =flake.nix= file.
+You can still target specific attributes as we do with the flake, but you don't need to specify your system, and you don't need the =#= separator.
 
 *** Run a subset of tests
 Hop into the ~tests/*~ dirs and run with subsets of tests.
@@ -174,8 +175,10 @@ Since you've already seen this example I'll spice it up a bit and show that you 
 
 
 * Writing Tests
-The short story is that =default.nix= files exist to pass around imports and define the test runners. These utilities are provided by the flake =ak-nix=, but honestly it's honestly just a glorified "does ~a == b~?" machine.
-You only need to touch them when you're trying to pass in newly written expressions/pacakges to test suites. You can plug in alternative test driver routines to print out extra info, or pretty print if you want.
+The short story is that =default.nix= files exist to pass around imports and define the test runners.
+These utilities are provided by the flake =ak-nix=, but honestly it's honestly just a glorified "does ~a == b~?" machine.
+You only need to touch them when you're trying to pass in newly written expressions/pacakges to test suites.
+You can plug in alternative test driver routines to print out extra info, or pretty print if you want.
 
 The actual tests all live in =tests.nix= files and are good old fashioned "expected result" and "expression" pairs.
 
