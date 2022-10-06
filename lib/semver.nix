@@ -66,6 +66,7 @@
 # ---------------------------------------------------------------------------- #
 
   semverOpAliases = {
+    fail  = "fail";
     range = "range";
     caret = "caret";
     "or"  = "or";
@@ -76,7 +77,6 @@
     ge    = "ge";
     gt    = "gt";
     any   = "any";
-    fail  = "fail";
     " - " = "range";
     "||"  = "or";
     "&&"  = "and";
