@@ -210,6 +210,25 @@
 
 # ---------------------------------------------------------------------------- #
 
+    testSemverSatTilde_0 = {
+      expr = semverSatTilde "1.0.0" "1.0.0-0";
+      expected = true;
+    };
+
+    testSemverSatTilde_1 = {
+      expr = semverSatTilde "1.0.0" "1.0.0-pre";
+      expected = true;
+    };
+
+    testSemverSatTilde_2 = {
+      expr = semverSatTilde "1.0.0" "2.0.0-pre";
+      expected = false;
+    };
+
+
+
+# ---------------------------------------------------------------------------- #
+
   };  # End Tests
 
 

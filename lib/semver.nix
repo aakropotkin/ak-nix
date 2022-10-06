@@ -46,8 +46,10 @@
   semverSatExact = want: have: ( compareVersions want have ) == 0;
   semverSatTilde = want: have: let
     w' = lib.yank "([^-]+)-.*" want;
+    w  = if w' == null then want else w';
     h' = lib.yank "([^-]+)-.*" have;
-  in ( compareVersions w' h' ) == 0;
+    h  = if h' == null then have else h';
+  in ( compareVersions w h ) == 0;
   semverSatCaret = want: have: let
     gt = ( compareVersions want have ) <= 0;
     sm = ( lib.versions.major want ) == ( lib.versions.major have );
