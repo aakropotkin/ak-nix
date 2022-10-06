@@ -37,6 +37,10 @@
 
 # ---------------------------------------------------------------------------- #
 
+
+
+# ---------------------------------------------------------------------------- #
+
   tests = {
 
 # ---------------------------------------------------------------------------- #
@@ -87,6 +91,39 @@
     testSemverInRange_4 = {
       expr     = semverInRange { from = "1.0.0"; to = "1.0.2"; } "0.1.0";
       expected = false;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testJoinRanges_0 = {
+      expr = semverJoinRanges' { from = "1.0.0"; to = "1.0.2"; }
+                               { from = "1.0.0"; to = "1.0.3"; };
+      expected = { from = "1.0.0"; to = "1.0.3"; };
+    };
+
+    testJoinRanges_1 = {
+      expr = semverJoinRanges' { from = "1.0.0"; to = "1.0.2"; }
+                               { from = "1.0.1"; to = "1.0.3"; };
+      expected = { from = "1.0.0"; to = "1.0.3"; };
+    };
+
+    testJoinRanges_2 = {
+      expr = semverJoinRanges' { from = "0.9.9"; to = "1.0.2"; }
+                               { from = "1.0.0"; to = "1.0.3"; };
+      expected = { from = "0.9.9"; to = "1.0.3"; };
+    };
+
+    testJoinRanges_3 = {
+      expr = semverJoinRanges' { from = "1.0.0"; to = "1.0.4"; }
+                               { from = "1.0.1"; to = "1.0.3"; };
+      expected = { from = "1.0.0"; to = "1.0.4"; };
+    };
+
+    testJoinRanges_4 = {
+      expr = semverJoinRanges' { from = "1.0.1"; to = "1.0.3"; }
+                               { from = "1.0.0"; to = "1.0.4"; };
+      expected = { from = "1.0.0"; to = "1.0.4"; };
     };
 
 
