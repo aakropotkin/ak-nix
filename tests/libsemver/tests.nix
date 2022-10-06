@@ -9,6 +9,9 @@
 
 # ---------------------------------------------------------------------------- #
 
+  inherit (builtins)
+    compareVersions
+  ;
   inherit (lib.libsemver)
     semverRange
     semverInRange
@@ -54,6 +57,69 @@
 # ---------------------------------------------------------------------------- #
 
   tests = {
+
+# ---------------------------------------------------------------------------- #
+
+    testCompareVersions_0 = {
+      expr     = compareVersions "0.0.1" "0.0.1";
+      expected = 0;
+    };
+
+    testCompareVersions_1 = {
+      expr     = compareVersions "0.0.1" "0.0.0";
+      expected = 1;
+    };
+
+    testCompareVersions_2 = {
+      expr     = compareVersions "0.0.0" "0.0.1";
+      expected = -1;
+    };
+
+    testCompareVersions_3 = {
+      expr     = compareVersions "0.0.0-a" "0.0.0-a";
+      expected = 0;
+    };
+
+    # Any pre-release tag is considered "lower" than the same version untagged.
+    testCompareVersions_4 = {
+      expr     = compareVersions "0.0.0" "0.0.0-0";
+      expected = -1;
+    };
+
+    # Version number still trumps with a pre-tag.
+    testCompareVersions_5 = {
+      expr     = compareVersions "0.0.1-0" "0.0.0";
+      expected = 1;
+    };
+
+    testCompareVersions_6 = {
+      expr     = compareVersions "0.0.0-0" "0.0.0-0";
+      expected = 0;
+    };
+
+    # XXX: Pay attention here.
+    # Pre-release tags are compared alphabetically, not numerically!
+    # This means "x.y.z-0" > "x.y.z-1" which is not what you might expect.
+    testCompareVersions_7 = {
+      expr     = compareVersions "0.0.0-1" "0.0.0-0";
+      expected = 1;
+    };
+
+    testCompareVersions_8 = {
+      expr     = compareVersions "0.0.0-0" "0.0.0-1";
+      expected = -1;
+    };
+
+    testCompareVersions_9 = {
+      expr     = compareVersions "0.0.0-a" "0.0.0-b";
+      expected = -1;
+    };
+
+    testCompareVersions_10 = {
+      expr     = compareVersions "0.0.0-b" "0.0.0-a";
+      expected = 1;
+    };
+
 
 # ---------------------------------------------------------------------------- #
 
