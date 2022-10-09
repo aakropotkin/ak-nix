@@ -197,6 +197,7 @@ let
     ytypes = prev.makeExtensible ( _: let
       libyants = callLib "${yants-src}/default.nix";
     in {
+      inherit (final.libtypes.ytypes) Typeclasses;
       inherit (final.libstr.ytypes) Strings;
       Prim = {
         inherit (libyants)

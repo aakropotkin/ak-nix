@@ -83,9 +83,7 @@
 
 # ---------------------------------------------------------------------------- #
 
-  Prim = let
-    yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
-  in {
+  Prim = {
     nil = yt.Prim.unit // {
       name = "nil";
       checkType = v: {
@@ -95,6 +93,33 @@
     };
   };
 
+  Typeclasses = {
+
+    stringable = yt.Prim.string // {
+      name = "stringable";
+      checkType = v: {
+        ok  = ( builtins.isString v ) ||
+              ( ( v ? __toString ) && ( builtins.isFunction v.__toString ) );
+        err = "expected a string, or an attrset with the functor '__toString', "
+              + "but value is of type '${builtins.typeOf v}'";
+      };
+    };
+
+    serializable = yt.Prim.unit // {
+      name = "serializable";
+      checkType = v: let
+        errGeneric = "expected an attrset with the functor '__serial', but ";
+        errType    = "value is of type '${builtins.typeOf v}'";
+        errNotFn   = "'__serial' is of type '${builtins.typeOf v.__serial}'";
+      in {
+        ok  = ( builtins.isAttrs v ) &&
+              ( ( v ? __serial ) && ( ( lib.isFunction v.__serial ) ) );
+        err = errGeneric + ( if v ? __serial then errNotFn else errType );
+      };
+    };
+
+  };  # End Typeclasses
+
 
 # ---------------------------------------------------------------------------- #
 
@@ -103,7 +128,7 @@ in {
     defXTypes
     defPrettyXFns
   ;
-  ytypes = { inherit Prim; };
+  ytypes = { inherit Prim Typeclasses; };
 }
 
 # ---------------------------------------------------------------------------- #
