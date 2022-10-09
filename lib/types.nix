@@ -118,6 +118,19 @@
       };
     };
 
+    functor = yt.Prim.function // {
+      name      = "functor";
+      checkType = v: let
+        errGeneric = "expected an attrset with the functor '__functor', but ";
+        errType    = "value is of type '${builtins.typeOf v}'";
+        errNotFn   = "'__functor' is of type '${builtins.typeOf v.__functor}'";
+      in {
+        ok  = ( builtins.isAttrs v ) &&
+              ( ( v ? __functor ) && ( ( lib.isFunction v.__functor ) ) );
+        err = errGeneric + ( if v ? __functor then errNotFn else errType );
+      };
+    };
+
   };  # End Typeclasses
 
 
