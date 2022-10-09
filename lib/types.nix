@@ -50,6 +50,28 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Creates an extended `sum' type which carries a `case' statement matcher
+  # keyed by types.
+  #
+  # Example:
+  # let
+  #   boolOrStringly = sumCase "boolOrStringly" {
+  #     inherit bool;
+  #     Stringly = string;
+  #   };
+  #   m = { bool = x: if x then 4 else 20; Stringly = x: "${x}: it"; };
+  # in [
+  #   ( boolOrStringly.case "blaze" m )
+  #   ( map ( boolOrStringly.switch m ) [true "loud" false] )
+  # ];
+  # => [ "blaze: it" [4 "loud" 20]]
+  sumCase = name: types: let
+    self = ( yt.sum name types ) // {
+      discr  = discrTypes types;
+      case   = val: self.match ( self.discr val );
+      switch = matcher: val: self.match ( self.discr val ) matcher;
+    };
+  in self;
 
 
 # ---------------------------------------------------------------------------- #
@@ -103,32 +125,6 @@
     };
 
   };  # End Typeclasses
-
-
-# ---------------------------------------------------------------------------- #
-
-  # Creates an extended `sum' type which carries a `case' statement matcher
-  # keyed by types.
-  #
-  # Example:
-  # let
-  #   boolOrStringly = sumCase "boolOrStringly" {
-  #     inherit bool;
-  #     Stringly = string;
-  #   };
-  #   m = { bool = x: if x then 4 else 20; Stringly = x: "${x}: it"; };
-  # in [
-  #   ( boolOrStringly.case "blaze" m )
-  #   ( map ( boolOrStringly.switch m ) [true "loud" false] )
-  # ];
-  # => [ "blaze: it" [4 "loud" 20]]
-  sumCase = name: types: let
-    self = ( yt.sum name types ) // {
-      disc = discrTypes types;
-      case = val: self.match ( self.disc val );
-      switch = matcher: val: self.match ( self.disc val ) matcher;
-    };
-  in self;
 
 
 # ---------------------------------------------------------------------------- #
