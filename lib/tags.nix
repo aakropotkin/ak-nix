@@ -74,10 +74,9 @@
   tagValue = tag: (assertIsTag tag).val;
 
   # like `verifyTag`, but throws the error message if it is not a tag.
-  assertIsTag = tag:
-    let res = verifyTag tag; in
-    assert res.isTag || throw res.errmsg;
-    { inherit (res) name val; };
+  assertIsTag = tag: let
+    res = verifyTag tag;
+  in if res.isTag then { inherit (res) name val; } else throw res.errmsg;
 
 
 # ---------------------------------------------------------------------------- #
@@ -101,24 +100,22 @@
   #     { negative = i: i < 0; }
   #   ] 1
   #   => { smol = 1; }
-  discrDef = defTag: fs: v:
-    let
-      res = lib.findFirst
-        (t: t.val v)
-        null
-        (map assertIsTag fs);
-    in
-    if res == null
-    then { ${defTag} = v; }
-    else { ${res.name} = v; };
+  discrDef = defTag: fs: v: let
+    res = lib.findFirst ( t: t.val v ) null ( map assertIsTag fs );
+  in if res == null then { ${defTag} = v; } else { ${res.name} = v; };
 
-  # Like `discrDef`, but fail if there is no match.
+  # Like `discrDef', but fail if there is no match.
+  # NOTE: the original routine used `res != null', however this is a bug.
+  # Because `null' is used as a key as `let k = null; in { ${k} = 1; }' you
+  # get back an empty set `{}'.
+  # I was surprised that this didn't throw an error honestly.
+  # XXX: if this ever misbehaves the default should just be swapped for a magic
+  # reserved keyword like `"_%FAIL%_"' to avoid undefined behavior.
   discr = fs: v: let
     res = discrDef null fs v;
     msg = "tag.discr: No predicate found that matches " +
           ( lib.generators.toPretty {} v );
-  in assert lib.assertMsg (res != null) msg;
-     res;
+  in if res != {} then res else throw msg;
 
 
 # ---------------------------------------------------------------------------- #
@@ -150,7 +147,7 @@
     in assert
     let len = builtins.length cases; in
     lib.assertMsg (len == 1)
-      ("match: an instance of a sum is an attrset "
+      ("match: an instance of a sum in an attrset "
         + "with exactly one element, yours had ${toString len}"
         + ", namely: ${lib.generators.toPretty {} cases}");
     let case = builtins.head cases;

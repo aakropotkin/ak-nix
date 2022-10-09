@@ -10,75 +10,46 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # Add type chekcers to converters for type classes.
-  # Fields of `X' take the form `X.<from>.<to>', e.g.
-  #   ytypes = { string, foo, ... };
-  #   X.string.this : parse string to `foo' type.
-  #   X.this.attrs  : serialize `foo' type.
-  #   X.tag.this    : extract `{ foo = ...; }' tag ( see `./tags.nix' ).
+  # Create a `discrDef' tagger for a group of types.
+  # ( [ytype] | {tag: ytype} ) -> string -> value -> {tag: value}
   #
-  # Example:
-  # { lib }: let
-  #   ytypes = {
-  #     inherit (lib.libyants) string;
-  #     foo = foo = with lib.libyants;
-  #       restrict "foo" ( lib.test ".*[fF]oo.*" ) string;
-  #   };
-  #   X = ( defXTypes ytypes ) {
-  #     string.foo = str: let
-  #       f = lib.yank ".*([Ff]oo).*" str;
-  #     in if f == null then "NOPE" else "<${f}>";
-  #   };
-  # in map builtins.tryEval [
-  #      ( X.string.foo "barFooBaz" )
-  #      ( X.string.foo "quux" )
-  #    ]
-  #   ==> [{ success = true;  value = "<Foo>"; }
-  #        { success = false; value = false; }]
-  defXTypes = ytypes: X: let
-    defX = from: to: yt.defun [ytypes.${from} ytypes.${to}] X.${from}.${to};
-    proc = { acc, from }: to:
-      { acc = acc // { ${to} = ( defX from to ); }; inherit from; };
-    forF = from: xts: let
-      tos = builtins.attrNames xts;
-    in ( builtins.foldl' proc { acc = {}; inherit from; } tos ).acc;
-  in builtins.mapAttrs forF X;
+  # Examples:
+  #   let dt = discrDefTypes [yt.bool yt.string] "unknown";
+  #   in map dt ["hey" false 3]
+  #   => [{ string = "hey" } { bool = false } { unknown = 3 }]
+  #
+  #   let dt = discrDefTypes { Buul = yt.bool; Strang = yt.string; } "dunno";
+  #   in map dt ["hey" false 3]
+  #   => [{ Strang = "hey" } { Buul = false } { dunno = 3 }]
+  discrDefTypes = types: let
+    fromList  = map ( { name, check, ... }: { ${name} = check; } ) types;
+    fromAttrs = map ( tag: { ${tag} = types.${tag}.check; } )
+                    ( builtins.attrNames types );
+    fs = if builtins.isList types then fromList else fromAttrs;
+  in defTag: ( lib.libtag.discrDef defTag fs );
+
+
+  # Same as above, but no default tag.
+  # Failing to match throws an error.
+  #
+  # Examples:
+  #   let dt = discrTypes [yt.bool yt.string];
+  #   in map dt ["hey" false 3]
+  #   => [{ string = "hey" } { bool = false }];
+  #
+  #   let dt = discrTypes { Buul = yt.bool; Strang = yt.string; };
+  #   in map dt ["hey" false 3]
+  #   => [{ Strang = "hey" } { Buul = false } error: ...]
+  discrTypes = types: let
+    fromList  = map ( { name, check, ... }: { ${name} = check; } ) types;
+    fromAttrs = map ( tag: { ${tag} = types.${tag}.check; } )
+                    ( builtins.attrNames types );
+    fs = if builtins.isList types then fromList else fromAttrs;
+  in lib.libtag.discr fs;
 
 
 # ---------------------------------------------------------------------------- #
 
-  # As above, but create a single set of "pretty" names as:
-  # ytypes = { this.name = "bar"; ... };
-  # X      = { this.foo = ...; any.this = ...; quux.this = ...; }
-  #   ==> { toFoo = ...; coerceBar = ...; fromQuux = ...; }
-  #
-  # NOTE: any appearance of `this' in attr names is substituted with
-  # `ytypes.this.name', so be sure that's set.
-  # NOTE: certain converters are skipped, for example `this.any', since it is
-  # kind of non-sensical.
-  # The real use case here is to generate `(to|from)(String|Attrs)' and
-  # `coerce<NAME>' functions.
-  defPrettyXFns = ytypes: X: let
-    name = ytypes.this.name;
-    tc = from: to: let
-      tts = if from == "any" then "coerce${lib.libstr.titleCase name}" else
-            "from${lib.libstr.titleCase from}";
-      fts = if to == "any" then null else "to${lib.libstr.titleCase to}";
-    in if from == "this" then fts else
-       if to   == "this" then tts else null;
-    defPrettyX = from: to: let
-      pn = tc from to;
-    in if pn == null then {} else {
-      ${pn} = yt.defun [ytypes.${from} ytypes.${to}] X.${from}.${to};
-    };
-    proc = { acc, from }: to: {
-      inherit from; acc = acc // ( defPrettyX from to );
-    };
-    forF = from: xts: let
-      tos = builtins.attrNames xts;
-    in ( builtins.foldl' proc { acc = {}; inherit from; } tos ).acc;
-    froms = builtins.attrNames X;
-  in builtins.foldl' ( acc: from: acc // ( forF from X.${from} ) ) {} froms;
 
 
 # ---------------------------------------------------------------------------- #
@@ -136,12 +107,38 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Creates an extended `sum' type which carries a `case' statement matcher
+  # keyed by types.
+  #
+  # Example:
+  # let
+  #   boolOrStringly = sumCase "boolOrStringly" {
+  #     inherit bool;
+  #     Stringly = string;
+  #   };
+  #   m = { bool = x: if x then 4 else 20; Stringly = x: "${x}: it"; };
+  # in boolOrStringly.case "blaze" m;
+  # => "blaze: it"
+  sumCase = name: types: let
+    self = ( yt.sum name types ) // {
+      disc = discrTypes types;
+      case = val: self.match ( self.disc val );
+    };
+  in self;
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
-    defXTypes
-    defPrettyXFns
+    discrDefTypes
+    discrTypes
+    sumCase
   ;
-  ytypes = { inherit Prim Typeclasses; };
+  ytypes = {
+    inherit Prim Typeclasses;
+    inherit sumCase;
+  };
 }
 
 # ---------------------------------------------------------------------------- #
