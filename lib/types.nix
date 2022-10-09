@@ -83,11 +83,27 @@
 
 # ---------------------------------------------------------------------------- #
 
+  Prim = let
+    yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
+  in {
+    nil = yt.Prim.unit // {
+      name = "nil";
+      checkType = v: {
+        ok  = v == null;
+        err = "expected 'null', but value is of type '${builtins.typeOf v}'";
+      };
+    };
+  };
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     defXTypes
     defPrettyXFns
   ;
+  ytypes = { inherit Prim; };
 }
 
 # ---------------------------------------------------------------------------- #

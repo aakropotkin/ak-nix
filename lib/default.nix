@@ -202,7 +202,7 @@ let
         inherit (libyants)
           any unit int bool float string path drv function type
         ;
-      };
+      } // final.libtypes.ytypes.Prim;
       Core = removeAttrs libyants [
         "any" "unit" "int" "bool" "float" "string" "path" "drv"
         "function" "type"
