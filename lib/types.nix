@@ -64,7 +64,7 @@
   #   ( boolOrStringly.case "blaze" m )
   #   ( map ( boolOrStringly.switch m ) [true "loud" false] )
   # ];
-  # => [ "blaze: it" [4 "loud" 20]]
+  # => [ "blaze: it" [4 "loud: it" 20]]
   sumCase = name: types: let
     self = ( yt.sum name types ) // {
       discr  = discrTypes types;
@@ -85,6 +85,9 @@
       };
     };
   };
+
+
+# ---------------------------------------------------------------------------- #
 
   Typeclasses = {
 
