@@ -14,8 +14,9 @@
   base32Chars' = "0123456789abcdfghijklmnpqrsvwxyz";
   base32Chars  = "0123456789abcdfghijklmnpqrsvwxyzABCDFGHIJKLMNPQRSVWXYZ";
 
-  base64Chars' = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/";
-  base64Chars  = "ABCDFGHIJKLMNPQRSVWXYZabcdfghijklmnpqrsvwxyz0123456789+/=";
+  # NOTE: these include [EOUT]
+  base64Chars' = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  base64Chars  = "ABCDEFGHIJKLMNPOQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
   isBase16Str = ( lib.test "[${base16Chars}]+" );
   isBase32Str = ( lib.test "[${base32Chars}]+" );

@@ -198,7 +198,7 @@ let
       libyants = callLib "${yants-src}/default.nix";
     in {
       inherit (final.libtypes.ytypes) Typeclasses;
-      inherit (final.libstr.ytypes) Strings;
+      Strings = final.libstr.ytypes.Strings // final.libenc.ytypes.Strings;
       Prim = {
         inherit (libyants)
           any unit int bool float string path drv function type

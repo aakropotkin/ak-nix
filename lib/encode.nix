@@ -1,5 +1,7 @@
 { lib }: let
 
+  yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
+
   inherit (lib.libstr)
     base16Chars'
     base16Chars
@@ -278,6 +280,23 @@
 
 # ---------------------------------------------------------------------------- #
 
+  ytypes.Strings = {
+    sha1_sri = let
+      cond = lib.test "sha1-[${base64Chars'}]+={0,2}";
+    in yt.restrict "sha1:sri" cond yt.string;
+    # sha256-A3eLarlqN1XPBYBcFPY1yUpfxdhJKvDBjN+vsOAmOoc=
+    sha256_sri = let
+      cond = lib.test "sha256-[${base64Chars'}]+={0,2}";
+    in yt.restrict "sha256:sri" cond yt.string;
+    sha512_sri = let
+      cond = lib.test "sha512-[${base64Chars'}]+={0,2}";
+    in yt.restrict "sha512:sri" cond yt.string;
+  };
+
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit
@@ -292,6 +311,7 @@ in {
     algoFromB16Len
     hexToSri
     sriFile sri256File sri512File
+    ytypes
   ;
 
 }
