@@ -86,6 +86,11 @@ let
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
 
+    inherit (final.libfilt)
+      genericFilt
+      nixFilt
+    ;
+
     inherit (final.libattrs)
       eachSystemMap
       eachDefaultSystemMap
