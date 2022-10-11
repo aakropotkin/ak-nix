@@ -81,6 +81,7 @@ let
     libflake  = callLibs [./flake-registry.nix ./flake-utils.nix];
     libtag    = callLib  ./tags.nix;
     libtypes  = callLib  ./types.nix;
+    libfilt   = callLib  ./filt.nix;
 
     # Avoid overloading the name `fetchurl' even more than it already is.
     fetchurlDrv = import ./fetchurl.nix;
