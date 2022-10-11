@@ -15,8 +15,18 @@
   tests = with libpath; {
 
     testIsCoercibleToPath = {
-      expr = map isCoercibleToPath ["" ./.];
-      expected = [true true];
+      expr = builtins.mapAttrs ( _: isCoercibleToPath ) {
+        emptyString = "";
+        dot         = ".";
+        pwdPath     = ./.;
+        setOutPath  = { outPath = ""; };
+      };
+      expected = {
+        emptyString = false;
+        dot         = true;
+        pwdPath     = true;
+        setOutPath  = true;
+      };
     };
 
     testExtSuffix = {

@@ -1,26 +1,37 @@
-{ lib }:
-let
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
+
+{ lib }: let
+
   inherit (builtins) isString typeOf;
   inherit (builtins) readDir isPath pathExists;
+  yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
+
+# ---------------------------------------------------------------------------- #
+
+  strp = yt.Typeclasses.stringy.check;
 
 # ---------------------------------------------------------------------------- #
 
   __doc__isCoercibleToPath = ''
     Can `x' be coerced to a Path?
   '';
-  isCoercibleToPath = x:
-    ( isPath x ) || ( isString x ) || ( lib.isDerivation x );
+  isCoercibleToPath = yt.Typeclasses.pathlike.check;
 
 
   __doc__coercePath = ''
     Force a path-like `x' to be a Path.
+    NOTE: unlike the `pathlike' Typeclass we don't accept 'fetchTree' args.
   '';
   coercePath = x:
     if isPath x then x else
-    if lib.isDerivation x then x.outPath else
-    if ( ! isString x ) then
-      throw "Cannot coerce a path from type: ${typeOf x}" else
-    if isAbspath x then ( /. + x ) else ( ./. + "/${x}" );
+    if x ? outPath then x.outPath else
+    if ! ( strp x ) then
+      throw "Cannot coerce a path from type: ${builtins.typeOf x}" else
+    if isAbspath x then /. + "${x}" else ./. + "/${toString x}";
 
 
 # ---------------------------------------------------------------------------- #
@@ -31,9 +42,10 @@ let
     for whether or not a relative path-like (string) needs to be resolved.
   '';
   isAbspath = x:
-    if isPath x then true else if ( ! isString x ) then
-    throw "Cannot get absolute path of type: ${typeOf x}" else
-    ( x != "" ) && ( builtins.substring 0 1 x ) == "/";
+    if isPath x then true else
+    if ! ( strp x ) then
+      throw "Cannot get absolute path of type: ${builtins.typeOf x}"
+    else ( x != "" ) && ( ( builtins.substring 0 1 x ) == "/" );
 
 
   __doc__asAbspath = ''
@@ -41,7 +53,7 @@ let
   '';
   asAbspath = path: let
     str = toString path;
-  in if ( isAbspath str ) then str else ( ./. + ( "/" + str ) );
+  in if isAbspath str then str else ./. + ( "/" + str );
 
 
 # ---------------------------------------------------------------------------- #
@@ -263,3 +275,10 @@ in {
   };
 
 }
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

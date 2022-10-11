@@ -83,6 +83,7 @@
         ok  = v == null;
         err = "expected 'null', but value is of type '${builtins.typeOf v}'";
       };
+      check = v: ( Prim.nil.checkType v ).ok;
     };
   };
 
@@ -91,14 +92,44 @@
 
   Typeclasses = {
 
-    stringable = yt.Prim.string // {
-      name = "stringable";
+    pathlike = yt.Prim.unit // {
+      name = "pathlike";
+      checkType = v: let
+        mt = {
+          string = lib.test "[./].*";
+          path   = _: true;
+          set    = x:
+            ( x ? outPath ) || 
+            ( ( x.type or x._type or null ) == "path" ) ||
+            ( ( x ? __toString ) && ( mt.string ( toString x ) ) );
+        };
+        bt   = builtins.typeOf v;
+        okBt = builtins.elem bt ( builtins.attrNames mt );
+        me   = {
+          string = "expected a pathlike type, and while value is a string - "
+                   + "it must begin with '.' or '/', but we got '${v}'";
+          set = "expected a pathlike type, and while an attrset can be " +
+                "pathlike - it must set 'outPath' or '__toString', but" +
+                " value was: " + ( lib.generators.toPretty {} v );
+        };
+      in {
+        ok  = okBt && ( mt.${bt} v );
+        err = if okBt then me.${bt} else
+              "expected a pathlike type ( set, string, or path ), but value " +
+              " is of type '${bt}'";
+      };
+      check = v: ( Typeclasses.pathlike.checkType v ).ok;
+    };
+
+    stringy = yt.Prim.string // {
+      name = "stringy";
       checkType = v: {
         ok  = ( builtins.isString v ) ||
               ( ( v ? __toString ) && ( builtins.isFunction v.__toString ) );
         err = "expected a string, or an attrset with the functor '__toString', "
               + "but value is of type '${builtins.typeOf v}'";
       };
+      check = v: ( Typeclasses.stringy.checkType v ).ok;
     };
 
     serializable = yt.Prim.unit // {
@@ -112,6 +143,7 @@
               ( ( v ? __serial ) && ( ( lib.isFunction v.__serial ) ) );
         err = errGeneric + ( if v ? __serial then errNotFn else errType );
       };
+      check = v: ( Typeclasses.serializable.checkType v ).ok;
     };
 
     functor = yt.Prim.function // {
@@ -125,6 +157,7 @@
               ( ( v ? __functor ) && ( ( lib.isFunction v.__functor ) ) );
         err = errGeneric + ( if v ? __functor then errNotFn else errType );
       };
+      check = v: ( Typeclasses.functor.checkType v ).ok;
     };
 
   };  # End Typeclasses
