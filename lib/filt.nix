@@ -30,7 +30,7 @@
   nixFilt' = name: type: let
     bname = baseNameOf name;
   in ( bname != "flake.lock" ) &&
-     ( ! ( lib.test ".*\\.nix" ) );
+     ( ! ( lib.test ".*\\.nix" name ) );
 
   nixFilt = name: type: ( genericFilt name type ) && ( nixFilt' name type );
 
