@@ -16,18 +16,7 @@
 
   data0 = { a = 1; b = ["hey" "there"]; c = { d = null; }; };
   file0 = ./data/file0.json;
-
-  cont1 = ''
-    {
-      // Comment
-      "a": 1,
-      "b": ["hey", "there"],
-      "c": {
-        "d": null
-      }
-    }
-  '';
-  file1 = builtins.toFile "file1.json" cont1;
+  file1 = ./data/file1.json;
 
 
 # ---------------------------------------------------------------------------- #
@@ -51,11 +40,11 @@
 
     testImportJSONOr_0 = {
       expr     = importJSONOr {} file0;
-      expected = data0;
+      expected = if lib.inPureEvalMode then {} else data0;
     };
 
     testImportJSONOr_1 = {
-      expr     = importJSONOr data0 ( toString ./.fake-file.json );
+      expr     = importJSONOr data0 ./.fake-file.json;
       expected = data0;
     };
 
@@ -64,11 +53,11 @@
 
     testImportJSONOr'_0 = {
       expr     = importJSONOr' {} file1;
-      expected = data0;
+      expected = if lib.inPureEvalMode then {} else data0;
     };
 
     testImportJSONOr'_1 = {
-      expr     = importJSONOr' data0 ( toString ./.fake-file.json );
+      expr     = importJSONOr' data0 ./.fake-file.json;
       expected = data0;
     };
 
