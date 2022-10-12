@@ -15,7 +15,7 @@
 # ---------------------------------------------------------------------------- #
 
   data0 = { a = 1; b = ["hey" "there"]; c = { d = null; }; };
-  file0 = builtins.toFile "file0.json" ( builtins.toJSON ( data0 ) );
+  file0 = ./data/file0.json;
 
   cont1 = ''
     {

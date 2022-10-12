@@ -122,7 +122,7 @@
     };
 
     testMapDropNulls_1 = {
-      expr = mapDropNulls ( x: null ) [0 null 2];
+      expr     = mapDropNulls ( x: null ) [0 null 2];
       expected = [];
     };
 
