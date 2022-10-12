@@ -1,10 +1,12 @@
 # ============================================================================ #
 #
+# Tests for `libtag' functions defined in `lib/tags.nix'.
+# These routines were taken from TVL, but these tests were written from scratch.
 #
 #
 # ---------------------------------------------------------------------------- #
 
-{ lib } @ args: let
+{ lib }: let
 
   inherit (lib.libtag)
     verifyTag
