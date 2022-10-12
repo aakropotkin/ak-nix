@@ -37,12 +37,38 @@
 # ---------------------------------------------------------------------------- #
 
     testImportJSON'_0 = {
-      expr     = lib.importJSON' file0;
+      expr     = importJSON' file0;
       expected = data0;
     };
 
     testImportJSON'_1 = {
-      expr     = lib.importJSON' file1;
+      expr     = importJSON' file1;
+      expected = data0;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testImportJSONOr_0 = {
+      expr     = importJSONOr {} file0;
+      expected = data0;
+    };
+
+    testImportJSONOr_1 = {
+      expr     = importJSONOr data0 ( toString ./.fake-file.json );
+      expected = data0;
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testImportJSONOr'_0 = {
+      expr     = importJSONOr' {} file1;
+      expected = data0;
+    };
+
+    testImportJSONOr'_1 = {
+      expr     = importJSONOr' data0 ( toString ./.fake-file.json );
       expected = data0;
     };
 
