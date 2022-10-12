@@ -3,7 +3,6 @@
 # Tests for `libtag' functions defined in `lib/tags.nix'.
 # These routines were taken from TVL, but these tests were written from scratch.
 #
-#
 # ---------------------------------------------------------------------------- #
 
 { lib }: let
@@ -51,7 +50,7 @@
     testDiscrDef_0 = {
       expr = discrDef "smol" [
         { biggerFive = i: i > 5; }
-        { negative = i: i < 0; }
+        { negative   = i: i < 0; }
       ] ( -100 );
       expected = { negative = -100; };
     };
@@ -59,7 +58,7 @@
     testDiscrDef_1 = {
       expr = discrDef "smol" [
         { biggerFive = i: i > 5; }
-        { negative = i: i < 0; }
+        { negative   = i: i < 0; }
       ] 1;
       expected = { smol = 1; };
     };
@@ -113,7 +112,7 @@
           } )
         ( matchLam {
             small = i: "yay it was small";
-            big = i: "whoo it was big!";
+            big   = i: "whoo it was big!";
           }  )
       ];
       expected = "whoo it was big!";
