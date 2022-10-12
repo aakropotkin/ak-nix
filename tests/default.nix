@@ -34,6 +34,7 @@
   in builtins.foldl' ( ts: file: ts // ( testsFrom file ) ) {} [
     ./libsemver
     ./libfunk
+    ./libtag.nix
     ./debug.nix
     ./strings.nix
     ./paths.nix
