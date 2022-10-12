@@ -1,3 +1,9 @@
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
+
 { lib }: let
 
   inherit (lib) take drop reverseList;
@@ -7,51 +13,49 @@
  # This could also be done with a functor:
  #   let adder = { x = 0; __functor = self: x: self // { x = self.x + x; }; };
  #   in ( builtins.foldl' ( acc: acc ) adder [1 2 3] ).rsl
-  takeUntil = cond: lst:
-    let taker = acc: x:  # acc ::= { rsl : list; stop : bool; }
-          if acc.stop then acc else
-          if ( cond x ) then ( acc // { stop = true; } ) else
-          ( acc // { rsl = acc.rsl ++ [x]; } );
-    in ( builtins.foldl' taker { stop = false; rsl = []; } lst ).rsl;
+  takeUntil = cond: lst: let
+    proc = { rsl, done } @ acc: x:
+      if acc.done then acc else
+      if cond x   then acc // { done = true; } else
+      acc // { rsl = rsl ++ [x]; };
+  in ( builtins.foldl' proc { done = false; rsl = []; } lst ).rsl;
 
 
-  dropAfter = cond: lst:
-    let
-      rsl = takeUntil cond lst;
-      rlen = builtins.length rsl;
-      last = builtins.elemAt lst rlen;
-    in if ( lst == [] ) then [] else
-       if ( rsl == [] ) then [last] else ( rsl ++ [last] );
-
-
-# ---------------------------------------------------------------------------- #
-
-  dropUntil = cond: lst:
-    let dropper = acc: x:  # acc ::= { rsl : list; start : bool; }
-          if acc.start then ( acc // { rsl = acc.rsl ++ [x]; } ) else
-          if ( cond x ) then { start = true; rsl = [x]; } else
-          acc;
-    in ( builtins.foldl' dropper { start = false; rsl = []; } lst ).rsl;
-
-
-  takeAfter = cond: lst:
-    let rsl = dropUntil cond lst; in
-    if rsl == [] then [] else ( builtins.tail rsl );
+  dropAfter = cond: lst: let
+    proc = { rsl, done } @ acc: x:
+      if done then acc else
+      if cond x then { rsl = rsl ++ [x]; done = true; } else
+      { rsl = rsl ++ [x]; done = false; };
+  in ( builtins.foldl' proc { rsl = []; done = false; } lst ).rsl;
 
 
 # ---------------------------------------------------------------------------- #
 
-  commonPrefix = a: b:
-    let
-      inherit (builtins) elemAt length genList;
-      alen   = length a;
-      blen   = length b;
-      maxLen = if ( alen < blen ) then alen else blen;
-      a' = take maxLen a;
-      b' = take maxLen b;
-      idxList = genList ( x: x ) maxLen;
-      commons = takeUntil ( i: ( elemAt a' i ) != ( elemAt b' i ) ) idxList;
-    in take ( length commons ) a';
+  dropUntil = cond: lst: let
+    proc = { rsl, start } @ acc: x:
+      if start   then acc // { rsl = rsl ++ [x]; } else
+      if cond x then { start = true; rsl = [x]; }  else
+      acc;
+  in ( builtins.foldl' proc { start = false; rsl = []; } lst ).rsl;
+
+
+  takeAfter = cond: lst: let
+    rsl = dropUntil cond lst;
+  in if rsl == [] then [] else builtins.tail rsl;
+
+
+# ---------------------------------------------------------------------------- #
+
+  commonPrefix = a: b: let
+    alen    = builtins.length a;
+    blen    = builtins.length b;
+    maxLen  = if alen < blen then alen else blen;
+    a'      = take maxLen a;
+    b'      = take maxLen b;
+    idxList = builtins.genList ( x: x ) maxLen;
+    proc    = i: ( builtins.elemAt a' i ) != ( builtins.elemAt b' i );
+    commons = takeUntil proc idxList;
+  in take ( builtins.length commons ) a';
 
 
   commonSuffix = a: b:
@@ -61,10 +65,12 @@
 # ---------------------------------------------------------------------------- #
 
   # Map Non-Nulls
-  mapNoNulls = f: xs: map f ( x: builtins.filter ( x != null ) xs );
+  mapNoNulls = f: xs:
+    map f ( x: builtins.filter ( x != null ) xs );
 
   # Sieve Non-Nulls from Mapped
-  mapDropNulls = f: xs: builtins.filter ( x: x != null ) ( map f xs );
+  mapDropNulls = f: xs:
+    builtins.filter ( x: x != null ) ( map f xs );
 
 
 # ---------------------------------------------------------------------------- #

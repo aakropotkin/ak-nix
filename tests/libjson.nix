@@ -21,7 +21,7 @@
     {
       // Comment
       "a": 1,
-      "b": ["hey" "there"],
+      "b": ["hey", "there"],
       "c": {
         "d": null
       }

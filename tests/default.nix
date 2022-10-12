@@ -35,6 +35,8 @@
     ./libsemver
     ./libfunk
     ./libtag.nix
+    ./libjson.nix
+    ./liblist.nix
     ./debug.nix
     ./strings.nix
     ./paths.nix
