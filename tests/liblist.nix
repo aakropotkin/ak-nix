@@ -77,6 +77,58 @@
 
 # ---------------------------------------------------------------------------- #
 
+    testCommonPrefix_0 = {
+      expr     = commonPrefix [1 2 3] [1 2 4];
+      expected = [1 2];
+    };
+
+    testCommonPrefix_1 = {
+      expr     = commonPrefix [1 2 3] [3 2 1];
+      expected = [];
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testCommonSuffix_0 = {
+      expr     = commonSuffix [1 2 3] [4 2 3];
+      expected = [2 3];
+    };
+
+    testCommonSuffix_1 = {
+      expr     = commonSuffix [1 2 3] [3 2 1];
+      expected = [];
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testMapNoNulls_0 = {
+      expr     = mapNoNulls ( x: x + 1 ) [0 null 2];
+      expected = [1 3];
+    };
+
+    testMapNoNulls_1 = {
+      expr     = mapNoNulls ( x: null ) [0 null 2];
+      expected = [null null];
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
+    testMapDropNulls_0 = {
+      expr     = mapDropNulls ( x: if x != null then null else 0 ) [0 null 2];
+      expected = [0];
+    };
+
+    testMapDropNulls_1 = {
+      expr = mapDropNulls ( x: null ) [0 null 2];
+      expected = [];
+    };
+
+
+# ---------------------------------------------------------------------------- #
+
   };  # End tests
 
 

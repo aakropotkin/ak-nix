@@ -6,8 +6,6 @@
 
 { lib }: let
 
-  inherit (lib) take drop reverseList;
-
 # ---------------------------------------------------------------------------- #
 
  # This could also be done with a functor:
@@ -50,23 +48,24 @@
     alen    = builtins.length a;
     blen    = builtins.length b;
     maxLen  = if alen < blen then alen else blen;
-    a'      = take maxLen a;
-    b'      = take maxLen b;
+    a'      = lib.take maxLen a;
+    b'      = lib.take maxLen b;
     idxList = builtins.genList ( x: x ) maxLen;
     proc    = i: ( builtins.elemAt a' i ) != ( builtins.elemAt b' i );
     commons = takeUntil proc idxList;
-  in take ( builtins.length commons ) a';
+  in lib.take ( builtins.length commons ) a';
 
 
   commonSuffix = a: b:
-    reverseList ( commonPrefix ( reverseList a ) ( reverseList b ) );
+    lib.reverseList ( commonPrefix ( lib.reverseList a )
+                                   ( lib.reverseList b ) );
 
 
 # ---------------------------------------------------------------------------- #
 
   # Map Non-Nulls
   mapNoNulls = f: xs:
-    map f ( x: builtins.filter ( x != null ) xs );
+    map f ( builtins.filter ( x: x != null ) xs );
 
   # Sieve Non-Nulls from Mapped
   mapDropNulls = f: xs:
