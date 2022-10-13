@@ -47,6 +47,12 @@
     base16 = yt.restrict "base16" isBase16Str yt.string;
     base32 = yt.restrict "base32" isBase32Str yt.string;
     base64 = yt.restrict "base64" isBase64Str yt.string;
+    # Tarball
+    tarball_url =
+      yt.restrict "uri[tarball]" ( lib.test ".*${tarball_ext_p}" ) yt.string;
+    tarball_name =
+      yt.restrict "filename[tarball]" ( lib.test "[^/]+${tarball_ext_p}" )
+                                      yt.string;
   };
 
   # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt
@@ -226,6 +232,19 @@
 
 # ---------------------------------------------------------------------------- #
 
+  tarball_ext_p = "\\.(tar(\\.[gx]z)?|gz|tgz|zip|xz|bz(ip)?)";
+
+  isTarballUrl = ytypes.tarball_url.check;
+
+  dropArExt = n: let
+    m = builtins.match "(.*)${tarball_ext_p}" n;
+  in if m == null then n else builtins.head m;
+
+  nameFromTarballUrl = u: dropArExt ( baseNameOf u );
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit (lib)
@@ -282,6 +301,13 @@ in {
     removePoundDropEmpty
     titleCase
     ppDate
+  ;
+
+  inherit
+    tarball_ext_p
+    isTarballUrl
+    dropArExt
+    nameFromTarballUrl
   ;
 
   inherit ytypes;
