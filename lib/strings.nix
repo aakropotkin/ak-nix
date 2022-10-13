@@ -234,7 +234,7 @@
 
   tarball_ext_p = "\\.(tar(\\.[gx]z)?|gz|tgz|zip|xz|bz(ip)?)";
 
-  isTarballUrl = ytypes.tarball_url.check;
+  isTarballUrl = ytypes.Strings.tarball_url.check;
 
   dropArExt = n: let
     m = builtins.match "(.*)${tarball_ext_p}" n;
