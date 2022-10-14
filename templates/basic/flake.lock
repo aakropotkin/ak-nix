@@ -9,11 +9,11 @@
         "yants-src": "yants-src"
       },
       "locked": {
-        "lastModified": 1664434101,
-        "narHash": "sha256-F/ccqjXpctwmh9fmFrCZgCrowlFo0sP+m+gvkgrTbBs=",
+        "lastModified": 1665674721,
+        "narHash": "sha256-IcweBoyMEBJcc2DsoQHPfHns21mZpJHLroEfdBp10cA=",
         "owner": "aakropotkin",
         "repo": "ak-nix",
-        "rev": "d9518039c99373e5a94a8c6e1be80cac90ffa84a",
+        "rev": "2fb46d4d2de3fc3034c3ece0c734c37a45ddee15",
         "type": "github"
       },
       "original": {
@@ -49,11 +49,11 @@
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
-        "lastModified": 1664283749,
-        "narHash": "sha256-hYDFzQNPmBJsEKoyXdJfIH3cVsoMjh1ZTQQVKIwy/QA=",
+        "lastModified": 1664984742,
+        "narHash": "sha256-3w98t0PHcHfh/gp4be0z5R964zn3j5q26XO79hPjttE=",
         "owner": "NixOS",
         "repo": "nix",
-        "rev": "050fcd391bce0d36893446d4bc975fef4cb38af3",
+        "rev": "ac0fb38e8a5a25a84fa17704bd31b453211263eb",
         "type": "github"
       },
       "original": {
@@ -64,11 +64,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1664435326,
-        "narHash": "sha256-qx93eWLyUXRiizRkyO74KH0OwbDHJ3ZERAuaGmlf9tg=",
+        "lastModified": 1665762802,
+        "narHash": "sha256-xVE+uq2AbDSWsXwL4jxZjatdnZOv8xXQWdBkLLJR18g=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "48acf47fa3385823b091bf6a2d2b6aa644e347d3",
+        "rev": "2dffc57c88e1d11ab8ae980847f9bd810a8068a0",
         "type": "github"
       },
       "original": {
@@ -103,13 +103,17 @@
     "yants-src": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-nqHIq2oAnKicNhNA4Ew6hov34gimTLUOjhg+e0e1SI0=",
-        "type": "file",
-        "url": "https://code.tvl.fyi/plain/nix/yants/default.nix"
+        "lastModified": 1645270620,
+        "narHash": "sha256-wwkl3K200UbW9Z7BRlVH8HOEXCaVYP2MqZpsF9EhgZg=",
+        "ref": "refs/heads/canon",
+        "rev": "efeb6dc11eb1a1e88d41dc2093fc5aa31f7abd35",
+        "revCount": 15,
+        "type": "git",
+        "url": "https://code.tvl.fyi/depot.git:/nix/yants.git"
       },
       "original": {
-        "type": "file",
-        "url": "https://code.tvl.fyi/plain/nix/yants/default.nix"
+        "type": "git",
+        "url": "https://code.tvl.fyi/depot.git:/nix/yants.git"
       }
     }
   },

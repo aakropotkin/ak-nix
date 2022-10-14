@@ -37,6 +37,7 @@
     ./libtag.nix
     ./libjson.nix
     ./liblist.nix
+    ./attrsets.nix
     ./debug.nix
     ./strings.nix
     ./paths.nix

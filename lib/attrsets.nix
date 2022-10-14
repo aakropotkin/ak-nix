@@ -22,6 +22,8 @@
 
 { lib }: let
 
+  yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
+
 # ---------------------------------------------------------------------------- #
 
   # Apply `fn' to each `system', forming an attrset keyed by system names.
@@ -29,6 +31,11 @@
     builtins.foldl' ( acc: sys: acc // { ${sys} = fn sys; } ) {} systems;
 
   eachDefaultSystemMap = eachSystemMap lib.defaultSystems;
+
+
+# ---------------------------------------------------------------------------- #
+
+  pushDownNames = builtins.mapAttrs ( name: val: val // { inherit name; } );
 
 
 # ---------------------------------------------------------------------------- #
@@ -47,14 +54,12 @@
       name = "joinAttrs";
       doc  = "Merges an attrset or list of sub-attrsets to a single attrset.";
       argc = 1;
-      argsType = with lib.types;
-        either ( listOf ( attrsOf anything ) )
-               ( attrsOf ( attrsOf anything ) );
-      returnType = with lib.types; attrsOf anything;
+      argsType   = yt.either ( ( yt.list  yt.any ) ( yt.attrs yt.any ) );
+      returnType = yt.attrs yt.any;
     };
-    __processArgs = x: if builtins.isList x then x else builtins.attrValues x;
+    __processArgs   = x: if builtins.isList x then x else builtins.attrValues x;
     __innerFunction = builtins.foldl' ( a: b: a // b ) {};
-    __functor = self: x: self.__innerFunction ( self.__processArgs x );
+    __functor       = self: x: self.__innerFunction ( self.__processArgs x );
   };
 
 
@@ -100,6 +105,7 @@
 
 in {
   inherit
+    pushDownNames
     eachSystemMap eachDefaultSystemMap
     attrsToList
     joinAttrs
