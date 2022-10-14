@@ -2,7 +2,7 @@
   # FIXME: Replace "PROJECT" with your project name.
   description = "a basic autotools package";
 
-  inputs.utils.url = github:numtide/flake-utils;
+  inputs.utils.url = "github:numtide/flake-utils";
 
   outputs = { self, nixpkgs, utils, PROJECT-src }:
   let systemMap = utils.lib.eachSystemMap utils.lib.defaultSystems;

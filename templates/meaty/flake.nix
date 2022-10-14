@@ -42,8 +42,8 @@
         args = builtins.intersectAttrs ( builtins.functionArgs f )
                                        ( { inherit lib; } // auto );
       in f args;
-      callLibsWith = auto: lst:
-        builtins.foldl' ( acc: x: acc // ( callLibWith auto x ) ) {} lst;
+      callLibsWith = auto:
+        builtins.foldl' ( acc: x: acc // ( callLibWith auto x ) ) {};
       callLib  = callLibWith {};
       callLibs = callLibsWith {};
     in {
