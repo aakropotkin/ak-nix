@@ -1,4 +1,4 @@
-{ ... }: let
+_: let
 
   inherit (builtins) head split readDir substring stringLength filter;
 
@@ -13,7 +13,7 @@
     removeNixStorePrefix = nsp: let
       m = builtins.match "/nix/store/[^-]+-(.*)" ( toString nsp );
     in if m == null then nsp else ( head m );
-  in baseNameOf ( removeNixStorePrefix ( p ) );
+  in baseNameOf ( removeNixStorePrefix p );
 
   baseName' = p: builtins.unsafeDiscardStringContext ( baseName p );
 

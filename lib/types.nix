@@ -140,7 +140,7 @@
         errNotFn   = "'__serial' is of type '${builtins.typeOf v.__serial}'";
       in {
         ok  = ( builtins.isAttrs v ) &&
-              ( ( v ? __serial ) && ( ( lib.isFunction v.__serial ) ) );
+              ( ( v ? __serial ) && ( lib.isFunction v.__serial ) );
         err = errGeneric + ( if v ? __serial then errNotFn else errType );
       };
       check = v: ( Typeclasses.serializable.checkType v ).ok;
@@ -154,7 +154,7 @@
         errNotFn   = "'__functor' is of type '${builtins.typeOf v.__functor}'";
       in {
         ok  = ( builtins.isAttrs v ) &&
-              ( ( v ? __functor ) && ( ( lib.isFunction v.__functor ) ) );
+              ( ( v ? __functor ) && ( lib.isFunction v.__functor ) );
         err = errGeneric + ( if v ? __functor then errNotFn else errType );
       };
       check = v: ( Typeclasses.functor.checkType v ).ok;

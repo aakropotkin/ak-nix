@@ -38,28 +38,23 @@
   # Takes a tag, checks whether it is an attrset with one element,
   # if so sets `isTag` to `true` and sets the name and value.
   # If not, sets `isTag` to `false` and sets `errmsg`.
-  verifyTag = tag:
-    let
-      cases = builtins.attrNames tag;
-      len = builtins.length cases;
-    in
-    if builtins.length cases == 1
-    then
-      let name = builtins.head cases; in {
-        isTag = true;
-        name = name;
-        val = tag.${name};
-        errmsg = null;
-      }
-    else {
-      isTag = false;
-      errmsg =
-        ("match: an instance of a sum is an attrset "
-          + "with exactly one element, yours had ${toString len}"
-          + ", namely: ${lib.generators.toPretty {} cases}");
-      name = null;
-      val = null;
-    };
+  verifyTag = tag: let
+    cases = builtins.attrNames tag;
+    len   = builtins.length cases;
+    name  = builtins.head cases;
+  in if builtins.length cases == 1 then {
+    inherit name;
+    isTag  = true;
+    val    = tag.${name};
+    errmsg = null;
+  } else {
+    isTag = false;
+    errmsg = "match: an instance of a sum is an attrset "
+              + "with exactly one element, yours had ${toString len}"
+              + ", namely: ${lib.generators.toPretty {} cases}";
+    name = null;
+    val  = null;
+  };
 
   # Returns the tag name of a given tag attribute set.
   # Throws if the tag is invalid.

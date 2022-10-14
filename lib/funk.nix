@@ -153,14 +153,14 @@
     callV  = system: fn system args;
     isSys  = ( builtins.isString args ) &&
              ( builtins.elem args supportedSystems );
-    callF  = _: args': fn args args';  # Flip
+    callF  = _: fn args;  # Flip
     apply  =
       if ( fas == {} ) then if isSys then callF else callV else
       if ( fas ? system ) then callAs else
       throw "provided function cannot accept system as an arg";
     sysAttrs = lib.eachSystemMap supportedSystems apply;
     curried  = { __functor = self: system: self.${system}; };
-    curriedF = { __functor = self: args': self.${args} args'; };
+    curriedF = { __functor = self: self.${args}; };
   in sysAttrs // ( if isSys then curriedF else curried );
 
   curryDefaultSystems = currySystems lib.defaultSystems;
@@ -172,8 +172,7 @@
   funkSystems = supportedSystems: fn: let
     fas    = lib.functionArgs fn;
     callAs = system: fn { inherit system; };
-    callV  = system: fn system;
-    apply  = if ( fas == {} ) then callV else if ( fas ? system ) then callAs
+    apply  = if ( fas == {} ) then fn else if ( fas ? system ) then callAs
              else throw "provided function cannot accept system as an arg";
     sysAttrs = lib.eachSystemMap supportedSystems apply;
     curried  = { __functor = self: system: self.${system}; };

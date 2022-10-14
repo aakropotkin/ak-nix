@@ -56,9 +56,8 @@
 
 # ---------------------------------------------------------------------------- #
 
-  baseListToDec' = base: digits: foldl' ( acc: x: acc * base + x ) 0 digits;
-  baseListToDec = base: digits:
-    foldl' ( acc: x: ( mulSafe acc base ) + x ) 0 digits;
+  baseListToDec' = base: foldl' ( acc: x: acc * base + x ) 0;
+  baseListToDec = base: foldl' ( acc: x: ( mulSafe acc base ) + x ) 0;
 
 
 # ---------------------------------------------------------------------------- #

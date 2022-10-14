@@ -28,10 +28,11 @@
   '';
   coercePath = x:
     if isPath x then x else
-    if x ? outPath then x.outPath else
-    if ! ( strp x ) then
-      throw "Cannot coerce a path from type: ${builtins.typeOf x}" else
-    if isAbspath x then /. + "${x}" else ./. + "/${toString x}";
+    x.outPath or (
+      if ! ( strp x ) then
+        throw "Cannot coerce a path from type: ${builtins.typeOf x}" else
+      if isAbspath x then /. + "${x}" else ./. + "/${toString x}"
+    );
 
 
 # ---------------------------------------------------------------------------- #

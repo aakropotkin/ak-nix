@@ -18,9 +18,9 @@
   base64Chars' = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
   base64Chars  = "ABCDEFGHIJKLMNPOQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
 
-  isBase16Str = ( lib.test "[${base16Chars}]+" );
-  isBase32Str = ( lib.test "[${base32Chars}]+" );
-  isBase64Str = ( lib.test "[A-Za-z0-9\\+/=]+" );
+  isBase16Str = lib.test "[${base16Chars}]+";
+  isBase32Str = lib.test "[${base32Chars}]+";
+  isBase64Str = lib.test "[A-Za-z0-9\\+/=]+";
 
 # ---------------------------------------------------------------------------- #
 
@@ -96,7 +96,7 @@
   coerceString = x: let
     emitWarnThen = lib.warn "Unable to stringify type ${builtins.typeOf x}";
     coerceAs = as:
-      builtins.toJSON ( builtins.mapAttrs ( _: v: coerceString v ) as );
+      builtins.toJSON ( builtins.mapAttrs ( _: coerceString ) as );
   in if lib.strings.isCoercibleToString x then toString x else
      if lib.isFunction x   then "<LAMBDA>" else
      if builtins.isAttrs x then coerceAs x else
@@ -129,11 +129,11 @@
     post = if pattHasDollar patt then "" else ".*$";
   in pre + patt + post;
 
-  matchingLines = re: lines: builtins.filter ( test re ) lines;
-  linesInfix    = re: lines: builtins.filter ( l: lib.hasInfix re l ) lines;
+  matchingLines = re: builtins.filter ( test re );
+  linesInfix    = re: builtins.filter ( lib.hasInfix re );
   readLines     = f: lib.splitString "\n" ( lib.fileContents f );
 
-  linesGrep     = re: lines: matchingLines ( pattForLine re ) lines;
+  linesGrep     = re: matchingLines ( pattForLine re );
   readLinesGrep = re: f: linesGrep re ( readLines f );
   readGrep      = re: f: builtins.concatStringsSep "\n" ( readLinesGrep re f );
 

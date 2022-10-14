@@ -94,11 +94,11 @@
       if lib.isStorePath     then "store-path"          else
       if builtins.hasContext then "string-with-context" else
       fromBuiltin;
-    fromAttrs =
-      if x ? _type          then x._type      else
+    fromAttrs = x._type or (
       if lib.isDerivation x then "derivation" else
       if lib.isFunction x   then "function"   else  # Distinct from "lambda"
-      fromBuiltin;
+      fromBuiltin
+    );
   in if fromBuiltin == "string" then fromString else
      if fromBuiltin == "set"    then fromAttrs  else
      fromBuiltin;

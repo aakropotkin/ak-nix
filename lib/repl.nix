@@ -77,7 +77,7 @@
       lines = if isSGlob then ( files ++ subs ) else
               if isDGlob then ( lib.filesystem.listFilesRecursive dir ) else
               ( lsDir' dir );
-      makeRel = p: lib.libpath.realpathRel' dir p;
+      makeRel = lib.libpath.realpathRel' dir;  # dir -> path -> rel-path
       relLines = if wasAbs then lines else ( map makeRel lines );
     in show relLines;
 

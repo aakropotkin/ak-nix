@@ -67,8 +67,7 @@ in
 
 , extraAttrs    ? {}
 , extraDrvAttrs ? {}
-}: let
-in derivation ( {
+}: derivation ( {
   inherit name url executable unpack outputHashAlgo outputHash;
   builder = "builtin:fetchurl";
   outputHashMode = if ( unpack || executable ) then "recursive" else "flat";

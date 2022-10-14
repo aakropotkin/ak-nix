@@ -43,8 +43,8 @@ let
     in scrubLib ( f args );
 
     callLib = callLibWith {};
-    callLibsWith = autoArgs: lst:
-      builtins.foldl' ( acc: x: acc // ( callLibWith autoArgs x ) ) {} lst;
+    callLibsWith = auto:
+      builtins.foldl' ( acc: x: acc // ( callLibWith auto x ) ) {};
     callLibs = callLibsWith {};
 
 
@@ -130,6 +130,8 @@ let
       yank
       yankN
       test
+      isTarballUrl
+      nameFromTarballUrl
     ;
 
     inherit (final.libfs)
