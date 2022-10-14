@@ -47,6 +47,7 @@
     base16 = yt.restrict "base16" isBase16Str yt.string;
     base32 = yt.restrict "base32" isBase32Str yt.string;
     base64 = yt.restrict "base64" isBase64Str yt.string;
+
     # Tarball
     tarball_url =
       yt.restrict "uri[tarball]" ( lib.test ".*${tarball_ext_p}" ) yt.string;

@@ -22,7 +22,6 @@
   ;
   inherit (lib)
     toBaseDigits
-    # toHexString  XXX: Returns capitalized characters.
   ;
   inherit (builtins)
     concatLists
@@ -281,7 +280,17 @@
 # ---------------------------------------------------------------------------- #
 
   ytypes.Strings = {
-    sha1_sri = let
+    # Base16
+    md5_hash  = yt.restrict "md5:b16" ( lib.test "[[:xdigit:]]{32}" ) yt.string;
+    sha1_hash =
+      yt.restrict "sha1:b16" ( lib.test "[[:xdigit:]]{40}" ) yt.string;
+    sha256_hash =
+      yt.restrict "sha256:b16" ( lib.test "[[:xdigit:]]{64}" ) yt.string;
+    sha512_hash =
+      yt.restrict "sha512:b16" ( lib.test "[[:xdigit:]]{128}" ) yt.string;
+
+    # Base 64
+    sha1_sri  = let
       cond = lib.test "sha1-[${base64Chars'}]+={0,2}";
     in yt.restrict "sha1:sri" cond yt.string;
     # sha256-A3eLarlqN1XPBYBcFPY1yUpfxdhJKvDBjN+vsOAmOoc=
