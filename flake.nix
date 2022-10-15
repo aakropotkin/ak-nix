@@ -16,7 +16,7 @@
   outputs = { self, nixpkgs, nix, yants-src }: let
 
     # An extension to `nixpkgs.lib'.
-    lib = import ./lib { inherit nix yants-src; inherit (nixpkgs) lib; };
+    lib = nixpkgs.lib.extend self.libOverlays.default;
 
     inherit (lib) eachDefaultSystemMap;
 
@@ -111,11 +111,22 @@
       };
       trivial = tarutils // linkutils // copyutils;
     in {
-      lib = import ./lib { inherit (prev) lib; inherit nix yants-src; };
+      lib = prev.lib.extend self.libOverlays.default;
     } // trivial;
+
     overlays.default = self.overlays.ak-nix;
 
-    overlays.ytypes = final: prev: lib.ytypes // prev;
+    ytOverlays.ak-nix  = final: prev: lib.ytypes;
+    ytOverlays.default = self.ytOverlays.ak-nix;
+
+    # FIXME: this is funny but also completely hideous and unnecessary.
+    libOverlays.ak-nix = final: prev: let
+      nlib = import ./lib {
+        inherit (nixpkgs) lib;
+        inherit nix yants-src;
+      };
+    in removeAttrs nlib ["__unfix__" "extend"];
+    libOverlays.default = self.libOverlays.ak-nix;
 
 
 # ---------------------------------------------------------------------------- #
