@@ -111,7 +111,7 @@
       };
       trivial = tarutils // linkutils // copyutils;
     in {
-      lib = prev.lib.extend self.libOverlays.default;
+      lib = ( prev.lib or nixpkgs.lib ).extend self.libOverlays.default;
     } // trivial;
 
     overlays.default = self.overlays.ak-nix;
