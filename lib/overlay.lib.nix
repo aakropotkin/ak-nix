@@ -204,21 +204,12 @@ in {
 # ---------------------------------------------------------------------------- #
 
   ytypes = prev.makeExtensible ( _: let
-    #libyants = callLib "${yants-src}/default.nix";
-    # FIXME: you need to vendor YANTS or ensure that it is added to the overlay
-    # separately since you don't have access to its reference here.
+    libyants = callLib ./yants.nix;
   in {
     inherit (final.libtypes.ytypes) Typeclasses;
     Strings = final.libstr.ytypes.Strings // final.libenc.ytypes.Strings;
-    Prim = {
-      inherit (libyants)
-        any unit int bool float string path drv function type
-      ;
-    } // final.libtypes.ytypes.Prim;
-    Core = removeAttrs libyants [
-      "any" "unit" "int" "bool" "float" "string" "path" "drv"
-      "function" "type"
-    ];
+    Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
+    inherit (libyants) Core;
   } );
 
 

@@ -106,7 +106,7 @@
   # Default error message for a type mismatch.
   typeError = type: val: let
     p  = prettyPrint val;
-  in "expected type '${type}', but value '${p}' is of type '${typeOf val}'";
+  in "expected type '${type}', but value '${p}' is of type '${builtins.typeOf val}'";
 
 
 # ---------------------------------------------------------------------------- #
@@ -186,7 +186,7 @@
   # One of [<T1>...<TN>]
   Core.eitherN = tn: let
     cond = x: builtins.any ( t: ( Prim.type t ).check x ) tn;
-  in typedef "either<${concatStringsSep ", " (map (x: x.name) tn)}>" cond;
+  in typedef "either<${builtins.concatStringsSep ", " (map (x: x.name) tn)}>" cond;
 
 
   # Either <T1> or <T2>
@@ -202,7 +202,7 @@
   in typedef' {
     inherit name;
     checkType = v:
-      if isList v then checkEach name ( Prim.type t ) v else {
+      if builtins.isList v then checkEach name ( Prim.type t ) v else {
         ok  = false;
         err = typeError name v;
       };
@@ -259,7 +259,7 @@
     # any fields that are not part of the definition.
     checkExtraneous = def: has: acc:
       if ( builtins.length has ) == 0 then acc else
-      if ( builtins.hasAttr ( builtins.head has ) def )
+      if def ? ${builtins.head has}
       then checkExtraneous def ( builtins.tail has ) acc
       else checkExtraneous def ( builtins.tail has ) {
         ok = false;
@@ -273,24 +273,24 @@
       extraneous    = checkExtraneous def ( builtins.attrNames value ) init;
       checkedFields = let
         pred = n: let
-          v = if hasAttr n value then value."${n}" else null;
-        in checkField def."${n}" n v;
+          v = value.${n} or null;
+        in checkField def.${n} n v;
       in map pred ( builtins.attrNames def );
       combined = let
         proc = acc: res: {
           ok  = acc.ok && res.ok;
           err = if ! res.ok then acc.err + res.err else acc.err;
         };
-      in foldl' proc init checkedFields;
+      in builtins.foldl' proc init checkedFields;
     in {
-      ok = combined.ok && extraneous.ok;
+      ok  = combined.ok && extraneous.ok;
       err = combined.err + extraneous.err;
     };
 
     struct' = name: def: typedef' {
       inherit name def;
       checkType = value:
-        if isAttrs value
+        if builtins.isAttrs value
         then checkStruct ( Core.attrs Prim.type def ) value
         else { ok = false; err = typeError name value; };
       toError = _: result:
@@ -298,7 +298,7 @@
     };
 
   # If arg1 is a string interpret it as a typename, otherwise name it "anon".
-  in arg: if isString arg then struct' arg else struct' "anon" arg;
+  in arg: if builtins.isString arg then struct' arg else struct' "anon" arg;
 
 
 # ============================================================================ #
@@ -339,7 +339,7 @@
     plain = name: def: typedef' {
       inherit name def;
       checkType = x: let
-        variant = elemAt (attrNames x) 0;
+        variant = builtins.head ( builtins.attrNames x );
         t   = def."${variant}";
         v   = x."${variant}";
         res = t.checkType v;
@@ -382,9 +382,9 @@
   Core.defun = let
     mkFunc = sig: f: {
       inherit sig;
-      __toString = self: foldl' (s: t: "${s} -> ${t.name}")
-        "<LAMBDA> :: ${(head self.sig).name}"
-        (tail self.sig);
+      __toString = self: builtins.foldl' ( s: t: "${s} -> ${t.name}" )
+        "<LAMBDA> :: ${( builtins.head self.sig ).name}"
+        ( builtins.tail self.sig );
       __functor = _: f;
     };
     defun' = sig: func:
@@ -432,7 +432,7 @@ in {
 
   # These were previously "private" in a `let ... in' block, presumably because
   # the authors thought the given typedefs were sufficient.
-  __internal = { inherit typedef' typedef typeError checkEach toPretty; };
+  __internal = { inherit typedef' typedef typeError checkEach prettyPrint; };
 
 }
 
