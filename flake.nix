@@ -5,15 +5,9 @@
   inputs.nix.url = "github:NixOS/nix";
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
-  inputs.yants-src = {
-    url = "git+https://code.tvl.fyi/depot.git:/nix/yants.git";
-    flake = false;
-  };
-
-
 # ---------------------------------------------------------------------------- #
 
-  outputs = { self, nixpkgs, nix, yants-src }: let
+  outputs = { self, nixpkgs, nix }: let
 
     # An extension to `nixpkgs.lib'.
     lib = nixpkgs.lib.extend self.libOverlays.default;
@@ -121,10 +115,7 @@
 
     # FIXME: this is funny but also completely hideous and unnecessary.
     libOverlays.ak-nix = final: prev: let
-      nlib = import ./lib {
-        inherit (nixpkgs) lib;
-        inherit nix yants-src;
-      };
+      nlib = import ./lib { inherit (nixpkgs) lib; inherit nix; };
     in removeAttrs nlib ["__unfix__" "extend"];
     libOverlays.default = self.libOverlays.ak-nix;
 
