@@ -4,8 +4,8 @@
   inputs.nix.url = "github:NixOS/nix";
   inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
 
-  outputs = { self, nixpkgs, nix, yants-src, ... }: {
+  outputs = { self, nixpkgs, nix, ... }: {
     # An extension to `nixpkgs.lib'.
-    lib = import ./. { inherit nix yants-src; inherit (nixpkgs) lib; };
+    lib = import ./. { inherit nix; inherit (nixpkgs) lib; };
   };
 }

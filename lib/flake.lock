@@ -25,11 +25,11 @@
         "nixpkgs-regression": "nixpkgs-regression"
       },
       "locked": {
-        "lastModified": 1665761757,
-        "narHash": "sha256-A6DEvsXzVvBCUah/wD/ZsLu+oGkCmHdJg9x0HHj1jhs=",
+        "lastModified": 1666171312,
+        "narHash": "sha256-1w4IETmuLq2OCNWfWs0wraSKcYHZlHB/4gQRV4U2aFk=",
         "owner": "NixOS",
         "repo": "nix",
-        "rev": "3093bd3a855b8fa1f572fd5a33c1971adf5e3e08",
+        "rev": "95331cb9c99151cbd790ceb6ddaf49fc1c0da4b3",
         "type": "github"
       },
       "original": {
@@ -71,24 +71,7 @@
     "root": {
       "inputs": {
         "nix": "nix",
-        "nixpkgs": "nixpkgs",
-        "yants-src": "yants-src"
-      }
-    },
-    "yants-src": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1645270620,
-        "narHash": "sha256-wwkl3K200UbW9Z7BRlVH8HOEXCaVYP2MqZpsF9EhgZg=",
-        "ref": "refs/heads/canon",
-        "rev": "efeb6dc11eb1a1e88d41dc2093fc5aa31f7abd35",
-        "revCount": 15,
-        "type": "git",
-        "url": "https://code.tvl.fyi/depot.git:/nix/yants.git"
-      },
-      "original": {
-        "type": "git",
-        "url": "https://code.tvl.fyi/depot.git:/nix/yants.git"
+        "nixpkgs": "nixpkgs"
       }
     }
   },
