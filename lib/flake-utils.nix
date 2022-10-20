@@ -4,9 +4,7 @@
 #
 # ---------------------------------------------------------------------------- #
 
-{ lib
-, nix ? builtins.getFlake "github:NixOS/nix"
-}: let
+{ lib }: let
 
 # ---------------------------------------------------------------------------- #
 
@@ -43,12 +41,6 @@
   in self;
 
   callFlake = callFlakeWith {};
-
-  # XXX: Not sure if it makes sense to make these implementations align or not.
-  # They basically do the exact same thing though; the main difference is that
-  # `callSubFlake' handles `follows' correct AFAIK.
-  # { lock ? <PATH>, root ? <PATH>, subdir ? <REL-PATH> }
-  callSubFlake' = import ./call-flake-w.nix { inherit nix; };
 
 
 # ---------------------------------------------------------------------------- #
