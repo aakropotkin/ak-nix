@@ -206,7 +206,7 @@ in {
     inherit (final.libtypes.ytypes) Typeclasses;
     Strings = final.libstr.ytypes.Strings // final.libenc.ytypes.Strings;
     Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
-    inherit (libyants) Core;
+    inherit (libyants) Core __internal;
   } );
 
 
