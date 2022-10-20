@@ -188,6 +188,7 @@ in {
     canCallStrict
     setFunctionArgProcessor
     callWith
+    apply
   ;
 
   inherit (final.libtag)

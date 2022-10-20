@@ -183,9 +183,25 @@
 
 # ---------------------------------------------------------------------------- #
 
-  callWith = autoArgs: x: let
+  # Apply a function to an attrset or potential args, automatically filtering
+  # the set to those the function can accept.
+  # NOTE: This is strictly meant to be used with functions that accept attrsets
+  # as their argument, and is best suited for use with `setFunctionArgs'.
+  #
+  # lib.apply ( { x, y }: x + y ) { x = 1; y = 2; z = -1; }
+  # => 3
+  apply = x: args: let
     f = if lib.isFunction x then x else import x;
-  in f ( builtins.intersectAttrs ( lib.functionArgs f ) autoArgs );
+  in f ( builtins.intersectAttrs ( lib.functionArgs f ) args );
+
+
+# ---------------------------------------------------------------------------- #
+
+  # non-overridable form of `callPackageWith'.
+  callWith = auto: x: let
+    f = if lib.isFunction x then x else import x;
+  in args:
+    f ( ( builtins.intersectAttrs ( lib.functionArgs f ) auto ) // args );
 
 
 # ---------------------------------------------------------------------------- #
@@ -203,6 +219,7 @@ in {
     canPassStrict
     canCallStrict
     setFunctionArgProcessor
+    apply
     callWith
   ;
 
