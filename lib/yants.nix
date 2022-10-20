@@ -104,9 +104,9 @@
 # ---------------------------------------------------------------------------- #
 
   # Default error message for a type mismatch.
-  typeError = type: val: let
-    p  = prettyPrint val;
-  in "expected type '${type}', but value '${p}' is of type '${builtins.typeOf val}'";
+  typeError = type: val:
+    "expected type '${type}', but value '${prettyPrint val}' is of " +
+    "type '${builtins.typeOf val}'";
 
 
 # ---------------------------------------------------------------------------- #
@@ -185,8 +185,9 @@
 
   # One of [<T1>...<TN>]
   Core.eitherN = tn: let
+    name = "either<${builtins.concatStringsSep ", " ( map ( x: x.name ) tn )}>";
     cond = x: builtins.any ( t: ( Prim.type t ).check x ) tn;
-  in typedef "either<${builtins.concatStringsSep ", " (map (x: x.name) tn)}>" cond;
+  in typedef name cond;
 
 
   # Either <T1> or <T2>
@@ -345,7 +346,7 @@
         res = t.checkType v;
       in if ( builtins.isAttrs x ) &&
             ( builtins.length ( builtins.attrNames x ) == 1 ) &&
-            ( variant ? ${def} )
+            ( def ? ${variant} )
          then if t.checkToBool res then { ok = true; } else {
            ok = false;
            err = "while checking '${name}' variant '${variant}': "
@@ -387,13 +388,14 @@
         ( builtins.tail self.sig );
       __functor = _: f;
     };
-    defun' = sig: func:
-      if 2 < ( builtins.length sig )
-      then mkFunc sig (x: defun' (builtins.tail sig) (func ((builtins.head sig) x)))
-      else mkFunc sig (x: ((builtins.head (builtins.tail sig)) (func ((builtins.head sig) x))));
+    defun' = sig: func: let
+      ic = x: defun' ( builtins.tail sig ) ( func ( ( builtins.head sig ) x ) );
+      i1 = x: ( builtins.elemAt sig 1 ) ( func ( ( builtins.head sig ) x ) );
+      inner = if 2 < ( builtins.length sig ) then ic else i1;
+    in mkFunc sig inner;
   in sig: func:
      if ( builtins.length sig ) < 2
-     then (throw "Signature must at least have two types (a -> b)")
+     then throw "Signature must at least have two types (a -> b)"
      else defun' sig func;
 
 
