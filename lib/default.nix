@@ -1,16 +1,2 @@
-# ============================================================================ #
-#
-#
-#
-# ---------------------------------------------------------------------------- #
-
-{ lib       ? ( builtins.getFlake "github:NixOS/nixpkgs?dir=lib" ).lib
-, nix       ? builtins.getFlake "github:NixOS/nix"
-}: lib.extend ( import ./overlay.lib.nix )
-
-
-# ---------------------------------------------------------------------------- #
-#
-#
-#
-# ============================================================================ #
+{ lib ? ( builtins.getFlake "github:NixOS/nixpkgs?dir=lib" ).lib }:
+lib.extend ( import ./overlay.lib.nix )

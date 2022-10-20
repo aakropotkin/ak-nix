@@ -53,9 +53,6 @@ final: prev: let
 
 in {
 
-  # Eliminated depratation warnings/errors.
-  systems = removeAttrs prev.systems ["supported"];
-
   # Cribbed from `flake-utils', vendored to skip a redundant fetch.
   defaultSystems = [
     "x86_64-linux" "x86_64-darwin"

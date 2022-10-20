@@ -2,95 +2,18 @@
 
   description = "Misc Nix derivations and expressions";
 
-  inputs.nix.url = "github:NixOS/nix";
-  inputs.nix.inputs.nixpkgs.follows = "/nixpkgs";
+# ---------------------------------------------------------------------------- #
+
+  outputs = { nixpkgs, ... }: let
 
 # ---------------------------------------------------------------------------- #
 
-  outputs = { self, nixpkgs, nix }: let
+    # A standalone lib overlay, useful if you are creating other pure libs.
+    libOverlays.default = import ./lib/overlay.lib.nix;
 
-    # An extension to `nixpkgs.lib'.
-    lib = nixpkgs.lib.extend self.libOverlays.default;
-
-    inherit (lib) eachDefaultSystemMap;
-
-  in {
-
-# ---------------------------------------------------------------------------- #
-
-    # Not effected by systems:
-    inherit lib;
-
-    # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
-    repl = let
-      pkgsFor = nixpkgs.legacyPackages.${builtins.currentSystem};
-    in lib.joinAttrs [
-      ( lib.extend ( _: _: { inNixRepl = true; } ) )
-      lib.librepl
-      builtins
-      {
-        inherit pkgsFor;
-        np = pkgsFor;
-      }
-    ];
-
-    # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
-    docgen = ( eachDefaultSystemMap ( system: import ./pkgs/docgen {
-      inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
-    } ) ) // { __functor = _self: system: _self.${system}; };
-
-
-# ---------------------------------------------------------------------------- #
-
-    tarutils = ( eachDefaultSystemMap ( system:
-      import ./pkgs/build-support/trivial/tar.nix {
-        inherit system lib;
-        inherit (nixpkgs.legacyPackages.${system})
-          gzip gnutar coreutils bash findutils;
-      } ) ) // { __functor = _self: system: _self.${system}; };
-
-
-# ---------------------------------------------------------------------------- #
-
-    linkutils = ( eachDefaultSystemMap ( system:
-      import ./pkgs/build-support/trivial/link.nix {
-        inherit system lib;
-        inherit (nixpkgs.legacyPackages.${system}) coreutils bash;
-      } ) ) // { __functor = _self: system: _self.${system}; };
-
-
-# ---------------------------------------------------------------------------- #
-
-    copyutils = ( eachDefaultSystemMap ( system:
-      import ./pkgs/build-support/trivial/copy.nix {
-        inherit system lib;
-        inherit (nixpkgs.legacyPackages.${system}) coreutils bash;
-      } ) ) // { __functor = _self: system: _self.${system}; };
-
-
-# ---------------------------------------------------------------------------- #
-
-    trivial = ( eachDefaultSystemMap ( system:
-      self.tarutils.${system} // self.linkutils.${system} //
-      self.copyutils.${system}
-    ) ) // { __functor = _self: system: _self.${system}; };
-
-
-# ---------------------------------------------------------------------------- #
-
-    packages = eachDefaultSystemMap ( system: let
-      pkgsFor = self.legacyPackages.${system};
-    in {
-      tests = ( pkgsFor.callPackage ./tests {
-        inherit pkgsFor lib nixpkgs system;
-      } ).checkDrv;
-    } );
-
-
-# ---------------------------------------------------------------------------- #
-
-    # Merge input overlays in isolation from one another.
-    overlays.ak-nix = final: prev: let
+    # Extends Nixpkgs with new builders as well as our lib and type extensions.
+    # Types are stashed under `lib.ytypes'.
+    overlays.default = final: prev: let
       tarutils = import ./pkgs/build-support/trivial/tar.nix {
         inherit (prev) gzip gnutar coreutils bash findutils system;
         inherit (final) lib;
@@ -105,65 +28,110 @@
       };
       trivial = tarutils // linkutils // copyutils;
     in {
-      lib = ( prev.lib or nixpkgs.lib ).extend self.libOverlays.default;
+      lib = prev.lib.extend libOverlays.default;
     } // trivial;
 
-    overlays.default = self.overlays.ak-nix;
+    # These are already included in our lib overlay.
+    # We splice them out here to help simplify the use of overrides in other
+    # flakes with complex compositions.
+    # Users should ignore this overlay - you shouldn't ever need to this overlay
+    # unless you're trying to stub the type checkers with dummy functions.
+    ytOverlays.default  = final: prev:
+      ( nixpkgs.lib.extend libOverlays.default ).ytypes;
 
-    ytOverlays.ak-nix  = final: prev: lib.ytypes;
-    ytOverlays.default = self.ytOverlays.ak-nix;
+# ---------------------------------------------------------------------------- #
 
-    # FIXME: this is funny but also completely hideous and unnecessary.
-    libOverlays.ak-nix = final: prev: let
-      nlib = import ./lib { inherit (nixpkgs) lib; inherit nix; };
-    in removeAttrs nlib ["__unfix__" "extend"];
-    libOverlays.default = self.libOverlays.ak-nix;
+    nixosModules.default = { config, ... }: { overlays = [overlays.ak-nix]; };
+
+# ---------------------------------------------------------------------------- #
+
+    inherit (nixpkgs.lib.extend libOverlays.default) eachDefaultSystemMap;
+
+# ---------------------------------------------------------------------------- #
+
+  in {
+
+# ---------------------------------------------------------------------------- #
+
+    # Inheriting these allows us to avoid referring to a "global self".
+    # This is important in order to avoid quirks in lockfiles, and to simplify
+    # the use of `callFlake'.
+    inherit overlays libOverlays ytOverlays nixosModules;
+
+    lib = nixpkgs.lib.extend libOverlays.default;
 
 
 # ---------------------------------------------------------------------------- #
 
-  legacyPackages = eachDefaultSystemMap ( system:
-    nixpkgs.legacyPackages.${system}.extend self.overlays.ak-nix
-  );
+    # `nix-repl> :a ( builtins.getFlake "ak-core" ).repl'
+    repl = let
+      pkgsFor = nixpkgs.legacyPackages.${builtins.currentSystem}.extend
+                  overlays.default;
+      lib = let
+        pureLib = nixpkgs.lib.extend libOverlays.default;
+      in pureLib.extend ( _: _: { inNixRepl = true; } );
+    in lib.joinAttrs [
+      lib
+      lib.librepl
+      builtins
+      { inherit pkgsFor lib; }
+    ];
+
+    # Wrappers for Pandoc, Makeinfo, and NixOS module options' generators.
+    docgen = ( eachDefaultSystemMap ( system: import ./pkgs/docgen {
+      inherit (nixpkgs.legacyPackages.${system}) pandoc texinfo;
+    } ) ) // { __functor = _self: system: _self.${system}; };
 
 
 # ---------------------------------------------------------------------------- #
 
-    nixosModules.ak-nix  = { config, ... }: {
-      overlays = [self.overlays.ak-nix];
-    };
-    nixosModules.default = self.nixosModules.ak-nix;
+    packages = eachDefaultSystemMap ( system: let
+      pkgsFor = nixpkgs.legacyPackages.${system}.extend overlays.default;
+    in {
+      tests = ( pkgsFor.callPackage ./tests {
+        inherit pkgsFor nixpkgs system;
+        inherit (pkgsFor) lib;
+      } ).checkDrv;
+    } );
 
 
 # ---------------------------------------------------------------------------- #
 
-    templates = {
-      default = self.templates.basic;
+    legacyPackages = eachDefaultSystemMap ( system:
+      nixpkgs.legacyPackages.${system}.extend overlays.default
+    );
 
+
+# ---------------------------------------------------------------------------- #
+
+    templates = let
       basic.path = ./templates/basic;
       basic.description = "a dank starter flake";
+    in {
+      inherit basic;
+      default = basic;
 
-      meaty.path = ./templates/meaty;
+      meaty.path        = ./templates/meaty;
       meaty.description = "a meaty starter flake";
 
-      basic-pkg.path = ./templates/basic-pkg;
+      basic-pkg.path        = ./templates/basic-pkg;
       basic-pkg.description = "a basic GNU build system package";
 
-      autotools.path = ./templates/autotools;
+      autotools.path        = ./templates/autotools;
       autotools.description = "a basic autotools project";
 
-      lib-sub.path = ./templates/lib-sub;
+      lib-sub.path        = ./templates/lib-sub;
       lib-sub.description = "a sub library file";
 
-      tests.path = ./templates/tests;
+      tests.path        = ./templates/tests;
       tests.description = "a test harness for Nix expressions and drvs";
 
-      tests-sub.path = ./templates/tests-sub;
+      tests-sub.path        = ./templates/tests-sub;
       tests-sub.description = "a subset of tests for the `ak-nix' Test harness";
     };
 
 
 # ---------------------------------------------------------------------------- #
 
-  };
+  };  # End Outputs
 }
