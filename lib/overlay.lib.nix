@@ -201,13 +201,14 @@ in {
 
 # ---------------------------------------------------------------------------- #
 
-  ytypes = prev.makeExtensible ( _: let
+  ytypes = prev.makeExtensible ( ytFinal: let
     libyants = callLib ./yants.nix;
   in {
-    inherit (final.libtypes.ytypes) Typeclasses;
-    Strings = final.libstr.ytypes.Strings // final.libenc.ytypes.Strings;
-    Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
     inherit (libyants) Core __internal;
+    inherit (final.libtypes.ytypes) Typeclasses;
+    Strings = final.libstr.ytypes.Strings // ytFinal.Hash.Strings;
+    Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
+    Hash    = final.libenc.ytypes;
   } );
 
 

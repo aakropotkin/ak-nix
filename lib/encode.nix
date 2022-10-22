@@ -279,29 +279,46 @@
 
 # ---------------------------------------------------------------------------- #
 
-  ytypes.Strings = {
-    # Base16
-    md5_hash  = yt.restrict "md5:b16" ( lib.test "[[:xdigit:]]{32}" ) yt.string;
-    sha1_hash =
-      yt.restrict "sha1:b16" ( lib.test "[[:xdigit:]]{40}" ) yt.string;
-    sha256_hash =
-      yt.restrict "sha256:b16" ( lib.test "[[:xdigit:]]{64}" ) yt.string;
-    sha512_hash =
-      yt.restrict "sha512:b16" ( lib.test "[[:xdigit:]]{128}" ) yt.string;
+  ytypes = {
 
-    # Base 64
-    sha1_sri  = let
-      cond = lib.test "sha1-[${base64Chars'}]+={0,2}";
-    in yt.restrict "sha1:sri" cond yt.string;
-    # sha256-A3eLarlqN1XPBYBcFPY1yUpfxdhJKvDBjN+vsOAmOoc=
-    sha256_sri = let
-      cond = lib.test "sha256-[${base64Chars'}]+={0,2}";
-    in yt.restrict "sha256:sri" cond yt.string;
-    sha512_sri = let
-      cond = lib.test "sha512-[${base64Chars'}]+={0,2}";
-    in yt.restrict "sha512:sri" cond yt.string;
-  };
+    Strings = {
+      # Base16
+      md5_hash = let
+        cond = lib.test "[[:xdigit:]]{32}";
+      in yt.restrict "md5:b16" cond yt.string;
+      sha1_hash =
+        yt.restrict "sha1:b16" ( lib.test "[[:xdigit:]]{40}" ) yt.string;
+      sha256_hash =
+        yt.restrict "sha256:b16" ( lib.test "[[:xdigit:]]{64}" ) yt.string;
+      sha512_hash =
+        yt.restrict "sha512:b16" ( lib.test "[[:xdigit:]]{128}" ) yt.string;
 
+      # Base 64
+      sha1_sri  = let
+        cond = lib.test "sha1-[${base64Chars'}]+={0,2}";
+      in yt.restrict "sha1:sri" cond yt.string;
+      # sha256-A3eLarlqN1XPBYBcFPY1yUpfxdhJKvDBjN+vsOAmOoc=
+      sha256_sri = let
+        cond = lib.test "sha256-[${base64Chars'}]+={0,2}";
+      in yt.restrict "sha256:sri" cond yt.string;
+      sha512_sri = let
+        cond = lib.test "sha512-[${base64Chars'}]+={0,2}";
+      in yt.restrict "sha512:sri" cond yt.string;
+    };
+
+
+    Eithers = {
+      sha1   = yt.either ytypes.Strings.sha1_hash ytypes.Strings.sha1_sri;
+      sha256 = yt.either ytypes.Strings.sha256_hash ytypes.Strings.sha256_sri;
+      sha512 = yt.either ytypes.Strings.sha512_hash ytypes.Strings.sha512_sri;
+    };
+
+    md5 = ytypes.Strings.md5_hash;
+    inherit (ytypes.Eithers)
+      sha1 sha256 sha512
+    ;
+
+  };  # End ytypes
 
 
 # ---------------------------------------------------------------------------- #
