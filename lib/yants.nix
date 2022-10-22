@@ -81,7 +81,8 @@
     # function.
     __functor = self: value: let
       result = self.checkType value;
-    in if checkToBool result then value else throw ( toError value result );
+    in if self.checkToBool result then value else
+       throw ( self.toError value result );
   };
 
 
