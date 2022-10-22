@@ -189,6 +189,9 @@ in {
     setFunctionArgProcessor
     callWith
     apply
+    callWithOvStrict
+    callWithOvStash
+    callWithOv
   ;
 
   inherit (final.libtag)

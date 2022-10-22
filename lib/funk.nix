@@ -45,7 +45,7 @@
     lib.filterAttrs ( name: optional: ! optional ) ( lib.functionArgs fn );
 
   # Taken from Nixpkgs' `lib.callPackageWith'
-  missingArgsStrict = args: fn: let
+  missingArgsStrict = fn: args: let
     sat = name: optional: ! ( optional || ( args ? ${name} ) );
   in lib.filterAttrs sat ( lib.functionArgs fn );
 
@@ -55,11 +55,11 @@
   # These are "strict" insofar as they do not attempt to access thunks
   # or other auto-args.
 
-  canPassStrict = args: fn: let
+  canPassStrict = fn: args: let
     fa = lib.functionArgs fn;
   in builtins.intersectAttrs fa args;
 
-  canCallStrict = args: fn: ( missingArgsStrict args fn ) == {};
+  canCallStrict = fn: args: ( missingArgsStrict args fn ) == {};
 
 
 # ---------------------------------------------------------------------------- #
@@ -201,7 +201,57 @@
   callWith = auto: x: let
     f = if lib.isFunction x then x else import x;
   in args:
-    f ( ( builtins.intersectAttrs ( lib.functionArgs f ) auto ) // args );
+     f ( ( builtins.intersectAttrs ( lib.functionArgs f ) auto ) // args );
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Produce an overridable call to a function.
+  # Return type must be an attrset.
+  # An attribute called `override' is added to allow recall.
+  callWithOvStrict = auto: x: let
+    __innerFunction = if lib.isFunction x then x else import x;
+    __thunk = builtins.intersectAttrs ( lib.functionArgs __innerFunction ) auto;
+  in {
+    inherit __innerFunction __thunk;
+    __processArgs = self: args: self.__thunk // args;
+    __functor = self: args: let
+      result  = self.__innerFunction ( self.__processArgs self args );
+    in assert builtins.isAttrs result;
+       result // { override = self // { __thunk = self.__thunk // args; }; };
+  };
+
+  # Produce an overridable call to a function.
+  # Return type need not be an attrset.
+  # An attribute called `override' allows recall, and the return value of the
+  # original call is stashed in `result'.
+  callWithOvStash = auto: x: let
+    __innerFunction = if lib.isFunction x then x else import x;
+    __thunk = builtins.intersectAttrs ( lib.functionArgs __innerFunction ) auto;
+  in {
+    inherit __innerFunction __thunk;
+    __processArgs = self: args: self.__thunk // args;
+    __functor = self: args: {
+      result   = self.__innerFunction ( self.__processArgs self args );
+      override = self // { __thunk = self.__thunk // args; };
+    };
+  };
+
+  # Produce an overridable call to a function.
+  # If return type is an attrset, behave like `callWithOvStrict', otherwise
+  # stash the returned value in `result' like `callWithOvStash'.
+  callWithOv = auto: x: let
+    __innerFunction = if lib.isFunction x then x else import x;
+    __thunk = builtins.intersectAttrs ( lib.functionArgs __innerFunction ) auto;
+  in {
+    inherit __innerFunction __thunk;
+    __processArgs = self: args: self.__thunk // args;
+    __functor = self: args: let
+      result   = self.__innerFunction ( self.__processArgs self args );
+      override = self // { __thunk = self.__thunk // args; };
+    in if builtins.isAttrs result then result // { inherit override; } else
+       { inherit result override; };
+  };
 
 
 # ---------------------------------------------------------------------------- #
@@ -221,6 +271,7 @@ in {
     setFunctionArgProcessor
     apply
     callWith
+    callWithOvStrict callWithOvStash callWithOv
   ;
 
 }
