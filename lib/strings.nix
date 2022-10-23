@@ -54,6 +54,10 @@
     tarball_name =
       yt.restrict "filename[tarball]" ( lib.test "[^/]+${tarball_ext_p}" )
                                       yt.string;
+
+    # As seen in `sourceInfo'
+    timestamp = yt.restrict "timestamp" ( lib.test "[0-9]{14}" ) yt.string;
+
   };
 
   # TODO: URIs https://www.ietf.org/rfc/rfc2396.txt
