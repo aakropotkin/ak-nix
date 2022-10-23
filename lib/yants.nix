@@ -383,24 +383,16 @@
   # used to check values for conformity.
   Core.defun = let
     mkFunc = sig: f: {
-      __functionMeta.name = f.__functionMeta.name or f.name or "<LAMBDA>";
-      __functionMeta.signature = sig;
-      __toString = self: let
-        name = self.__functionMeta.name or self.name or "<LAMBDA>";
-        sig  = self.__functionMeta.signature or self.sig;
-      in builtins.foldl' ( s: t: "${s} -> ${t.name}" )
-        "${name} :: ${( builtins.head sig ).name}"
-        ( builtins.tail sig );
+      inherit sig;
+      __toString = self: builtins.foldl' ( s: t: "${s} -> ${t.name}" )
+        "<LAMBDA> :: ${( builtins.head self.sig ).name}"
+        ( builtins.tail self.sig );
       __functor = _: f;
     };
     defun' = sig: func: let
       ic = x: defun' ( builtins.tail sig ) ( func ( ( builtins.head sig ) x ) );
       i1 = x: ( builtins.elemAt sig 1 ) ( func ( ( builtins.head sig ) x ) );
-      extra = if ( builtins.isAttrs func ) && ( func ? __functionMeta )
-              then { inherit (func) __functionMeta; } else {};
-      inner = {
-        __functor = _: if 2 < ( builtins.length sig ) then ic else i1;
-      } // extra;
+      inner = if 2 < ( builtins.length sig ) then ic else i1;
     in mkFunc sig inner;
   in sig: func:
      if ( builtins.length sig ) < 2
