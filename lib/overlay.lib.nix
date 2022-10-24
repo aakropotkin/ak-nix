@@ -81,9 +81,6 @@ in {
   libtypes  = callLib  ./types.nix;
   libfilt   = callLib  ./filt.nix;
 
-  # Avoid overloading the name `fetchurl' even more than it already is.
-  fetchurlDrv = import ./fetchurl.nix;
-
   inherit (final.libfilt)
     genericFilt
     nixFilt
