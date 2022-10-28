@@ -202,7 +202,7 @@
   __doc__expandGlob = ''
     Path -> PathGlob -> [Path]
     Ex:
-      json-utils.expandGlob ../../../../foo "bar/baz/*"
+      expandGlob ../../../../foo "bar/baz/*"
         ==>
       [ /<ABS-PATH>/foo/bar/baz/quux /<ABS-PATH>/foo/bar/baz/sally ... ]
     NOTE: Taken from `mkYarnPackage'.

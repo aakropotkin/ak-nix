@@ -51,7 +51,19 @@ final: prev: let
 
 # ---------------------------------------------------------------------------- #
 
-in {
+  # Backport missing `lib.inPureEvalMode'
+  # NOTE: only injected if missing so `pos' isn't disturbed.
+  backport.inPureEvalMode = ! ( builtins ? currentSystem );
+
+  backportFns = let
+    proc = acc: fname:
+    if prev ? ${fname} then acc else acc // { ${fname} = backport.${fname}; };
+  in builtins.foldl' proc {} ( builtins.attrNames backport );
+
+
+# ---------------------------------------------------------------------------- #
+
+in backportFns // {
 
   # Cribbed from `flake-utils', vendored to skip a redundant fetch.
   defaultSystems = [
