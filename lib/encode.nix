@@ -294,31 +294,126 @@
         yt.restrict "sha512:b16" ( lib.test "[[:xdigit:]]{128}" ) yt.string;
 
       # Base 64
-      sha1_sri  = let
-        cond = lib.test "sha1-[${base64Chars'}]+={0,2}";
+      # XXX: These use Nix's character limitations on hashes.
+      # No [EOUTeout]
+      md5_sri  = let  # 24 data chars
+        condChars = lib.test "md5-[${base64Chars'}]{22,24}={0,2}";
+        condLen   = s: ( builtins.stringLength s ) == 28;
+        cond      = s: ( condLen s ) && ( condChars s );
+      in yt.restrict "md5:sri" cond yt.string;
+      sha1_sri  = let  # 28 data chars
+        condChars = lib.test "sha1-[${base64Chars'}]{26,28}={0,2}";
+        condLen   = s: ( builtins.stringLength s ) == 33;
+        cond      = s: ( condLen s ) && ( condChars s );
       in yt.restrict "sha1:sri" cond yt.string;
       # sha256-A3eLarlqN1XPBYBcFPY1yUpfxdhJKvDBjN+vsOAmOoc=
-      sha256_sri = let
-        cond = lib.test "sha256-[${base64Chars'}]+={0,2}";
+      sha256_sri = let  # 44 data chars
+        condChars = lib.test "sha256-[${base64Chars'}]{42,44}={0,2}";
+        condLen   = s: ( builtins.stringLength s ) == 51;
+        cond      = s: ( condLen s ) && ( condChars s );
       in yt.restrict "sha256:sri" cond yt.string;
-      sha512_sri = let
-        cond = lib.test "sha512-[${base64Chars'}]+={0,2}";
+      sha512_sri = let  # 88 data chars
+        condChars = lib.test "sha512-[${base64Chars'}]{86,88}={0,2}";
+        condLen   = s: ( builtins.stringLength s ) == 95;
+        cond      = s: ( condLen s ) && ( condChars s );
       in yt.restrict "sha512:sri" cond yt.string;
+
+      narHash = ytypes.Strings.sha256_sri;
     };
 
-
     Eithers = {
+      md5    = yt.either ytypes.Strings.md5_hash ytypes.Strings.md5_sri;
       sha1   = yt.either ytypes.Strings.sha1_hash ytypes.Strings.sha1_sri;
       sha256 = yt.either ytypes.Strings.sha256_hash ytypes.Strings.sha256_sri;
       sha512 = yt.either ytypes.Strings.sha512_hash ytypes.Strings.sha512_sri;
     };
 
-    md5 = ytypes.Strings.md5_hash;
+    Sums.hash = yt.sum {
+      shasum = ytypes.Eithers.sha1;
+      inherit (ytypes.Eithers) md5 sha1 sha256 sha512;
+      inherit (ytypes.String)
+        sha1_hash sha256_hash sha512_hash md5_hash
+        sha1_sri sha256_sri sha512_sri md5_sri
+        narHash
+      ;
+      integrity = yt.eitherN [
+        yt.Strings.md5_sri
+        yt.Strings.sha1_sri
+        yt.Strings.sha256_sri
+        yt.Strings.sha512_sri
+      ];
+    };
+
     inherit (ytypes.Eithers)
-      sha1 sha256 sha512
+      sha1 sha256 sha512 md5
     ;
+    inherit (ytypes.Strings) narHash;
 
   };  # End ytypes
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Identify
+  tagHash = {
+    __functionMeta.name = "tagHash";
+    __functionMeta.from = "ak-nix#lib.libenc";
+    __functionArgs = {
+      shasum      = true;
+      sha1        = true;
+      sha256      = true;
+      sha512      = true;
+      md5         = true;
+      integrity   = true;
+      hash        = true;
+      narHash     = true;
+      md5_sri     = true;
+      md5_hash    = true;
+      sha1_sri    = true;
+      sha1_hash   = true;
+      sha256_sri  = true;
+      sha256_hash = true;
+      sha512_sri  = true;
+      sha512_hash = true;
+    };
+    __processArgs = self: x: let
+      common    = builtins.intersectAttrs self.__functionArgs x;
+      vals      = builtins.attrValues common;
+      msg = let
+        loc = self.__functionMeta.from + "." + self.__functionMeta.name;
+        options = builtins.attrNames self.__functionArgs;
+        manyFew = if ( vals == [] ) then "few" else "many";
+      in "(${loc}): Received too ${manyFew} hashable arguments - pass exactly "
+         + "one of:  " + ( builtins.concatStringsSep " " options );
+      fromAttrs = if ( builtins.length vals ) == 1 then builtins.head vals else
+                  throw msg;
+    in if builtins.isString x then x else fromAttrs;
+
+    __innerFunction = h: let
+      # NOTE: original implementation yanked `m[2]', I think for Nixpkgs hash.
+      m = builtins.match "(sha(512|256|1)|md5)-(.*)" h;
+      # Try to take a shortcut and ID using an SRI prefix.
+      fromSri  = { "${builtins.head m}_sri" = h; };
+      # Fallback to a full audit.
+      fromHash = lib.libtypes.discrTypes {
+        inherit (ytypes.Strings) sha1_hash sha256_hash sha512_hash md5_hash;
+      } h;
+    in if m == null then fromHash else fromSri;
+
+    __functor = self: let
+      cond = y: let
+        vt = lib.libtag.verifyTag y;
+        tags = [
+          "md5_sri"    "md5_hash"
+          "sha1_sri"   "sha1_hash"
+          "sha256_sri" "sha256_hash"
+          "sha512_sri" "sha512_hash"
+        ];
+      in vt.isTag && ( builtins.elem vt.name tags );
+      tt = yt.restrict "hash:tagged" cond ( yt.Core.attrs yt.Prim.string );
+      fn = x: self.__innerFunction ( self.__processArgs self x );
+    in yt.defun [yt.any tt] fn;
+  };
 
 
 # ---------------------------------------------------------------------------- #
@@ -338,6 +433,7 @@ in {
     hexToSri
     sriFile sri256File sri512File
     ytypes
+    tagHash
   ;
 
 }
