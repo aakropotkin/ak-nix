@@ -326,6 +326,31 @@
       sha1   = yt.either ytypes.Strings.sha1_hash ytypes.Strings.sha1_sri;
       sha256 = yt.either ytypes.Strings.sha256_hash ytypes.Strings.sha256_sri;
       sha512 = yt.either ytypes.Strings.sha512_hash ytypes.Strings.sha512_sri;
+
+      integrity = yt.eitherN [
+        yt.Strings.md5_sri
+        yt.Strings.sha1_sri
+        yt.Strings.sha256_sri
+        yt.Strings.sha512_sri
+      ];
+
+      b16 = yt.eitherN [
+        yt.Strings.md5_hash
+        yt.Strings.sha1_hash
+        yt.Strings.sha256_hash
+        yt.Strings.sha512_hash
+      ];
+
+      hash = yt.eitherN [
+        yt.Strings.md5_hash
+        yt.Strings.sha1_hash
+        yt.Strings.sha256_hash
+        yt.Strings.sha512_hash
+        yt.Strings.md5_sri
+        yt.Strings.sha1_sri
+        yt.Strings.sha256_sri
+        yt.Strings.sha512_sri
+      ];
     };
 
     Sums.hash = yt.sum {
@@ -336,16 +361,11 @@
         sha1_sri sha256_sri sha512_sri md5_sri
         narHash
       ;
-      integrity = yt.eitherN [
-        yt.Strings.md5_sri
-        yt.Strings.sha1_sri
-        yt.Strings.sha256_sri
-        yt.Strings.sha512_sri
-      ];
     };
 
     inherit (ytypes.Eithers)
       sha1 sha256 sha512 md5
+      integrity b16 hash
     ;
     inherit (ytypes.Strings) narHash;
 

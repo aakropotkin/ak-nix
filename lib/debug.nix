@@ -11,8 +11,8 @@ let
   report' = trace: { name, expected, result } @ test: let
     msg = ''
       Test ${name} Failure: Expectation did not match result.
-        expected: ${lib.libstr.coerceString expected}
-        result:   ${lib.libstr.coerceString result}
+        expected: ${lib.generators.toPretty {} expected}
+        result:   ${lib.generators.toPretty {} result}
     '';
   in trace msg test;
 
@@ -45,7 +45,7 @@ let
     rsl' = if doTrace then builtins.deepSeq ( builtins.trace msg ) rsl else rsl;
   in assert rsl'; rsl';
 
-  checkerEvalAssert = checkerEvalAssert true;
+  checkerEvalAssert = checkerEvalAssert' true;
 
   checkerReport = name: run: let
     # A phony runner used to capture report messages.
@@ -69,6 +69,7 @@ let
   }: ( writeText "${name}.log" check ).overrideAttrs ( _: _: {
     checkPhase = ''
       if grep -q "^FAIL: " "$out"; then
+        cat "$out";
         cat "$out" >&2;
         ${lib.optionalString ( ! keepFailed ) "exit 1;"}
       fi

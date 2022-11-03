@@ -16,7 +16,7 @@
     lines = builtins.concatStringsSep "\n" ( map printer xs );
   in builtins.trace ( "\n" + lines ) "";
   showList  = showList' lib.libstr.coerceString;
-  showListP = showList' ( lst: "\n${pp lst}\n" );
+  showListP = showList' ( lst: pp lst );
 
   # Uses trace to print arbitrary values to the console.
   # If passed a list, each element will be printed on a line.
