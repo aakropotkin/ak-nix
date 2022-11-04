@@ -107,8 +107,8 @@
   fromBase16    = fromHex;
 
   padBackTo6l = str: let
-    n = 6 - ( lib.mod ( stringLength str ) 6 );
-    pad = concatStringsSep "" ( genList ( _: "0" ) n );
+    n = 6 - ( lib.mod ( builtins.stringLength str ) 6 );
+    pad = builtins.concatStringsSep "" ( builtins.genList ( _: "0" ) n );
   in str + pad;
 
 
@@ -262,12 +262,21 @@
      throw "Invalid hash length, cannot guess algo: ${hash}";
 
   hexToSri = h16: let
-    b16l = lib.flatten ( split "(......)" ( padBackTo6l h16 ) );
-    b10l = map fromHex ( filter ( x: x != "" ) b16l );
-    b64  = concatStringsSep "" ( map toBase64 b10l );
+    b16l = lib.flatten ( builtins.split "(......)" ( padBackTo6l h16 ) );
+    b10l = map fromHex ( builtins.filter ( x: x != "" ) b16l );
+    b64  = builtins.concatStringsSep "" ( map toBase64 b10l );
     pad  = fixupSriPadding b64;
     algo = algoFromB16Len h16;
   in "${algo}-${pad}";
+
+  sriToHex = sri: let
+    unfixPadding = builtins.replaceStrings ["="] ["A"] sri;
+    dropPrefix   = lib.yankN 2 "(md5|sha(1|256|512))-(.*)" unfixPadding;
+    b64l = lib.flatten ( split "(....)" dropPrefix );
+    b10l = map fromBase64 ( builtins.filter ( x: x != "" ) b64l );
+    b16  = concatStringsSep "" ( map toBase16 b10l );
+    # Unpad back
+  in lib.yank "(.*[^0])0*" b16;
 
 
 # ---------------------------------------------------------------------------- #
@@ -450,7 +459,7 @@ in {
     toBase32 fromBase32
     toBase64 fromBase64
     algoFromB16Len
-    hexToSri
+    hexToSri sriToHex
     sriFile sri256File sri512File
     ytypes
     tagHash
