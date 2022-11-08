@@ -16,7 +16,9 @@
       exact = builtins.elem bname ignoreDirs;
       match = builtins.any ( patt: lib.test patt bname ) ignoreDirsP;
     in assert type == "directory"; ! ( exact || match );
-    ignoreFiles  = ["result" ".DS_Store" ".envrc" ".eslintcache" ".gitconfig"];
+    ignoreFiles  = [
+      "result" ".DS_Store" ".envrc" ".eslintcache" ".gitconfig" ".gitignore"
+    ];
     ignoreFilesP = [".*~" "\\._.*" ".*\\.(tgz|tar(\\.gz)?)" "result-.*"];
     filePred = let
       exact = builtins.elem bname ignoreFiles;
