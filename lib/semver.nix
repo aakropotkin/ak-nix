@@ -146,6 +146,7 @@
   semverOpFns = {
     range = semverSatRange;
     caret = semverSatCaret;
+    tilde = semverSatTilde;
     "or"  = semverSatOr;
     and   = semverSatAnd;
     exact = semverSatExact;
