@@ -130,14 +130,16 @@
     "~"   = "tilde";
     "="   = "exact";
     "<="  = "le";
+    "=<"  = "le";
     "<"   = "lt";
     "=>"  = "ge";
+    ">="  = "ge";
     ">"   = "gt";
     "*"   = "any";
   };
 
   semverNormalizeOp = op:
-    semverOpAliases.${op} or semverOpAliases.${lib.lower op} or
+    semverOpAliases.${op} or semverOpAliases.${lib.toLower op} or
     ( throw "Unrecognized op: ${op}" );
 
 
@@ -167,7 +169,7 @@
   , argc ? if arg1 == null then 0 else if arg2 == null then 1 else 2
   , sat  ? semverOpFn op
   } @ args: assert ( 0 <= argc ) && ( argc < 3 ); let
-    op' = semverNormalizeOp ( args.op or "fail" );
+    op' = semverNormalizeOp op;
   in {
     inherit sat argc;
     op = op';
