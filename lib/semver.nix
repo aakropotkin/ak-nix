@@ -33,9 +33,12 @@
   # the same untagged version.
   compareSemvers = a: b: let
     base    = builtins.compareVersions a b;
-    sameMMP = ( lib.yank "([^-]+)(-.*)?" a ) == ( lib.yank "([^-]+)(-.*)?" b );
+    ma = lib.yank "([^-]+)(-.*)?" a;
+    mb = lib.yank "([^-]+)(-.*)?" b;
   in if a == b then 0 else
-     if sameMMP && ( ( a == "${b}-0" ) || ( b == "${a}-0" ) ) then - base else
+     if ( a != ma ) && ( b != mb ) then base else
+     if ( a == ma ) && ( b == mb ) then base else
+     if ( a == mb ) || ( b == ma ) then - base else
      base;
 
 # ---------------------------------------------------------------------------- #
@@ -163,9 +166,11 @@
   , arg2 ? null
   , argc ? if arg1 == null then 0 else if arg2 == null then 1 else 2
   , sat  ? semverOpFn op
-  }: assert 0 <= argc && argc < 3; {
+  } @ args: assert ( 0 <= argc ) && ( argc < 3 ); let
+    op' = semverNormalizeOp ( args.op or "fail" );
+  in {
     inherit sat argc;
-    op = semverNormalizeOp op;
+    op = op';
     _type = "semverConst";
     __functor = self:
       if self.argc == 0 then self.sat else
@@ -380,6 +385,7 @@ in {
     semverConstFail
 
     semverConstRangeEq
+    semverOpFn
   ;
 
 }
