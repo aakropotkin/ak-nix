@@ -84,13 +84,21 @@
   semverSatExact = want: have: ( compareSemvers want have ) == 0;
 
   semverSatTilde = want: have: let
-    w' = lib.yank "([^-]+)-.*" want;
-    w  = if w' == null then want else w';
-    h' = lib.yank "([^-]+)-.*" have;
-    h  = if h' == null then have else h';
-  in ( compareSemvers w h ) == 0;
+    # Strip pre-release tags
+    w = lib.yank "([^-]+)(-.*)?" want;
+    h = lib.yank "([^-]+)(-.*)?" have;
+    wm = builtins.match "([0-9]+)(\\.([0-9]+)(\\.([0-9]+))?)?" w;
+    wp = {
+      major = builtins.head wm;
+      minor = builtins.elemAt wm 2;
+      patch = builtins.elemAt wm 4;
+    };
+    prefix =
+      if wp.minor == null then "${wp.major}." else
+      if ( wp.patch == null ) || ( w == want ) then "${wp.major}.${wp.minor}"
+                                               else w;
+  in lib.hasPrefix prefix h;
 
-  # FIXME: `0.x' and `0.0.x' are special cases.
   semverSatCaret = want: have: let
     gt = ( compareSemvers want have ) <= 0;
     sm = ( lib.versions.major want ) == ( lib.versions.major have );
