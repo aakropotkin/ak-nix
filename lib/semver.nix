@@ -27,13 +27,22 @@
 
 # ---------------------------------------------------------------------------- #
 
-  inherit (builtins) compareVersions;
+  # Same as default compare except unlike Nix we treat pre-tags as being "lower"
+  # than untagged versions.
+  # For whatever reason Nix's builtin compare treats "pre-tags" as "newer" than
+  # the same untagged version.
+  compareSemvers = a: b: let
+    base    = builtins.compareVersions a b;
+    sameMMP = ( lib.yank "([^-]+)(-.*)?" a ) == ( lib.yank "([^-]+)(-.*)?" b );
+  in if a == b then 0 else
+     if sameMMP && ( ( a == "${b}-0" ) || ( b == "${a}-0" ) ) then - base else
+     base;
 
 # ---------------------------------------------------------------------------- #
 
   # Inclusive
   semverRange' = { from, to }: let
-    x = ( compareVersions to from ) < 0;
+    x = ( compareSemvers to from ) < 0;
   in if x then { from = to; to = from; } else { inherit to from; };
 
   semverRange = x:
@@ -41,20 +50,20 @@
       to: semverRange' { from = x; inherit to; };
 
   semverInRange = { from, to }: v: let
-    f = ( compareVersions from v ) <= 0;
-    t = 0 <= ( compareVersions to v );
+    f = ( compareSemvers from v ) <= 0;
+    t = 0 <= ( compareSemvers to v );
   in f && t;
 
   # XXX: Does not assert that the merge is valid.
   semverJoinRanges' = a: b: let
-    from = if ( compareVersions a.from b.from ) < 0 then a.from else b.from;
-    to = if 0 < ( compareVersions a.to b.to ) then a.to else b.to;
+    from = if ( compareSemvers a.from b.from ) < 0 then a.from else b.from;
+    to = if 0 < ( compareSemvers a.to b.to ) then a.to else b.to;
   in { inherit from to; };
 
   # XXX: Does not assert that the merge is valid.
   semverIntersectRanges' = a: b: let
-    from = if ( compareVersions a.from b.from ) < 0 then b.from else a.from;
-    to = if 0 < ( compareVersions a.to b.to ) then b.to else a.to;
+    from = if ( compareSemvers a.from b.from ) < 0 then b.from else a.from;
+    to = if 0 < ( compareSemvers a.to b.to ) then b.to else a.to;
   in { inherit from to; };
 
   semverRangesOverlap = a: b: let
@@ -69,25 +78,25 @@
 
   semverSatRange = semverInRange;
 
-  semverSatExact = want: have: ( compareVersions want have ) == 0;
+  semverSatExact = want: have: ( compareSemvers want have ) == 0;
 
   semverSatTilde = want: have: let
     w' = lib.yank "([^-]+)-.*" want;
     w  = if w' == null then want else w';
     h' = lib.yank "([^-]+)-.*" have;
     h  = if h' == null then have else h';
-  in ( compareVersions w h ) == 0;
+  in ( compareSemvers w h ) == 0;
 
   # FIXME: `0.x' and `0.0.x' are special cases.
   semverSatCaret = want: have: let
-    gt = ( compareVersions want have ) <= 0;
+    gt = ( compareSemvers want have ) <= 0;
     sm = ( lib.versions.major want ) == ( lib.versions.major have );
   in gt && sm;
 
-  semverSatGt  = want: have: ( compareVersions want have ) < 0;
-  semverSatGe  = want: have: ( compareVersions want have ) <= 0;
-  semverSatLt  = want: have: 0 < ( compareVersions want have );
-  semverSatLe  = want: have: 0 <= ( compareVersions want have );
+  semverSatGt  = want: have: ( compareSemvers want have ) < 0;
+  semverSatGe  = want: have: ( compareSemvers want have ) <= 0;
+  semverSatLt  = want: have: 0 < ( compareSemvers want have );
+  semverSatLe  = want: have: 0 <= ( compareSemvers want have );
 
   # FIXME: Join/Intersect ranges
   semverSatAnd  = cond1: cond2: have: ( cond1 have ) && ( cond2 have );
@@ -333,6 +342,7 @@
 
 in {
   inherit
+    compareSemvers
     semverRange
     semverInRange
     semverJoinRanges'
