@@ -335,6 +335,7 @@
       sha1   = yt.either ytypes.Strings.sha1_hash ytypes.Strings.sha1_sri;
       sha256 = yt.either ytypes.Strings.sha256_hash ytypes.Strings.sha256_sri;
       sha512 = yt.either ytypes.Strings.sha512_hash ytypes.Strings.sha512_sri;
+      shasum = ytypes.Eithers.sha1;
 
       integrity = yt.eitherN [
         yt.Strings.md5_sri
@@ -363,8 +364,7 @@
     };
 
     Sums.hash = yt.sum {
-      shasum = ytypes.Eithers.sha1;
-      inherit (ytypes.Eithers) md5 sha1 sha256 sha512;
+      inherit (ytypes.Eithers) md5 sha1 shasum sha256 sha512;
       inherit (ytypes.String)
         sha1_hash sha256_hash sha512_hash md5_hash
         sha1_sri sha256_sri sha512_sri md5_sri
@@ -374,7 +374,7 @@
 
     inherit (ytypes.Eithers)
       sha1 sha256 sha512 md5
-      integrity b16 hash
+      integrity b16 hash shasum
     ;
     inherit (ytypes.Strings) narHash;
 
