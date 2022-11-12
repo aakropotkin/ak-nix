@@ -17,7 +17,10 @@
   # If you pass in an attrset you'll receive a list of pairs sorted.
   # Converting back to an attrset would "undo" the sorting because fields are
   # "unsorted" and printed alphabetically.
-  sortVersions' = { ascending ? false, accessor ? getVersion }: xs: let
+  sortVersions' = {
+    ascending ? false
+  , accessor  ? ( x: if builtins.isString x then x else getVersion x )
+  }: xs: let
     gvp = if builtins.isList xs then accessor
                                 else ( { name, value }: accessor value );
     versionList = if builtins.isList xs then xs else lib.attrsToList xs;
