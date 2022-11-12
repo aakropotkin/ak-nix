@@ -16,6 +16,7 @@
   inherit (libtriv)
     sortVersions'
     sortVersions
+    latestVersion
   ;
 
 # ---------------------------------------------------------------------------- #
@@ -37,6 +38,11 @@
         "foo/1.0.0" "bar/2.0.0" "baz/3.0.0"
       ];
       expected = ["baz/3.0.0" "bar/2.0.0" "foo/1.0.0"];
+    };
+
+    testLatestVersion_0 = {
+      expr     = latestVersion ["1.0.0" "2.0.0" "3.0.0"];
+      expected = "3.0.0";
     };
 
   };  # End tests
