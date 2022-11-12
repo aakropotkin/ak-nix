@@ -47,6 +47,20 @@
 
     inherit (nixpkgs.lib.extend libOverlays.default) eachDefaultSystemMap;
 
+    lib = nixpkgs.lib.extend libOverlays.default;
+
+# ---------------------------------------------------------------------------- #
+
+    packages = eachDefaultSystemMap ( system: let
+      pkgsFor = nixpkgs.legacyPackages.${system}.extend overlays.default;
+    in {
+      tests = ( pkgsFor.callPackage ./tests {
+        inherit pkgsFor nixpkgs system;
+        inherit (pkgsFor) lib;
+      } ).checkDrv;
+    } );
+
+
 # ---------------------------------------------------------------------------- #
 
   in {
@@ -56,10 +70,7 @@
     # Inheriting these allows us to avoid referring to a "global self".
     # This is important in order to avoid quirks in lockfiles, and to simplify
     # the use of `callFlake'.
-    inherit overlays libOverlays ytOverlays nixosModules;
-
-    lib = nixpkgs.lib.extend libOverlays.default;
-
+    inherit overlays libOverlays ytOverlays nixosModules lib;
 
 # ---------------------------------------------------------------------------- #
 
@@ -85,13 +96,10 @@
 
 # ---------------------------------------------------------------------------- #
 
-    packages = eachDefaultSystemMap ( system: let
+    checks = lib.eachDefaultSystemMap ( system: let
       pkgsFor = nixpkgs.legacyPackages.${system}.extend overlays.default;
     in {
-      tests = ( pkgsFor.callPackage ./tests {
-        inherit pkgsFor nixpkgs system;
-        inherit (pkgsFor) lib;
-      } ).checkDrv;
+      inherit (packages.${system}) tests;
     } );
 
 
