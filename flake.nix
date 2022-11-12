@@ -70,7 +70,7 @@
     # Inheriting these allows us to avoid referring to a "global self".
     # This is important in order to avoid quirks in lockfiles, and to simplify
     # the use of `callFlake'.
-    inherit overlays libOverlays ytOverlays nixosModules lib;
+    inherit overlays libOverlays ytOverlays nixosModules lib packages;
 
 # ---------------------------------------------------------------------------- #
 
