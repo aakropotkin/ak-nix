@@ -31,6 +31,10 @@
                                 else showPretty y;
   };
 
+  showPrettyAttrNames = a: showPretty ( builtins.attrNames a );
+  showPrettyAttrTypes = a:
+    showPretty ( builtins.mapAttrs ( _: builtins.typeOf ) a );
+
 
 # ---------------------------------------------------------------------------- #
 
@@ -92,6 +96,8 @@ in {
     showPretty
     showPrettyCurried
     prettyArgs
+    showPrettyAttrNames
+    showPrettyAttrTypes
 
     pwd'
     pwd
@@ -99,6 +105,8 @@ in {
   showp = showPretty;
   spp   = showPrettyCurried;
   spa   = prettyArgs;
+  saa   = showPrettyAttrNames;
+  sat   = showPrettyAttrTypes;
 
   # FIXME: Handle globs in the middle of paths, and names.
   ls' = lsDirGlob' "";
