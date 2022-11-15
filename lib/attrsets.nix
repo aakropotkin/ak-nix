@@ -103,6 +103,23 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Parse a string like `foo.bar."baz.quux".fizz."buzz"' to an attrpath,
+  # ["foo" "bar" "baz.quux" "fizz" "buzz"]
+  parseAttrPath = str: let
+    dropEmpty = builtins.filter ( x: x != "" );
+    esc  = dropEmpty ( builtins.split "\"([^\"]*)\"" str );
+    proc = acc: x:
+      if builtins.isList x then acc ++ x else
+      acc ++ ( dropEmpty ( lib.splitString "." x ) );
+  in builtins.foldl' proc [] esc;
+
+
+  # getAttrByStr "foo.\"bar.baz\".quux" { foo."bar.baz".quux = 420; } => 420
+  getAttrByStr = s: builtins.getAttr ( parseAttrPath s );
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     pushDownNames
@@ -112,6 +129,8 @@ in {
     remapKeys remapKeysWith
     listToAttrsBy
     foldAttrsl
+    parseAttrPath
+    getAttrByStr
   ;
 }
 
