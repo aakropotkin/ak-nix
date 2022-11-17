@@ -14,6 +14,9 @@
 
 { lib }: let
 
+  yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
+  inherit (lib.ytypes.Typeclasses) functor;
+
 # ---------------------------------------------------------------------------- #
 #
 # Nixpkgs routines included for reference.
@@ -130,19 +133,81 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Shallow check, avoids fucking up a functor with wrappers.
+  # This is pretty goofy honestly but it's a stub for any future references.
+  arg_processor = let
+    # arg0  = functor;
+    # arg1  = ( yt.defun functor yt.any );
+    # rsl   = yt.any;
+    cond = ap: yt.function.check ( ap {} );
+  in yt.restrict "arg_processor" cond yt.function;
+
+  functor_with_processArgs = let
+    cond = funk:
+      ( funk ? __processArgs ) && ( funk ? __innerFunction ) &&
+      ( yt.Funk.arg_processor.check funk.__processArgs );
+  in yt.restrict "with_pargs" cond functor;
+
+  hasStandardPAFunk = f:
+    ( f ? __functor ) && ( f ? __processArgs ) && ( f ? __innerFunction ) &&
+    ( f.__functionMeta.properties.funkT or null ) == "pargs-std";
+
+  functor_with_std_processArgs =
+    yt.restrict "std:pargs" hasStandardPAFunk functor;
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Run arg processor on funk.
+  # Throws an error if one isn't defined.
+  processArgs = funk: ( functor_with_processArgs funk ).__processArgs funk;
+
+  stdProcessArgsFunctor = self: x:
+    self.__innerFunction ( self.__processArgs self x );
+
   # Strictly wrap a function with an argument handler/pre-processor.
   # NOTE: No `self' reference allowed during arg processing; the arg processor
   # is not a functor.
   #
   # Ex:
-  # let incFloored = setFunctionArgProcess ( x: x + 1 ) builtins.floor;
+  # let incFloored = setFunctionArgProcess ( self: x: x + 1 ) builtins.floor;
   # in  map incFloored [1 1.1 1.9 2]
   # ==> [2 2 2 3]
   setFunctionArgProcessor = f: pa: {
+    __functionMeta.properties.funkT = "pargs-std";
     __processArgs   = pa;
     __innerFunction = f;
-    __functor = self: args: self.__innerFunction ( self.__processArgs args );
+    __functor       = stdProcessArgsFunctor;
   };
+
+
+  # Write over existing `__processArgs' functor if one exists, operates under
+  # the assumption that the functor is defined as the standard
+  # `setFunctionProcessor' functor.
+  setFunkArgProcessor = let
+    inner = f: pa: { __functor = stdProcessArgsFunctor; } // f // {
+      __functionMeta = ( f.__functionMeta or {} ) // {
+        properties   = ( f.__functionMeta.properties or {} ) // {
+          funkT = "pargs-std";
+        };
+      };
+      __processArgs = pa;
+    };
+    nopa  = yt.restrict "no-pargs" ( f: ! ( f ? __processArgs ) ) functor;
+    arg0  = yt.either functor_with_std_processArgs nopa;
+  in yt.defun [arg0 arg_processor functor_with_processArgs] inner;
+
+
+# ---------------------------------------------------------------------------- #
+
+  setFunkMetaField = f: k: v: f // {
+    __functionMeta = ( f.__functionMeta or {} ) // { ${k} = v; };
+  };
+
+  setFunkDoc  = f: setFunkMetaField "doc";
+  setFunkProp = f: p: v: let
+    prev = f.__functionMeta.properties or {};
+  in setFunkMetaField "properties" ( prev // { ${p} = v; } );
 
 
 # ---------------------------------------------------------------------------- #
@@ -273,6 +338,20 @@ in {
     callWith
     callWithOvStrict callWithOvStash callWithOv
   ;
+
+  inherit
+    processArgs
+    stdProcessArgsFunctor
+    hasStandardPAFunk
+    setFunkArgProcessor
+    setFunkMetaField
+    setFunkProp
+    setFunkDoc
+  ;
+
+  ytypes.Funk = {
+    inherit arg_processor functor_with_processArgs functor_with_std_processArgs;
+  };
 
 }
 
