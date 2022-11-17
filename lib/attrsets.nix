@@ -120,6 +120,52 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Filter out equal attrs recursively.
+  # Returns two top level attrs { _A = { ... }; _B = { ... }; }' containing the
+  # differing fields found in each attrset.
+  #
+  # diffAttrs { x = 1; y = 2; } { x = 1; y = 3; z = 4; }
+  # =>
+  # {
+  #   _A.y = 2;
+  #   _B = {
+  #     y = 3;
+  #     z = 4;
+  #   };
+  # }
+  diffAttrs = a: b: let
+    comm       = builtins.intersectAttrs a b;
+    different  = lib.filterAttrs ( k: bv: a.${k} != bv ) comm;
+    proc = acc: k: let
+      sub = diffAttrs a.${k} b.${k};
+      add = if ( builtins.isAttrs b.${k} ) && ( builtins.isAttrs a.${k} )
+            then diffAttrs a.${k} b.${k}
+            else { _A.${k} = a.${k}; _B.${k} = b.${k}; };
+    in { _A = ( acc._A or {} ) // add._A; _B = ( acc._B or {} ) // add._B; };
+    diff = builtins.foldl' proc {} ( builtins.attrNames different );
+  in {
+    _A = ( removeAttrs a ( builtins.attrNames comm ) ) // ( diff._A or {} );
+    _B = ( removeAttrs b ( builtins.attrNames comm ) ) // ( diff._B or {} );
+  };
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Apply functions held in fields of first arg to values of matching fields in
+  # second arg.
+  # Unmatched fields in second arg are unmodified.
+  #
+  # applyAttrs { x = prev: prev * 2; y = prev: prev / 2; } { x = 1; y = 3; }
+  # =>
+  # { x = 2; y = 1; }
+  applyAttrs = fns: set: let
+    comm    = builtins.intersectAttrs fns set;
+    applied = builtins.mapAttrs ( k: v: fns.${k} v ) comm;
+  in set // applied;
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     pushDownNames
@@ -131,6 +177,8 @@ in {
     foldAttrsl
     parseAttrPath
     getAttrByStr
+    diffAttrs
+    applyAttrs
   ;
 }
 

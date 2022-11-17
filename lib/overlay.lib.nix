@@ -107,6 +107,8 @@ in backportFns // {
     listToAttrsBy
     foldAttrsl
     joinAttrs
+    diffAttrs
+    applyAttrs
   ;
 
   inherit (final.libjson)
@@ -158,6 +160,7 @@ in backportFns // {
     showPrettyAttrNames
     showPrettyAttrTypes
     showDoc
+    spp
   ;
 
   inherit (final.liblist)
