@@ -151,10 +151,13 @@ in backportFns // {
   ;
 
   inherit (final.librepl)
-    pp
+    pp ls pwd
     show
-    ls
-    pwd
+    showPretty
+    showPrettyArgs
+    showPrettyAttrNames
+    showPrettyAttrTypes
+    showDoc
   ;
 
   inherit (final.liblist)
@@ -216,11 +219,12 @@ in backportFns // {
   ytypes = prev.makeExtensible ( ytFinal: let
     libyants = callLib ./yants.nix;
   in {
-    inherit (libyants) Core __internal;
+    inherit (libyants) __internal;
     inherit (final.libtypes.ytypes) Typeclasses;
     Strings = final.libstr.ytypes.Strings // ytFinal.Hash.Strings;
     Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
     Hash    = final.libenc.ytypes;
+    Core    = libyants.Core // final.libtypes.ytypes.Core;
   } );
 
 

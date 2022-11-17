@@ -38,7 +38,7 @@
 
 # ---------------------------------------------------------------------------- #
 
-  prettyArgs = fn: let
+  showPrettyArgs = fn: let
     args     = lib.functionArgs fn;
     allBools = builtins.all builtins.isBool ( builtins.attrValues args );
     showOpt  = builtins.mapAttrs ( _: v: if v then "Optional" else "Mandatory" )
@@ -88,6 +88,15 @@
 
 # ---------------------------------------------------------------------------- #
 
+  showDoc = fn: let
+    loc = "ak-nix#lib.librepl.showDoc";
+  in if ! ( fn ? __functionMeta.doc )
+     then throw "(${loc}): No doc string defined in `<FN>__functionMeta.doc'."
+     else show "\n${fn.__functionMeta.doc}";
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     pp
@@ -95,22 +104,24 @@ in {
     show
     showPretty
     showPrettyCurried
-    prettyArgs
+    showPrettyArgs
     showPrettyAttrNames
     showPrettyAttrTypes
+    showDoc
 
     pwd'
     pwd
   ;
   showp = showPretty;
   spp   = showPrettyCurried;
-  spa   = prettyArgs;
+  spa   = showPrettyArgs;
   saa   = showPrettyAttrNames;
   sat   = showPrettyAttrTypes;
 
   # FIXME: Handle globs in the middle of paths, and names.
   ls' = lsDirGlob' "";
   ls  = lsDirGlob';
+
 }
 
 

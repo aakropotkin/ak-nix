@@ -6,8 +6,6 @@
 
 { lib }: let
 
-  inherit (builtins) isString typeOf;
-  inherit (builtins) readDir isPath pathExists;
   yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
 
 # ---------------------------------------------------------------------------- #
@@ -27,7 +25,7 @@
     NOTE: unlike the `pathlike' Typeclass we don't accept 'fetchTree' args.
   '';
   coercePath = x:
-    if isPath x then x else
+    if builtins.isPath x then x else
     x.outPath or (
       if ! ( strp x ) then
         throw "Cannot coerce a path from type: ${builtins.typeOf x}" else
@@ -43,7 +41,7 @@
     for whether or not a relative path-like (string) needs to be resolved.
   '';
   isAbspath = x:
-    if isPath x then true else
+    if builtins.isPath x then true else
     if ! ( strp x ) then
       throw "Cannot get absolute path of type: ${builtins.typeOf x}"
     else ( x != "" ) && ( ( builtins.substring 0 1 x ) == "/" );
@@ -69,7 +67,7 @@
   '';
   categorizePath = x: let
     p = coercePath x;
-    c = ( readDir ( dirOf p ) ).${baseNameOf p};
+    c = ( builtins.readDir ( dirOf p ) ).${baseNameOf p};
     # XXX: This will NOT work without the quotes because the lexer will drop
     #      the trailing dot from a "raw" path!
     isSymlinkDir = builtins.pathExists "${toString p}/.";
@@ -86,11 +84,11 @@
     different filesystems will be treated naively.
   '';
   commonParent = a: b: let
-    inherit (builtins) split filter isString concatStringsSep;
-    a' = filter isString ( split "/" ( asAbspath a ) );
-    b' = filter isString ( split "/" ( asAbspath b ) );
+    splitSlash = s: builtins.filter builtins.isString ( builtins.split "/" s );
+    a' = splitSlash ( asAbspath a );
+    b' = splitSlash ( asAbspath b );
     common = lib.liblist.commonPrefix a' b';
-  in if ( common == [] ) then "/" else ( concatStringsSep "/" common );
+  in if ( common == [] ) then "/" else ( builtins.concatStringsSep "/" common );
 
 
 # ---------------------------------------------------------------------------- #
