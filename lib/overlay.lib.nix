@@ -225,17 +225,18 @@ in backportFns // {
 
 # ---------------------------------------------------------------------------- #
 
-  ytypes = prev.makeExtensible ( ytFinal: let
+  ytypes = let
     libyants = callLib ./yants.nix;
-  in {
-    inherit (libyants) __internal;
-    inherit (final.libtypes.ytypes) Typeclasses;
-    inherit (final.libfunk.ytypes) Funk;
-    Strings = final.libstr.ytypes.Strings // ytFinal.Hash.Strings;
-    Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
-    Hash    = final.libenc.ytypes;
-    Core    = libyants.Core // final.libtypes.ytypes.Core;
-  } );
+    core = prev.makeExtensible ( ytFinal: {
+      inherit (libyants) __internal;
+      inherit (final.libtypes.ytypes) Typeclasses;
+      inherit (final.libfunk.ytypes) Funk;
+      Strings = final.libstr.ytypes.Strings // ytFinal.Hash.Strings;
+      Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
+      Hash    = final.libenc.ytypes;
+      Core    = libyants.Core // final.libtypes.ytypes.Core;
+    } );
+  in core.extend ( import ../types/overlay.yt.nix );
 
 
 # ---------------------------------------------------------------------------- #
