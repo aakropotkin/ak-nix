@@ -1,4 +1,12 @@
+# ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
+
 { lib }: let
+
+# ---------------------------------------------------------------------------- #
 
   yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
 
@@ -23,25 +31,6 @@
   inherit (lib)
     toBaseDigits
   ;
-  inherit (builtins)
-    concatLists
-    concatStringsSep
-    elemAt
-    filter
-    genList
-    head
-    isInt
-    isList
-    isString
-    length
-    listToAttrs
-    match
-    replaceStrings
-    split
-    stringLength
-    substring
-  ;
-
 
 # ---------------------------------------------------------------------------- #
 
@@ -80,7 +69,9 @@
 
 # ---------------------------------------------------------------------------- #
 
-  splitDigits = str: concatLists ( filter isList ( split "(.)" str ) );
+  splitDigits = str: let
+    charList = builtins.filter builtins.isList ( builtins.split "(.)" str );
+  in builtins.concatLists charList;
 
 
 # ---------------------------------------------------------------------------- #
@@ -143,7 +134,7 @@
   toBase32 = x: let
     digits = toBaseDigits 32 x;
     chars  = map toBase32Digit digits;
-  in concatStringsSep "" chars;
+  in builtins.concatStringsSep "" chars;
 
 
   fromBase32 = str: let
@@ -218,17 +209,17 @@
     if x == 61 then "9" else
     if x == 62 then "+" else
     if x == 63 then "/" else
-    throw "Cannot convert ${toString x} to a single base 64 digit";
+    # FIXME: you shouldn't assume that you can `toString x'
+    throw "Cannot convert ${x} to a single base 64 digit";
 
 
-  # FIXME: Handle "=" and "==" padding
+  # NOTE: these do not handle "==" padding, which is instead handled in routines
+  # which use these as helper functions.
   toBase64 = x: let
     digits = toBaseDigits 64 x;
     chars  = map toBase64Digit digits;
-  in concatStringsSep "" chars;
+  in builtins.concatStringsSep "" chars;
 
-
-  # FIXME: Handle "=" and "==" padding
   fromBase64 = str: let
     digits = map ( c: base64ToDecM.${c} ) ( splitDigits str );
   in baseListToDec 64 digits;
@@ -249,12 +240,12 @@
   # 1b61c0562190a8dff6ae3bb2cf0200ca130b86d4
 
   fixupSriPadding = hash: let
-    m = match "(.*[^A]A)(AA?)" hash;
-    p = replaceStrings ["A"] ["="] ( elemAt m 1 );
-  in if m == null then hash else ( head m ) + p;
+    m = builtins.match "(.*[^A]A)(AA?)" hash;
+    p = builtins.replaceStrings ["A"] ["="] ( builtins.elemAt m 1 );
+  in if m == null then hash else ( builtins.head m ) + p;
 
   algoFromB16Len = hash: let
-    len = stringLength hash;
+    len = builtins.stringLength hash;
   in if len == 128 then "sha512" else
      if len == 64  then "sha256" else
      if len == 40  then "sha1"   else
@@ -272,9 +263,9 @@
   sriToHex = sri: let
     unfixPadding = builtins.replaceStrings ["="] ["A"] sri;
     dropPrefix   = lib.yankN 2 "(md5|sha(1|256|512))-(.*)" unfixPadding;
-    b64l = lib.flatten ( split "(....)" dropPrefix );
+    b64l = lib.flatten ( builtins.split "(....)" dropPrefix );
     b10l = map fromBase64 ( builtins.filter ( x: x != "" ) b64l );
-    b16  = concatStringsSep "" ( map toBase16 b10l );
+    b16  = builtins.concatStringsSep "" ( map toBase16 b10l );
     # Unpad back
   in lib.yank "(.*[^0])0*" b16;
 
@@ -327,7 +318,7 @@
         cond      = s: ( condLen s ) && ( condChars s );
       in yt.restrict "sha512:sri" cond yt.string;
 
-      narHash = ytypes.Strings.sha256_sri;
+      nar_hash = ytypes.Strings.sha256_sri;
     };
 
     Eithers = {
@@ -368,7 +359,7 @@
       inherit (ytypes.String)
         sha1_hash sha256_hash sha512_hash md5_hash
         sha1_sri sha256_sri sha512_sri md5_sri
-        narHash
+        nar_hash
       ;
     };
 
@@ -376,7 +367,7 @@
       sha1 sha256 sha512 md5
       integrity b16 hash shasum
     ;
-    inherit (ytypes.Strings) narHash;
+    inherit (ytypes.Strings) nar_hash;
 
   };  # End ytypes
 
