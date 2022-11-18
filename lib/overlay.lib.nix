@@ -218,6 +218,8 @@ in backportFns // {
     discrDef
     matchLam
     matchTag
+    tagName
+    tagValue
   ;
 
 

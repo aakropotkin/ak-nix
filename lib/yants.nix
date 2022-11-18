@@ -105,8 +105,8 @@
 # ---------------------------------------------------------------------------- #
 
   # Default error message for a type mismatch.
-  typeError = type: val:
-    "expected type '${type}', but value '${prettyPrint val}' is of " +
+  typeError = typeName: val:
+    "expected type '${typeName}', but value '${prettyPrint val}' is of " +
     "type '${builtins.typeOf val}'";
 
 

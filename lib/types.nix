@@ -91,6 +91,70 @@ Examples:
 
 # ---------------------------------------------------------------------------- #
 
+  # Apply a tagged function to a value based on its primitive type.
+  # The "any" type will be used as a fallback but it need not be defined,
+  # failing to match will throw an error though.
+  #   discrTypesMatchLam { string = s: s + " there"; any = x: x; } "hi"
+  #   => "hi there"
+  discrTypesMatchLam = types: matcher: let
+    inner  = x: lib.libtag.match ( discrDefTypes types "any" x ) matcher;
+    genMsg = wrong: right:
+      "The tag \"${wrong}\" found in `matcher' is not a primitive. " +
+      "Did you mean \"${right}\"?";
+    misnomers = {
+      attrset  = "attrs";
+      struct   = "attrs";
+      record   = "attrs";
+      fields   = "attrs";
+      set      = "attrs";
+      unit     = "attrs";
+      tag      = "attrs";
+      "null"   = "nil";
+      empty    = "nil";
+      void     = "nil";
+      number   = "int' or `float";
+      num      = "int' or `float";
+      integer  = "int";
+      decimal  = "float";
+      double   = "float";
+      default  = "any";
+      _default = "any";
+      functor  = "function";
+      lambda   = "function";
+      file     = "path";
+      str      = "string";
+    };
+    bads    = builtins.attrNames ( builtins.intersectAttrs matcher misnomers );
+    mproc   = msgs: wrong: msgs + "\n" + ( genMsg wrong misnomers.${wrong} );
+    msg     = builtins.foldl' mproc "" bads;
+  in if bads == {} then inner else throw msg;
+
+  # As above but it is an error to omit the `any' type.
+  discrDefTypesMatchLam = types: matcher:
+    if matcher ? any  then discrTypesMatchLam types matcher else
+    throw ( "(ak-nix#lib.libtypes.discrDefTypesMatchLam): You must provide "
+            + "a matcher for the 'any' type to use for fallbacks." );
+
+
+# ---------------------------------------------------------------------------- #
+
+  # Identify/"tag" a value with its primitive type.
+  # NOTE: `unit' is excluded and the value `{}' will return "attrs".
+  #   discrPrims "hi" => { string = "hi"; }
+  discrPrims = discrTypes ( ( removeAttrs lib.ytypes.Prim ["any" "unit"] ) // {
+    attrs = yt.attrs yt.any;
+    list  = yt.list yt.any;
+  } );
+
+
+  discrPrimsMatchLam = matcher: x: let
+    tagged = discrPrims x;
+    tn     = lib.libtag.tagName tagged;
+  in ( matcher.${tn} or matcher.any ) x;
+
+
+# ---------------------------------------------------------------------------- #
+
   # A more useful `sum' type with a member similar to `<SUM>.match' except that
   # it acutally makes sense.
   # Lord knows what `<SUM>.match' was intended to do... probably this.
@@ -150,33 +214,32 @@ Example:
 
 # ---------------------------------------------------------------------------- #
 
-    pathlike = yt.Prim.unit // {
-      name = "pathlike";
-      checkType = v: let
-        mt = {
-          string = lib.test "[./].*";
-          path   = _: true;
-          set    = x:
-            ( x ? outPath ) || 
-            ( ( x.type or x._type or null ) == "path" ) ||
-            ( ( x ? __toString ) && ( mt.string ( toString x ) ) );
-        };
-        bt   = builtins.typeOf v;
-        okBt = builtins.elem bt ( builtins.attrNames mt );
-        me   = {
-          string = "expected a pathlike type, and while value is a string - "
-                   + "it must begin with '.' or '/', but we got '${v}'";
-          set = "expected a pathlike type, and while an attrset can be " +
+    pathlike = yt.__internal.typedef' {
+      name    = "pathlike";
+      toError = v: { type, ok } @ result: {
+        string = "expected a pathlike type, and while value is a string - "
+                  + "it must begin with '.' or '/', but we got '${v}'";
+        attrs = "expected a pathlike type, and while an attrset can be " +
                 "pathlike - it must set 'outPath' or '__toString', but" +
                 " value was: " + ( lib.generators.toPretty {} v );
+        any =
+          yt.__internal.typeError "pathlike ( string, path, or {outPath} )" v;
+      }.${type};
+      checkType = v: let
+        matcher = {
+          string = lib.test "[./].*";
+          path   = _: true;
+          attrs  = x: let
+            type = x.type or x._type or null;
+          in ( x ? outPath ) || ( builtins.elem type ["path" "pathlike"] ) ||
+             ( ( x ? __toString ) && ( lib.test "[./].*" ( toString x ) ) );
         };
+        tagged = discrPrims v;
+        tag    = lib.tagName tagged;
       in {
-        ok  = okBt && ( mt.${bt} v );
-        err = if okBt then me.${bt} else
-              "expected a pathlike type ( set, string, or path ), but value " +
-              " is of type '${bt}'";
+        type   = if matcher ? ${tag} then tag else "any";
+        ok = ( matcher ? ${tag} ) && ( lib.libtag.match tagged matcher );
       };
-      check = v: ( Typeclasses.pathlike.checkType v ).ok;
     };
 
 
@@ -239,12 +302,23 @@ in {
   inherit
     discrDefTypes
     discrTypes
+    discrPrims
+    discrTypesMatchLam
+    discrDefTypesMatchLam
   ;
+
+  dtmatchL     = discrTypesMatchLam;
+  dPrims       = discrPrims;
+  dPrimsMatchL = discrPrimsMatchLam;
+
   inherit (Core)
     sumCase
   ;
   ytypes = {
     inherit Prim Typeclasses Core;
+    store_pathlike =
+      yt.restrict "nix-store" ( x: lib.isStorePath ( toString x ) )
+                              lib.ytypes.Typeclasses.pathlike;
   };
 }
 
