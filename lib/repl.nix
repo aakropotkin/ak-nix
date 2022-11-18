@@ -48,8 +48,8 @@
 
 # ---------------------------------------------------------------------------- #
 
-  pwd' = builtins.getEnv "PWD";
-  pwd  = toString ./.;
+  pwd' = if lib.inPureEvalMode then null else builtins.getEnv "PWD";
+  pwd  = if lib.inPureEvalMode then null else ( _: toString ./. ) null;
 
 
 # ---------------------------------------------------------------------------- #
@@ -119,8 +119,7 @@ in {
   sat   = showPrettyAttrTypes;
 
   # FIXME: Handle globs in the middle of paths, and names.
-  ls' = lsDirGlob' "";
-  ls  = lsDirGlob';
+  ls = lsDirGlob';
 
 }
 

@@ -21,26 +21,23 @@
   #
   # Also try calling with your registries ( see [[file:./flake-registry.nix]] ):
   #   builtins.mapAttrs ( _: builtins.fetchTree ) lib.libflake.registryFlakeRefs
-  callFlakeWith = autoArgs: refOrDir: extraArgs: let
+  callFlakeWith = auto: refOrDir: extraArgs: let
     ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
-    fromFt   = if refOrDir ? dir then "${ftSrc}/${refOrDir.dir}" else ftSrc;
+    fromFt   = if refOrDir ? dir then ftSrc + "/${refOrDir.dir}" else ftSrc;
     flakeDir =
       if lib.isStorePath refOrDir       then refOrDir else
       if lib.isCoercibleToPath refOrDir then refOrDir else
       if builtins.isAttrs refOrDir then fromFt else
       throw "This doesn't look like a path";
-    flake  = import "${flakeDir}/flake.nix";
+    flake  = import ( flakeDir + "/flake.nix" );
     inputs = let
-      inherit (builtins) functionArgs intersectAttrs;
-      lock       = lib.importJSONOr { nodes = {}; } "${flakeDir}/flake.lock";
+      lock    = lib.importJSONOr { nodes = {}; } ( flakeDir + "/flake.lock" );
+      locked  = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
+      stdArgs = locked // auto // { inherit self; };
       fetchInput = { locked, ... }: builtins.fetchTree locked;
-      locked     = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
-      stdArgs    = locked // autoArgs // { inherit self; };
     in lib.canPassStrict stdArgs flake.outputs;
     self = flake // ( flake.outputs ( inputs // extraArgs ) );
   in self;
-
-  callFlake = callFlakeWith {};
 
 
 # ---------------------------------------------------------------------------- #
@@ -51,7 +48,7 @@
   # The alternative approach is importing your own lock and scraping for the
   # field `flake = <bool>' in the nodes which is a pain in the ass.
   inputIsFlake = input: assert input ? narHash;
-    ( input ? sourceInfo );
+    input ? sourceInfo;
 
 
 # ---------------------------------------------------------------------------- #
@@ -59,10 +56,12 @@
 in {
   inherit
     callFlakeWith
-    callFlake
     inputIsFlake
   ;
-}  /* End `attrsets.nix' */
+
+  callFlake = callFlakeWith {};
+
+}  # End `attrsets.nix'
 
 
 /* ========================================================================== */

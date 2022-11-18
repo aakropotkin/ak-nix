@@ -218,7 +218,7 @@ Example:
       name    = "pathlike";
       toError = v: { type, ok } @ result: {
         string = "expected a pathlike type, and while value is a string - "
-                  + "it must begin with '.' or '/', but we got '${v}'";
+                  + "it must begin with '.' or '/', but we got \"${v}\"";
         attrs = "expected a pathlike type, and while an attrset can be " +
                 "pathlike - it must set 'outPath' or '__toString', but" +
                 " value was: " + ( lib.generators.toPretty {} v );
@@ -298,7 +298,7 @@ Example:
 
 # ---------------------------------------------------------------------------- #
 
-in {
+in lib.ytypes.__internal // {
   inherit
     discrDefTypes
     discrTypes
@@ -316,9 +316,14 @@ in {
   ;
   ytypes = {
     inherit Prim Typeclasses Core;
-    store_pathlike =
-      yt.restrict "nix-store" ( x: lib.isStorePath ( toString x ) )
-                              lib.ytypes.Typeclasses.pathlike;
+    store_pathlike = let
+      cond = x: ( builtins.isPath x ) ||
+                ( builtins.hasContext ( toString x ) ) ||
+                ( lib.isStorePath ( toString x ) );
+    in yt.restrict "nix-store" cond lib.ytypes.Typeclasses.pathlike;
+    impure_pathlike = let
+      cond = x: ! ( lib.ytypes.Typeclasses.store_pathlike.check x );
+    in yt.restrict "impure" cond lib.ytypes.Typeclasses.pathlike;
   };
 }
 
