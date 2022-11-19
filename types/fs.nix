@@ -108,6 +108,7 @@ in {
 
   inherit (Strings)
     filename
+    relpath
   ;
 
   inherit (Eithers)

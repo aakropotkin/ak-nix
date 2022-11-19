@@ -413,17 +413,19 @@
   Core.restrict = name: pred: t: let
     restriction = "${t.name}[${name}]";
   in typedef' {
-    name = restriction;
+    name      = restriction;
     checkType = v: let
-      res = t.checkType v;
-      iok = pred v;
+      res  = t.checkType v;
+      ok  = pred v;
+      msg  = "restriction '${restriction}' predicate returned unexpected " +
+             "value '${prettyPrint ok}' instead of boolean";
     in if ! ( t.checkToBool res ) then res else
-       if builtins.isBool iok then {
-         ok  = iok;
-         err = "${prettyPrint v} does not conform to restriction '${restriction}'";
-       } else
-       # use throw here to avoid spamming the build log
-       throw "restriction '${restriction}' predicate returned unexpected value '${prettyPrint iok}' instead of boolean";
+       if builtins.isBool ok then {
+         inherit ok;
+         err =
+           "${prettyPrint v} does not conform to restriction '${restriction}'";
+       } else  # Use throw here to avoid spamming the build log
+       throw msg;
   };
 
 
