@@ -60,5 +60,6 @@ jobs:
           nix build head#tests --show-trace --impure;
 
       - name: DeepSeq Lib
-      - run: nix eval head#lib --apply 'lib: builtins.deepSeq lib true' --show-trace;
+      - run: |
+          nix eval head#lib --apply 'lib: builtins.deepSeq lib true' --show-trace;
 
