@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/all-tests.yml
       - flake.nix
+      - flake.lock
       - tests/**
       - types/**
       - lib/**
@@ -16,6 +17,7 @@ on:
     paths:
       - .github/workflows/all-tests.yml
       - flake.nix
+      - flake.lock
       - tests/**
       - types/**
       - lib/**
@@ -56,3 +58,7 @@ jobs:
         run: |
           nix build head#tests --show-trace;
           nix build head#tests --show-trace --impure;
+
+      - name: DeepSeq Lib
+      - run: nix eval head#lib --apply 'lib: builtins.deepSeq lib true' --show-trace;
+
