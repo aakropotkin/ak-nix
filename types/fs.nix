@@ -44,7 +44,21 @@
     abspath = restrict "absolute" ( lib.test "/.*" )    Strings.path;
     relpath = restrict "relative" ( lib.test "[^/].*" ) Strings.path;
 
-    store_path = restrict "store" ( lib.test "/nix/store/.*" ) Strings.abspath;
+    store_path = let
+      b32c = lib.libstr.base32Chars';
+      patt = "(/nix/store/[${b32c}]\{32\}-[${b32c}+-.?_=]*)/.*";
+      cond = s: let
+        m  = builtins.match patt s;
+        lc = ( builtins.stringLength m ) <= 211;
+      in ( m != null) && lc;
+    in restrict "abspath[store]" cond yt.string;
+ 
+    store_filename = let
+      b32c     = lib.libstr.base32Chars';
+      lenCond  = s: ( builtins.stringLength s ) <= 167;
+      pattCond = s: lib.test "[${b32c}+-.?_=]*" s;
+      cond     = s: ( lenCond s ) && ( pattCond s );
+    in restrict "filename[store]" cond yt.string;
 
   };  # End Strings
 
