@@ -61,5 +61,4 @@ jobs:
 
       - name: DeepSeq Lib
       - run: |
-          nix eval head#lib --apply 'lib: builtins.deepSeq lib true' --show-trace;
-
+          nix eval head#lib --apply "lib: builtins.deepSeq lib true" --show-trace;
