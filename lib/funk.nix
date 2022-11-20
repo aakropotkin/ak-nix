@@ -321,6 +321,65 @@
 
 # ---------------------------------------------------------------------------- #
 
+  # Create a Hoare triple from a functor that has a `__functionMeta.signature'
+  # field, running pre/post conditions on input and output.
+  # Limitations:
+  #  - No curried functions.
+  #    + Hoare triples are triples are tuples of "pre-condition predicate",
+  #      "command", and "post-condition predicate".
+  #    + Curried functions are more obnoxious to check in a standardized way
+  #      especially if we want to avoid screwing up the functor's metadata
+  #      fields as we curry.
+  #  - Type signature must be expressed as a list of exactly two YANTS types.
+  #    + "exactly two" is the consequence of "No curried functions".
+  #  - The functor must account for `__processArgs' in relation to the declared
+  #    type signature.
+  #    + If `signature' indicates the argset before vs after `__processArgs',
+  #      the functor needs to call the type checker at the proper time.
+  mkFunkTypeChecker' = { __functionMeta, ... } @ functor: let
+    argt = builtins.head __functionMeta.signature;
+    rslt = builtins.elemAt __functionMeta.signature 1;
+    name = __functionMeta.name or "<LAMBDA>";
+    checkOne = type: v: let
+      checked = type.checkType v;
+      ok      = type.checkToBool checked;
+      err'    = if ok then {} else { err = type.toError v checked; };
+    in err' // { inherit type checked ok; };
+    baseType = lib.libtypes.typedef' {
+      inherit name;
+      checkType = { args, result ? null }: let
+        arg_info = checkOne argt args;
+        rsl_info = checkOne rslt result;
+      in {
+        inherit arg_info rsl_info;
+        ok = arg_info.ok && rsl_info.ok;
+      };
+      toError = { args, result }: { ok, arg_info, rsl_info }: let
+        a   = arg_info; r = rsl_info;
+        fl  = if ! ( __functionMeta ? from ) then ["("] else
+              ["(" __functionMeta.from "."];
+        loc = fl ++ [name "): "];
+        msg = if ok then ["no errors."] else
+              if a.ok then ["Typecheck of result failed:\n  ${r.err}"] else
+              ["Typecheck of inputs failed:\n  ${a.err}"];
+              #if r.ok then ["Typecheck of inputs failed:\n  ${a.err}"] else
+              #["Typecheck of inputs and result failed.\n"
+              # "Input Error:\n  ${a.err}\nResult Error:\n  ${r.err}\n"];
+      in builtins.concatStringsSep "" ( loc ++ msg );
+      def = { inherit argt rslt name checkOne; };
+    };
+  in baseType // {
+    __toString = self: builtins.concatStringsSep "" [
+      "TypeCheck[" name "] :: " argt.name " -> " rslt.name
+    ];
+  };
+
+  mkFunkTypeChecker = yt.defun [yt.Typeclasses.functor yt.type]
+                               mkFunkTypeChecker';
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit
@@ -347,6 +406,11 @@ in {
     setFunkMetaField
     setFunkProp
     setFunkDoc
+  ;
+
+  inherit
+    mkFunkTypeChecker'
+    mkFunkTypeChecker
   ;
 
   ytypes.Funk = {
