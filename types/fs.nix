@@ -10,6 +10,8 @@
   yt = ytypes // ytypes.Prim // ytypes.Core;
   inherit (yt) restrict string either eitherN sum;
 
+  b32c = "0-9a-df-np-sv-z";
+
 # ---------------------------------------------------------------------------- #
 
   RE = {
@@ -45,18 +47,16 @@
     relpath = restrict "relative" ( lib.test "[^/].*" ) Strings.path;
 
     store_path = let
-      b32c = lib.libstr.base32Chars';
-      patt = "(/nix/store/[${b32c}]\{32\}-[${b32c}+-.?_=]*)/.*";
+      patt = "(/nix/store/[${b32c}]{32}-[0-9a-zA-Z+.?_=-]*)(/.*)?";
       cond = s: let
         m  = builtins.match patt s;
-        lc = ( builtins.stringLength m ) <= 211;
+        lc = ( builtins.stringLength ( builtins.head m ) ) <= 211;
       in ( m != null) && lc;
     in restrict "abspath[store]" cond yt.string;
  
     store_filename = let
-      b32c     = lib.libstr.base32Chars';
       lenCond  = s: ( builtins.stringLength s ) <= 168;
-      pattCond = s: lib.test "[${b32c}+-.?_=]*" s;
+      pattCond = s: lib.test "[0-9a-zA-Z+-.?_=]*" s;
       cond     = s: ( lenCond s ) && ( pattCond s );
     in restrict "filename[store]" cond yt.string;
 
