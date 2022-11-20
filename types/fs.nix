@@ -55,7 +55,7 @@
  
     store_filename = let
       b32c     = lib.libstr.base32Chars';
-      lenCond  = s: ( builtins.stringLength s ) <= 167;
+      lenCond  = s: ( builtins.stringLength s ) <= 168;
       pattCond = s: lib.test "[${b32c}+-.?_=]*" s;
       cond     = s: ( lenCond s ) && ( pattCond s );
     in restrict "filename[store]" cond yt.string;
