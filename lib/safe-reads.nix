@@ -1,15 +1,30 @@
 # ============================================================================ #
 #
+# Eval time hints indicating if reading a path might get you killed.
+# Look before you leap.
+#
+# I use it to split "build plan eval" ( instantiation) operations that need
+# impure, from execution of the build plan ( realization ) in a single run.
+# This allows you to dynamically declare reproducible derivations using
+# inference without writing anything to disk or spinning up a second
+# "pure pass" after an impure run.
+# This isn't anything new, flakes in particular have to deal with this a lot.
+# These routines are just guard rails to help you develop without shooting
+# yourself in the foot and accidentally poisoning a generation of builds.
 #
 #
 # ---------------------------------------------------------------------------- #
 
 { lib }: let
 
-  yt = lib.ytypes // lib.ytypes.Core // lib.ytypes.Prim;
-
 # ---------------------------------------------------------------------------- #
 
+  # Mimics the `allowedPaths' in `libexpr'.
+  # We lack any type of introspection to know what the list is with a query,
+  # but the user can populate this list themselves.
+  # In practice you aren't going to emulate the real construct,
+  # but it's useful for path crawling in pure mode and artificial limiting in
+  # impure mode.
   isAllowedPath = { allowedPaths }: path:
     ( builtins.any ( allow: lib.hasPrefix allow path ) allowedPaths );
 
@@ -33,7 +48,6 @@
 
 # ---------------------------------------------------------------------------- #
 
-
   readNeedsImpureStrict = pathlike: let
     str = if builtins.isString pathlike then pathlike else
           pathlike.outPath or ( toString pathlike );
@@ -47,7 +61,6 @@
 
 # ---------------------------------------------------------------------------- #
 
-
   readNeedsImpureExcept = { allowedPaths }: pathlike: let
     str = toString pathlike;
   in ( readNeedsImpureStrict pathlike ) &&
@@ -58,7 +71,6 @@
 
 
 # ---------------------------------------------------------------------------- #
-
 
   readAllowed' = { pure, ifd, allowedPaths }: pathlike: let
     isImpure       = readNeedsImpureExcept { inherit allowedPaths; } pathlike;
@@ -119,9 +131,8 @@ in {
     defSafeReaders
     runtimeEnvReaders
   ;
-
-
 }
+
 
 # ---------------------------------------------------------------------------- #
 #
