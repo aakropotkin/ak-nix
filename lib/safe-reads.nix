@@ -113,7 +113,7 @@ in {
   inherit
     isAllowedPath
     readNeedsIFD
-    readNeedsImpureStrict readNeedsImpureExcept
+    readNeedsImpureStrict readNeedsImpureExcept readNeedsImpure
     readAllowed' readAllowed
     runReadOp
     defSafeReaders
