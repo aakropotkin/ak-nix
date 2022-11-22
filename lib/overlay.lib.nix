@@ -92,6 +92,14 @@ in backportFns // {
   libtag    = callLib  ./tags.nix;
   libtypes  = callLib  ./types.nix;
   libfilt   = callLib  ./filt.nix;
+  libread   = callLib ./safe-reads.nix;
+
+  inherit (final.libread)
+    readNeedsIFD
+    readNeedsImpure
+    readAllowed
+    runReadOp
+  ;
 
   inherit (final.libfilt)
     genericFilt

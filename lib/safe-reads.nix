@@ -100,6 +100,15 @@
 
 # ---------------------------------------------------------------------------- #
 
+  runtimeEnvReaders = defSafeReaders {
+    pure         = lib.inPureEvalMode;
+    allowedPaths = [];
+    ifd          = true;
+  };
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
   inherit
     isAllowedPath
@@ -108,7 +117,10 @@ in {
     readAllowed' readAllowed
     runReadOp
     defSafeReaders
+    runtimeEnvReaders
   ;
+
+
 }
 
 # ---------------------------------------------------------------------------- #
