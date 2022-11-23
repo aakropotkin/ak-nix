@@ -47,12 +47,30 @@
     else ( x != "" ) && ( ( builtins.substring 0 1 x ) == "/" );
 
 
-  __doc__asAbspath = ''
-    Resolve a relative path to an absolute path.
+  __doc__asAbspathstrEvil = ''
+    Resolve a relative path to an absolute pathstring.
+    This is a dirty implementation that uses the evaluator's CWD to resolve
+    relative paths.
   '';
-  asAbspath = path: let
+  asAbspathstrEvil = path: let
     str = toString path;
-  in if isAbspath str then str else ./. + ( "/" + str );
+  in if isAbspath path then str else ./. + ( "/" + str );
+
+
+  __doc__asAbspath = ''
+    Resolve a relative path to an absolute pathstring.
+    Uses `basedir' to resolve relative paths.
+  '';
+  asAbspath' = basedir: path:
+    if isAbspath path then toString path else
+    if builtin.isPath basedir then basedir + ( "/" + path ) else
+    /. + ( basedir + "/" + path );
+
+  asAbspath = x:
+    if ( builtins.isString x ) || ( builtins.isPath x ) then asAbspath' x else
+    if ( x ? basedir ) && ( x ? path ) then asAbspath' x.basedir x.path else
+    if ( x ? basedir ) && ( x ? relpath ) then asAbspath' x.basedir x.relpath
+    else asAbspath' ( x.basedir or ( toString x ) );
 
 
 # ---------------------------------------------------------------------------- #
@@ -117,10 +135,10 @@
     Also be mindful of how Nix may expand a Path ( type ) vs. a string.
   '';
   realpathRel = from: to: let
-    parent = commonParent from to;
+    parent       = commonParent from to;
     fromToParent = realpathRel' from parent;
     parentToTo   = realpathRel' parent to;
-    joined = "${fromToParent}/${parentToTo}";
+    joined       = "${fromToParent}/${parentToTo}";
     san = builtins.replaceStrings ["/./"] ["/"] joined;
     sanF = s: let m = builtins.match "(\\./)(.*)" s; in
               if ( m == null ) then s else ( builtins.elemAt m 1 );
@@ -239,7 +257,7 @@ in {
     isCoercibleToPath
     coercePath
     isAbspath
-    asAbspath
+    asAbspath' asAbspath
     categorizePath
     commonParent
     realpathRel'
@@ -259,6 +277,7 @@ in {
   __docs__libpath = {
       isCoercibleToPath   = __doc__isCoercibleToPath;
       coercePath          = __doc__coercePath;
+      isAbspath'          = __doc__isAbspath';
       isAbspath           = __doc__isAbspath;
       asAbspath           = __doc__asAbspath;
       categorizePath      = __doc__categorizePath;
