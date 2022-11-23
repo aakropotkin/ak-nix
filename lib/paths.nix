@@ -277,7 +277,6 @@ in {
   __docs__libpath = {
       isCoercibleToPath   = __doc__isCoercibleToPath;
       coercePath          = __doc__coercePath;
-      isAbspath'          = __doc__isAbspath';
       isAbspath           = __doc__isAbspath;
       asAbspath           = __doc__asAbspath;
       categorizePath      = __doc__categorizePath;
