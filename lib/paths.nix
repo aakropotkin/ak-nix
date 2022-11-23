@@ -63,7 +63,7 @@
   '';
   asAbspath' = basedir: path:
     if isAbspath path then toString path else
-    if builtin.isPath basedir then basedir + ( "/" + path ) else
+    if builtins.isPath basedir then basedir + ( "/" + path ) else
     /. + ( basedir + "/" + path );
 
   asAbspath = x:
