@@ -57,33 +57,30 @@
   unGlob = path:
     builtins.head ( builtins.split "\\*" ( toString path ) );
 
-  lsDir' = dir:
-    let
-      files = lib.listFiles dir;
-      dirs = lib.listSubdirs dir;
-    in files ++ ( map ( d: d + "/" ) dirs );
+  lsDir' = dir: let
+    files = lib.listFiles dir;
+    dirs  = lib.listSubdirs dir;
+  in files ++ ( map ( d: d + "/" ) dirs );
 
   # Only handles globs at the end of paths.
-  lsDirGlob' = path':
-    let
-      inherit (builtins) substring stringLength split head replaceStrings;
-      inherit (builtins) concatLists;
-      path = toString path';
-      wasAbs = lib.libpath.isAbspath path;
-      ng = unGlob path;
-      dir = if ( ng == "" ) then ( toString ./. )
-                            else ( lib.libpath.asAbspath ng );
-      plen = stringLength path;
-      isSGlob = ( 2 <= plen ) && ( substring ( plen - 2 ) plen path ) == "/*";
-      isDGlob = ( 3 <= plen ) && ( substring ( plen - 3 ) plen path ) == "/**";
-      files = lib.listFiles dir;
-      subs  = concatLists ( lib.libfs.mapSubdirs lib.libfs.listDir dir );
-      lines = if isSGlob then ( files ++ subs ) else
-              if isDGlob then ( lib.filesystem.listFilesRecursive dir ) else
-              ( lsDir' dir );
-      makeRel = lib.libpath.realpathRel' dir;  # dir -> path -> rel-path
-      relLines = if wasAbs then lines else ( map makeRel lines );
-    in show relLines;
+  lsDirGlob' = path': let
+    inherit (builtins) substring stringLength split head replaceStrings;
+    inherit (builtins) concatLists;
+    path   = toString path';
+    wasAbs = lib.libpath.isAbspath path;
+    ng     = unGlob path;
+    dir    = if ng == "" then toString ./.  else lib.libpath.asAbspath ./. ng;
+    plen    = builtins.stringLength path;
+    isSGlob = ( 2 <= plen ) && ( substring ( plen - 2 ) plen path ) == "/*";
+    isDGlob = ( 3 <= plen ) && ( substring ( plen - 3 ) plen path ) == "/**";
+    files = lib.listFiles dir;
+    subs  = concatLists ( lib.libfs.mapSubdirs lib.libfs.listDir dir );
+    lines = if isSGlob then ( files ++ subs ) else
+            if isDGlob then ( lib.filesystem.listFilesRecursive dir ) else
+            ( lsDir' dir );
+    makeRel = lib.libpath.realpathRel' dir;  # dir -> path -> rel-path
+    relLines = if wasAbs then lines else ( map makeRel lines );
+  in show relLines;
 
 
 # ---------------------------------------------------------------------------- #

@@ -24,20 +24,22 @@ _: let
 # ---------------------------------------------------------------------------- #
 
   listSubdirs = dir: let
-    process = name: type:
-      if ( type == "directory" ) then "${toString dir}/${baseNameOf name}"
-                                 else null;
-    files = builtins.attrValues ( builtins.mapAttrs process ( readDir dir ) );
-  in filter ( x: x != null ) files;
+    proc = name: type:
+      if type == "directory" then toString ( dir + "/${name}" ) else null;
+    inodes = builtins.readDir dir;
+    ents   = builtins.attrValues ( builtins.mapAttrs proc inodes );
+  in builtins.filter ( x: x != null ) ents;
 
   listFiles = dir: let
-    process = name: type:
-      if ( type == "directory" ) then null
-                                 else "${toString dir}/${baseNameOf name}";
-    files = builtins.attrValues ( builtins.mapAttrs process ( readDir dir ) );
-  in filter ( x: x != null ) files;
+    proc = name: type:
+      if type == "directory" then null else toString ( dir + "/${name}" );
+    inodes = builtins.readDir dir;
+    ents   = builtins.attrValues ( builtins.mapAttrs proc inodes );
+  in builtins.filter ( x: x != null ) ents;
 
-  listDir = dir: ( listSubdirs dir ) ++ ( listFiles dir );
+  listDir = dir: let
+    inodes = builtins.readDir dir;
+  in map ( name: toString ( dir + "/${name}" ) ) ( builtins.attrNames inodes );
 
 
 # ---------------------------------------------------------------------------- #
