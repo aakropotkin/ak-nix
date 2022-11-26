@@ -52,19 +52,18 @@
     str = if builtins.isString pathlike then pathlike else
           pathlike.outPath or ( toString pathlike );
     ctx      = builtins.getContext str;
-    forAttrs = ( ( pathlike.drvPath or pathlike.outPath or null ) != null ) ||
-               ( ctx != {} );
+    forAttrs = ( ( pathlike.drvPath or pathlike.outPath or null ) == null ) ||
+               ( ctx == {} );
   in if builtins.isPath pathlike then ! ( lib.isStorePath pathlike ) else
      if builtins.isAttrs pathlike then forAttrs else
-     ( ctx != {} );
+     ( ctx == {} );
 
 
 # ---------------------------------------------------------------------------- #
 
-  readNeedsImpureExcept = { allowedPaths }: pathlike: let
-    str = toString pathlike;
-  in ( readNeedsImpureStrict pathlike ) &&
-     ( ! ( isAllowedPath { inherit allowedPaths; } ) );
+  readNeedsImpureExcept = { allowedPaths }: pathlike:
+    ( readNeedsImpureStrict pathlike ) &&
+    ( ! ( isAllowedPath { inherit allowedPaths; } ( toString pathlike ) ) );
 
   readNeedsImpure = { allowedPaths ? [] }: pathlike:
     readNeedsImpureExcept { inherit allowedPaths; } pathlike;
@@ -74,13 +73,13 @@
 
   readAllowed' = { pure, ifd, allowedPaths }: pathlike: let
     isImpure       = readNeedsImpureExcept { inherit allowedPaths; } pathlike;
-    inAllowedPaths = isAllowedPath { inherit allowedPaths; };
-    needsIFD       = readNeedsIFD pathlike;
-    pureOk         = ! ( pure && isImpure );
-    ifdOk          = ifd || ( ! ifd );
-    ifdMsg  = "Cannot read path '${toString pathlike}' without IFD.";
-    pureMsg = "Cannot read unlocked path '${toString pathlike}' in pure mode.";
-    err'    = if ifdOk && pureOk then {} else {
+    inAllowedPaths = isAllowedPath { inherit allowedPaths; } pathlike;
+    needsIFD = readNeedsIFD pathlike;
+    pureOk   = ( ! pure ) || inAllowedPaths || ( ! isImpure );
+    ifdOk    = ifd || ( ! needsIFD );
+    ifdMsg   = "Cannot read path '${toString pathlike}' without IFD.";
+    pureMsg  = "Cannot read unlocked path '${toString pathlike}' in pure mode.";
+    err'     = if ifdOk && pureOk then {} else {
       err = if ifdOk then pureMsg else ifdMsg;
     };
   in {
