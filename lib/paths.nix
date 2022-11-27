@@ -21,16 +21,18 @@
 
 
   __doc__coercePath = ''
-    Force a path-like `x' to be a Path.
-    NOTE: unlike the `pathlike' Typeclass we don't accept 'fetchTree' args.
+    Force a path-like `x' to be a path.
+    Store paths will be returned as strings, non-store paths will be returned
+    as a `path' value.
   '';
-  coercePath = x:
-    if builtins.isPath x then x else
-    x.outPath or (
-      if ! ( strp x ) then
-        throw "Cannot coerce a path from type: ${builtins.typeOf x}" else
-      if isAbspath x then /. + "${x}" else ./. + "/${toString x}"
-    );
+  coercePath' = x: let
+    p      = x.outPath or ( toString x );
+    asPath = if yt.FS.Strings.store_path.check p then p else /. + p;
+  in if builtins.isPath x then x else asPath;
+
+  coercePath = let
+    rslt = yt.either yt.path yt.FS.Strings.store_path;
+  in yt.defun [yt.Typeclasses.pathlike rslt] coercePath';
 
 
 # ---------------------------------------------------------------------------- #
@@ -101,12 +103,15 @@
     Common parent is detected by path splitting alone - symlinks or files on
     different filesystems will be treated naively.
   '';
-  commonParent = a: b: let
+  commonParent' = a: b: let
     splitSlash = s: builtins.filter builtins.isString ( builtins.split "/" s );
-    a' = splitSlash ( asAbspath a );
-    b' = splitSlash ( asAbspath b );
+    a' = splitSlash a;
+    b' = splitSlash b;
     common = lib.liblist.commonPrefix a' b';
   in if ( common == [] ) then "/" else ( builtins.concatStringsSep "/" common );
+
+  commonParent = yt.defun [yt.FS.abspath yt.FS.abspath yt.FS.abspath]
+                          commonParent';
 
 
 # ---------------------------------------------------------------------------- #
@@ -117,8 +122,8 @@
   '';
   realpathRel' = from: to: let
     inherit (builtins) substring stringLength length split concatStringsSep;
-    p = asAbspath from;
-    s = asAbspath to;
+    p = toString ( /. + from );
+    s = asAbspath from to;
     dropP = "." + ( substring ( stringLength p ) ( stringLength s ) s );
     isSub = ( stringLength p ) < ( stringLength s );
     swapped = realpathRel' s p;
@@ -243,7 +248,7 @@
       foo/bar   ==> foo/bar
   '';
   asDrvRelPath = p: let
-    a = asAbspath p;
+    a = toString ( /. + p );
     m = builtins.match ".*/[${lib.libstr.base32Chars'}]\{32\}-[^/]*/(.*)" a;
   in if m != null then ( builtins.head m ) else
      if ! ( lib.isStorePath p ) then p else "";
