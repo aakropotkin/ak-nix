@@ -114,7 +114,7 @@
   runtimeEnvReaders = defSafeReaders {
     pure         = lib.inPureEvalMode;
     allowedPaths = [];
-    ifd          = true;
+    ifd          = true;  # For cross eval: `builtins.currentSystem == system'
   };
 
 

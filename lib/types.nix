@@ -283,12 +283,22 @@ Example:
         errType    = "value is of type '${builtins.typeOf v}'";
         errNotFn   = "'__functor' is of type '${builtins.typeOf v.__functor}'";
       in {
-        ok  = ( builtins.isAttrs v ) &&
-              ( ( v ? __functor ) && ( lib.isFunction v.__functor ) );
+        ok = ( builtins.isAttrs v ) &&
+             ( ( v ? __functor ) && ( lib.isFunction v.__functor ) );
         err = errGeneric + ( if v ? __functor then errNotFn else errType );
       };
       check = v: ( Typeclasses.functor.checkType v ).ok;
     };
+
+
+# ---------------------------------------------------------------------------- #
+
+    extensible = let
+      cond = x:
+        ( builtins.isAttrs x ) &&
+        ( builtins.isFunction ( x.extend or x.__extend or null ) ) &&
+        ( builtins.isFunction ( x.__unfix__ or null ) );
+    in yt.__internal.typedef "extensible" cond;
 
 
 # ---------------------------------------------------------------------------- #
@@ -321,6 +331,7 @@ in lib.ytypes.__internal // {
                 ( builtins.hasContext ( toString x ) ) ||
                 ( lib.isStorePath ( toString x ) );
     in yt.restrict "nix-store" cond lib.ytypes.Typeclasses.pathlike;
+    # TODO: process `allowedPaths'
     impure_pathlike = let
       cond = x: ! ( lib.ytypes.Typeclasses.store_pathlike.check x );
     in yt.restrict "impure" cond lib.ytypes.Typeclasses.pathlike;
