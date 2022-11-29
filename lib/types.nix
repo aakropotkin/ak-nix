@@ -196,6 +196,13 @@ Example:
 
 # ---------------------------------------------------------------------------- #
 
+  Attrsets.pkgset =
+    yt.restrict "pkgset" ( x: ( x._type or null ) == "pkgs" )
+                         yt.Typeclasses.extensible;
+
+
+# ---------------------------------------------------------------------------- #
+
   Prim = {
     nil = yt.Prim.unit // {
       name = "nil";
@@ -296,8 +303,7 @@ Example:
     extensible = let
       cond = x:
         ( builtins.isAttrs x ) &&
-        ( builtins.isFunction ( x.extend or x.__extend or null ) ) &&
-        ( builtins.isFunction ( x.__unfix__ or null ) );
+        ( builtins.isFunction ( x.extend or x.__extend or null ) );
     in yt.__internal.typedef "extensible" cond;
 
 
@@ -325,7 +331,8 @@ in lib.ytypes.__internal // {
     sumCase
   ;
   ytypes = {
-    inherit Prim Typeclasses Core;
+    inherit Prim Typeclasses Core Attrsets;
+    inherit (Attrsets) pkgset;
     store_pathlike = let
       cond = x: ( builtins.isPath x ) ||
                 ( builtins.hasContext ( toString x ) ) ||

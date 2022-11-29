@@ -237,7 +237,7 @@ in backportFns // {
     libyants = callLib ./yants.nix;
     core = prev.makeExtensible ( ytFinal: {
       inherit (libyants) __internal;
-      inherit (final.libtypes.ytypes) Typeclasses;
+      inherit (final.libtypes.ytypes) Typeclasses Attrsets;
       inherit (final.libfunk.ytypes) Funk;
       Strings = final.libstr.ytypes.Strings // ytFinal.Hash.Strings;
       Prim    = libyants.Prim // final.libtypes.ytypes.Prim;
