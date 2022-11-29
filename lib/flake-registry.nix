@@ -8,7 +8,7 @@
 
 # ---------------------------------------------------------------------------- #
 
-  registries = let
+  registries' = { ... } @ lazy: let
     paths = {
       # NOTE: The global registry may be different if the user provided CLI args
       # or settings in `nix.conf'.
@@ -36,6 +36,7 @@
   in if ( builtins.length flt ) < 1 then null else builtins.head flt;
 
   lookupFlake = id: let
+    registries = registries' {};
     u = lookupFlakeIn registries.user   id;
     s = lookupFlakeIn registries.system id;
     g = lookupFlakeIn registries.global id;
@@ -44,7 +45,8 @@
 
 # ---------------------------------------------------------------------------- #
 
-  registryFlakeRefs = let
+  registryFlakeRefs' = { ... } @ lazy: let
+    registries = registries' {};
     flakes  = ( registries.global.flakes or [] ) ++
               ( registries.system.flakes or [] ) ++
               ( registries.user.flakes or [] );
@@ -60,12 +62,12 @@
   # Here we just take our original args addin `outPath' and `sourceInfo'.
   #
   # FIXME: follow  indirect -> indirect -> ... -> real
-  registryFlakeTrees = let
+  registryFlakeTrees' = { ... } @ lazy: let
     # XXX: this preserves `dir' at top level.
     ftf = _: fra: let
       sourceInfo = builtins.fetchTree ( removeAttrs fra ["dir"] );
     in fra // { inherit sourceInfo; inherit (sourceInfo) outPath; };
-  in builtins.mapAttrs ftf registryFlakeRefs;
+  in builtins.mapAttrs ftf ( registryFlakeRefs' {} );
 
 
 # ---------------------------------------------------------------------------- #
@@ -189,9 +191,9 @@ in {
 } // ( lib.optionalAttrs ( ! lib.inPureEvalMode ) {
 
   inherit
-    registries
-    registryFlakeRefs
-    registryFlakeTrees
+    registries'
+    registryFlakeRefs'
+    registryFlakeTrees'
   ;
 
 } )
