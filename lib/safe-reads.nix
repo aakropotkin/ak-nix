@@ -3,7 +3,7 @@
 # Eval time hints indicating if reading a path might get you killed.
 # Look before you leap.
 #
-# I use it to split "build plan eval" ( instantiation) operations that need
+# I use it to split "build plan eval" ( instantiation ) operations that need
 # impure, from execution of the build plan ( realization ) in a single run.
 # This allows you to dynamically declare reproducible derivations using
 # inference without writing anything to disk or spinning up a second
