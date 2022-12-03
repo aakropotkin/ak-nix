@@ -12,6 +12,7 @@ _SDIR="${BASH_SOURCE[0]%/*}";
 
 : "${GIT:=git}";
 : "${SED:=sed}";
+: "${REALPATH:=realpath}";
 
 : "${PROJECT:=}";
 : "${SUB_NAME:=}";
@@ -119,12 +120,48 @@ $SED -i "s,^    \./sub\$,    ./$SUB_NAME," "$_SDIR/default.nix";
 
 # ---------------------------------------------------------------------------- #
 
+if test "$( $REALPATH $ROOT; )" != "$( $REALPATH $_SDIR; )"; then
+  read -n 1 -p "Would you like to move check.sh to the project root? [Yn]";
+  echo '';
+  case "$REPLY" in
+    [Nn]*)
+      {
+        echo "NOTE: if you plan to use 'check.sh' outside of the project root";
+        echo "be sure to edit its 'SDIR' and 'FLAKE_REF' setup accordingly.";
+      } >&2;
+      sleep 1s;
+    ;;
+    *) mv "$_SDIR/check.sh" "$ROOT/check.sh"; ;;
+  esac
+fi
+
+
+# ---------------------------------------------------------------------------- #
+
 read -n 1 -p "Would you like to delete ${BASH_SOURCE[0]}? [Yn]";
 echo '';
 case "$REPLY" in
   [Nn]*) :; ;;
   *) rm "${BASH_SOURCE[0]}"; ;;
 esac
+
+
+# ---------------------------------------------------------------------------- #
+
+read -n 1 -p "Would you like to add these files to 'git'? [Yn]";
+echo '';
+case "$REPLY" in
+  [Nn]*) :; ;;
+  *)
+    if test -r "$ROOT/check.sh"; then
+      $GIT add "$ROOT/check.sh";
+    fi
+    $GIT add "$_SDIR";
+  ;;
+esac
+
+
+# ---------------------------------------------------------------------------- #
 
 exit 0;
 
