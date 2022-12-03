@@ -169,6 +169,7 @@ in backportFns // {
     showPrettyAttrTypes
     showDoc
     spp
+    spa
   ;
 
   inherit (final.liblist)
