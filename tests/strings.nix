@@ -1,12 +1,10 @@
 # ============================================================================ #
+#
+#
+#
+# ---------------------------------------------------------------------------- #
 
-{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, nixpkgs   ? builtins.getFlake "nixpkgs"
-, system    ? builtins.currentSystem
-, pkgs      ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgs.writeText
-, ...
-} @ args: let
+{ lib }: let
 
   inherit (builtins) typeOf tryEval mapAttrs attrNames attrValues toFile;
   inherit (lib.libstr)
@@ -79,12 +77,15 @@
       expected = [[" " "aa"] ["A" "aa"] ["aa " "bb"] [null "aa"] null];
     };
 
+
+# ---------------------------------------------------------------------------- #
+
   };  # End Tests
 
 
 # --------------------------------------------------------------------------- #
 
-in libdbg.mkTestHarness { name = "test-strings"; inherit tests writeText; }
+in tests
 
 # --------------------------------------------------------------------------- #
 #

@@ -4,13 +4,7 @@
 #
 # ---------------------------------------------------------------------------- #
 
-{ lib       ? ( builtins.getFlake ( toString ../.. ) ).lib
-, nixpkgs   ? builtins.getFlake "nixpkgs"
-, system    ? builtins.currentSystem
-, pkgs      ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgs.writeText
-, ...
-} @ args: let
+{ lib }: let
 
   inherit (lib) libdbg libtriv;
   inherit (libtriv)
@@ -22,6 +16,8 @@
 # ---------------------------------------------------------------------------- #
 
   tests = {
+
+# ---------------------------------------------------------------------------- #
 
     testSortVersions_0 = {
       expr     = sortVersions' { ascending = false; } ["1.0.0" "2.0" "3"];
@@ -45,9 +41,13 @@
       expected = "3.0.0";
     };
 
+# ---------------------------------------------------------------------------- #
+
   };  # End tests
 
-in libdbg.mkTestHarness { name = "test-trivial"; inherit tests writeText; }
+# ---------------------------------------------------------------------------- #
+
+in tests
 
 
 # ---------------------------------------------------------------------------- #

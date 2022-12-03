@@ -2,12 +2,7 @@
 
 # Test for your testers so we can test while we test!
 
-{ lib       ? ( builtins.getFlake "${toString ../..}" ).lib
-, nixpkgs   ? builtins.getFlake "nixpkgs"
-, system    ? builtins.currentSystem
-, pkgsFor   ? nixpkgs.legacyPackages.${system}
-, writeText ? pkgsFor.writeText
-} @ args: let
+{ lib }: let
 
   inherit (lib) libdbg;
 
@@ -15,7 +10,7 @@
 
   # Tests for our tests.
   innerTests = {
-    testMaths = { expr = 1 + 1; expected = 2; };
+    testMaths   = { expr = 1 + 1; expected = 2; };
     testStrings = { expr = builtins.substring 0 1 "foo"; expected = "f"; };
   };
 
@@ -28,7 +23,7 @@
     # list of failure cases.
     testRunTestsFields = {
       expr = let
-        run = lib.runTests { testFail = { expr = 1; expected = 2; }; };
+        run    = lib.runTests { testFail = { expr = 1; expected = 2; }; };
         fields = builtins.attrNames ( builtins.head run );
       in fields;
       # The order of these matters, `attrNames' is alphabetically sorted.
@@ -44,7 +39,7 @@
 
     # Sanity check that `libdbg.checker' returns `true' when all tests pass.
     testChecker = {
-      expr = libdbg.checkerDefault "tests" ( lib.runTests innerTests );
+      expr     = libdbg.checkerDefault "tests" ( lib.runTests innerTests );
       expected = true;
     };
 
@@ -52,18 +47,7 @@
 
 
 # --------------------------------------------------------------------------- #
-
-  # Use the test harness as our driver.
-  # FIXME:
-  # Honestly this should be a test case that is driven by a dead simple driver,
-  # but I'm feeling lazy and this at leasts proves that `mkTestHarness'
-  # is free of syntax errors and performs it's basic functions.
-  #
-  # The problem really being: if the test harness is broken in a way that
-  # doesn't properly detect errors in tests, then it cannot be expected to
-  # properly report its own flaws.
-  # This is a "who polices the police?" paradox.
-in libdbg.mkTestHarness { name = "test-debug"; inherit tests writeText; }
+in tests
 
 
 # --------------------------------------------------------------------------- #

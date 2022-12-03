@@ -6,6 +6,8 @@
 
 { lib }: let
 
+# ---------------------------------------------------------------------------- #
+
   inherit (lib.libenc)
     toBaseDigits
     toBase16 fromBase16
@@ -21,6 +23,9 @@
     sha256_hash sha256_sri
     sha512_hash sha512_sri
   ;
+
+
+# ---------------------------------------------------------------------------- #
 
   sha512s = lib.splitString "\n" ( lib.fileContents ./data/sha512s.txt );
 
@@ -78,10 +83,9 @@
 
   };  # End tests
 
-
 # ---------------------------------------------------------------------------- #
 
-in lib.libdbg.mkTestHarness { name = "test-libenc"; inherit tests; }
+in tests
 
 
 # ---------------------------------------------------------------------------- #

@@ -7,22 +7,28 @@
 #
 # ---------------------------------------------------------------------------- #
 
-{ nixpkgs     ? builtins.getFlake "nixpkgs"
-, system      ? builtins.currentSystem
-, pkgsFor     ? nixpkgs.legacyPackages.${system}
-, writeText   ? pkgsFor.writeText
-, lib         ? import ../lib { inherit (nixpkgs) lib; }
-, keepFailed  ? false  # Useful if you run the test explicitly.
-, doTrace     ? true   # We want this disabled for `nix flake check'
+{ ak-nix    ? builtins.getFlake ( toString ../. )
+, lib       ? ak-nix.lib
+, system    ? builtins.currentSystem
+, pkgsFor   ? ak-nix.inputs.nixpkgs.legacyPackages.${system}
+, writeText ? pkgsFor.writeText
+
+# Eval Env
+, pure         ? lib.inPureEvalMode
+, ifd          ? ( builtins.currentSystem or null ) == system
+, allowedPaths ? toString ../.
+, typecheck    ? true
+
+# Options
+, keepFailed ? false  # Useful if you run the test explicitly.
+, nameExtra  ? ""
 , ...
 } @ args: let
 
 # ---------------------------------------------------------------------------- #
 
   # Used to import test files.
-  autoArgs = {
-    inherit lib;
-  } // args;
+  autoArgs = { inherit lib pure ifd allowedPaths typecheck; } // args;
 
   tests = let
     testsFrom = file: let
@@ -32,8 +38,8 @@
     in assert builtins.isAttrs ts;
        ts.tests or ts;
   in builtins.foldl' ( ts: file: ts // ( testsFrom file ) ) {} [
-    ./libsemver
-    ./libfunk
+    ./libsemver.nix
+    ./libfunk.nix
     ./libtag.nix
     ./libjson.nix
     ./liblist.nix
@@ -51,17 +57,22 @@
   # is why we have explicitly provided an alternative `check' as a part
   # of `mkCheckerDrv'.
   harness = let
-    name = "all-tests";
+    purity = if pure then "pure" else "impure";
+    ne     = if nameExtra != "" then " " + nameExtra else "";
+    name   = "ak-nix-${ne} (${system}, ${purity})";
   in lib.libdbg.mkTestHarness {
     inherit name keepFailed tests writeText;
-    mkCheckerDrv = args: lib.libdbg.mkCheckerDrv {
-      inherit name keepFailed writeText;
-      check = lib.libdbg.checkerReport name harness.run;
+    mkCheckerDrv = {
+      __functionArgs  = lib.functionArgs lib.libdbg.mkCheckerDrv;
+      __innerFunction = lib.libdbg.mkCheckerDrv;
+      __processArgs   = self: args: self.__thunk // args;
+      __thunk         = { inherit name keepFailed writeText; };
+      __functor = self: x: self.__innerFunction ( self.__processArgs self x );
     };
     checker = name: run: let
-      msg = lib.libdbg.checkerMsg name run;
-      rsl = lib.libdbg.checkerDefault name run;
-    in if doTrace then builtins.trace msg rsl else rsl;
+      rsl = lib.libdbg.checkerReport name run;
+      msg = builtins.trace rsl null;
+    in builtins.deepSeq msg rsl;
   };
 
 

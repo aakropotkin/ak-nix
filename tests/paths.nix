@@ -18,6 +18,8 @@
 
   tests = with libpath; {
 
+# ---------------------------------------------------------------------------- #
+
     testIsCoercibleToPath = {
       expr = builtins.mapAttrs ( _: isCoercibleToPath ) {
         emptyString = "";
@@ -33,6 +35,9 @@
       };
     };
 
+
+# ---------------------------------------------------------------------------- #
+
     testExtSuffix = {
       expr = extSuffix "foo.bar.baz";
       expected = "bar.baz";
@@ -43,12 +48,18 @@
       expected = "baz";
     };
 
+
+# ---------------------------------------------------------------------------- #
+
     testDropLeadingDotSlash = {
       expr = map dropLeadingDotSlash [
         "./foo" ".bar" "/baz" "quux/." "sally" "/"
       ];
       expected = ["foo" ".bar" "/baz" "quux/." "sally" "/"];
     };
+
+
+# ---------------------------------------------------------------------------- #
 
     testStripComponents = {
       expr =
@@ -65,6 +76,9 @@
       ];
     };
 
+
+# ---------------------------------------------------------------------------- #
+
     # FIXME: need to make example dir
     # TODO: check the "symlinkdir" works.
     #testCategorizePath = {
@@ -72,9 +86,14 @@
     #  expected = [];
     #};
 
+
+# ---------------------------------------------------------------------------- #
+
   };  # End tests
 
-in libdbg.mkTestHarness { name = "test-paths"; inherit tests writeText; }
+# ---------------------------------------------------------------------------- #
+
+in tests
 
 
 # ---------------------------------------------------------------------------- #
