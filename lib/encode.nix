@@ -356,7 +356,7 @@
 
     Sums.hash = yt.sum {
       inherit (ytypes.Eithers) md5 sha1 shasum sha256 sha512;
-      inherit (ytypes.String)
+      inherit (ytypes.Strings)
         sha1_hash sha256_hash sha512_hash md5_hash
         sha1_sri sha256_sri sha512_sri md5_sri
         nar_hash

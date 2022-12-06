@@ -57,7 +57,7 @@
   , def         ? null
   , match       ? null
   }: {
-    inherit name checkToBool toError;
+    inherit name def checkToBool toError;
 
     # check :: a -> bool
     #
@@ -112,7 +112,7 @@
 
 # ---------------------------------------------------------------------------- #
 
-  # checkEach :: string -> type -> [any]
+  # checkEach :: string -> type -> [any] => [checked]
   checkEach = name: t: let
     proc = acc: e: let
       res    = t.checkType e;
@@ -413,7 +413,11 @@
   Core.restrict = name: pred: t: let
     restriction = "${t.name}[${name}]";
   in typedef' {
-    name      = restriction;
+    name = restriction;
+    def  = {
+      inherit pred;
+      baseType = t;
+    };
     checkType = v: let
       res  = t.checkType v;
       ok  = pred v;
