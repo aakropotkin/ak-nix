@@ -236,6 +236,7 @@ let
       builder = "${bash}/bin/bash";
       PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${findutils}/bin";
       outputs = ["out"];
+      preferLocalBuild = true;
       inherit preTar postTar;
       buildCommand = ''
         set -eu;
