@@ -220,6 +220,8 @@ in backportFns // {
     setFunkProp
     setFunkDoc
     processArgs
+    defunk
+    funkName
   ;
 
   inherit (final.libtag)
