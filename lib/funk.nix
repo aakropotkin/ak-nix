@@ -197,6 +197,47 @@
     arg0  = yt.either functor_with_std_processArgs nopa;
   in yt.defun [arg0 arg_processor functor_with_processArgs] inner;
 
+# ---------------------------------------------------------------------------- #
+
+  defunk = {
+    name           ? null
+  , from           ? null
+  , signature      ? null
+
+  , meta           ? {}
+  , __functionMeta ? meta
+
+  , fargs ? null
+  , __functionArgs ?
+    fields.fargs or
+    ( lib.functionArgs ( fields.__innerFunction or ( _: null ) ) )
+
+  , pargs         ? null
+  , __processArgs ? fields.pargs or
+    ( self: x: let
+      ta = ( self.__thunk or {} ) // x;
+    in lib.canPassStrict self.__innerFunction ta )
+
+  , fn              ? null
+  , __innerFunction ? fields.fn or ( _: throw "defunk: fn undefined" )
+
+  , funk      ? null
+  , __functor ? fields.funk or stdProcessArgsFunctor
+  , ...
+  } @ fields: let
+    clean = removeAttrs fields [
+      "name" "from" "signature" "meta" "fargs" "pargs" "fn"
+    ];
+    fmaddFT =
+      if fields ? __functor then {} else { properties.funkT = "pargs-std"; };
+    fmAdd = fmaddFT // ( builtins.intersectAttrs {
+      name = true; from = true; signature = true;
+    } fields );
+  in clean // {
+    inherit __processArgs __functor __innerFunction __functionArgs;
+    __functionMeta = lib.recursiveUpdate fmAdd __functionMeta;
+  };
+
 
 # ---------------------------------------------------------------------------- #
 
@@ -380,6 +421,16 @@
 
 # ---------------------------------------------------------------------------- #
 
+  funkName = funk: let
+    from = funk.__functionMeta.from or null;
+    name = funk.__functionMeta.name or "<LAMBDA>";
+  in if from == null then name else
+     if lib.test ".*#.+" from then "${from}.${name}" else  # Subattrs
+     "${from}#${name}";                                    # Flake
+
+
+# ---------------------------------------------------------------------------- #
+
 in {
 
   inherit
@@ -406,6 +457,8 @@ in {
     setFunkMetaField
     setFunkProp
     setFunkDoc
+    funkName
+    defunk
   ;
 
   inherit
