@@ -223,27 +223,34 @@ let
   untarSanPerms = {
     tarball
   , name          ? stripExtension ( getName "source" tarball )
-  , preTar        ? ""
+  , preTar        ? ":"
   , tarFlags      ? ["--no-same-owner" "--delay-directory-restore"
                      "--no-same-permissions" "--no-overwrite-dir"]
   , tarFlagsLate  ? []
-  , postTar       ? ""
+  , postTar       ? ":"
   , extraAttrs    ? {}
   , extraDrvAttrs ? {}
-  }: ( derivation {
-    inherit name system tarFlags tarFlagsLate tarball;
-    builder = "${bash}/bin/bash";
-    PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${findutils}/bin";
-    passAsFile = ["buildPhase"];
-    buildPhase = ''
-      ${preTar}
-      tar tf $tarball|xargs -i dirname '{}'|sort -u|xargs -i mkdir -p '{}'
-      eval "tar $tarFlags -xf $tarball $tarFlagsLate"
-      mv ./* "$out"||{ mkdir "$out"; mv ./* "$out/"; }
-      ${postTar}
-    '';
-    args = ["-c" ". $buildPhasePath"];
-  } // extraDrvAttrs ) // extraAttrs;
+  }: lib.lazyDerivation {
+    derivation = derivation ( {
+      inherit name system tarFlags tarFlagsLate tarball;
+      builder = "${bash}/bin/bash";
+      PATH    = "${coreutils}/bin:${gnutar}/bin:${gzip}/bin:${findutils}/bin";
+      outputs = ["out"];
+      inherit preTar postTar;
+      buildCommand = ''
+        set -eu;
+        set -o pipefail;
+        eval "''${preTar:-:}";
+        tar tf $tarball|xargs -i dirname '{}'|sort -u|xargs -i mkdir -p '{}';
+        eval "tar $tarFlags -xf $tarball $tarFlagsLate";
+        mv ./* "$out"||{ mkdir "$out"; mv ./* "$out/"; };
+        eval "''${postTar:-:}";
+      '';
+      args = ["-c" ''eval "$buildCommand";''];
+    } // extraDrvAttrs );
+    passthru = extraAttrs.passthru or {};
+    meta     = extraAttrs.meta or {};
+  };
 
 
 /* -------------------------------------------------------------------------- */

@@ -10,7 +10,7 @@
 { ak-nix    ? builtins.getFlake ( toString ../. )
 , lib       ? ak-nix.lib
 , system    ? builtins.currentSystem
-, pkgsFor   ? ak-nix.inputs.nixpkgs.legacyPackages.${system}
+, pkgsFor   ? ak-nix.legacyPackages.${system}
 , writeText ? pkgsFor.writeText
 
 # Eval Env
@@ -28,7 +28,9 @@
 # ---------------------------------------------------------------------------- #
 
   # Used to import test files.
-  autoArgs = { inherit lib pure ifd allowedPaths typecheck; } // args;
+  autoArgs = {
+    inherit lib pure ifd allowedPaths typecheck pkgsFor;
+  } // args;
 
   tests = let
     testsFrom = file: let
