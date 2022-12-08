@@ -106,8 +106,9 @@
       pkgsFor = nixpkgs.legacyPackages.${system}.extend overlays.default;
     in {
       inherit (packages.${system}) tests;
-      untarSanPerms =
-        ( pkgsFor.callPackage ./tests/tar.nix {} ).drvs.testUntarSanPerms_0;
+      untarSanPerms = ( pkgsFor.callPackage ./tests/tar.nix {
+        inherit pkgsFor;
+      } ).drvs.testUntarSanPerms_0;
     } );
 
 
