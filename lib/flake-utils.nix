@@ -15,7 +15,7 @@
   # An example of re-calling `ak-nix' flake from some other flake
   # using the inputs of the caller "self" as a base, then overriding `nixpkgs'
   # to make `ak-nix' follow one of our inputs' instance.
-  #   ak-nix-custom = callFlakeWith self.inputs  {
+  #   ak-nix-custom = callFlakeWith self.inputs self {
   #     nixpkgs = self.inputs.bar.inputs.nixpkgs;
   #   };
   #
