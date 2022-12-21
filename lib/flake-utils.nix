@@ -20,7 +20,13 @@
   #   };
   #
   # Also try calling with your registries ( see [[file:./flake-registry.nix]] ):
-  #   builtins.mapAttrs ( _: builtins.fetchTree ) lib.libflake.registryFlakeRefs
+  # let
+  #   reg = builtins.mapAttrs ( _: builtins.fetchTree )
+  #                           lib.libflake.registryFlakeRefs;
+  #   foo = lib.callFlakeWith reg reg.foo {
+  #     bar = builtins.getFlake "/some/dir/bar";
+  #   };
+  # in foo.packages.default
   callFlakeWith = auto: refOrDir: extraArgs: let
     ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
     fromFt   = if refOrDir ? dir then ftSrc + "/${refOrDir.dir}" else ftSrc;
