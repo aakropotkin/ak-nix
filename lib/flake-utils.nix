@@ -15,12 +15,18 @@
   # An example of re-calling `ak-nix' flake from some other flake
   # using the inputs of the caller "self" as a base, then overriding `nixpkgs'
   # to make `ak-nix' follow one of our inputs' instance.
-  #   ak-nix-custom = callFlakeWith self.inputs  {
+  #   ak-nix-custom = callFlakeWith self.inputs self {
   #     nixpkgs = self.inputs.bar.inputs.nixpkgs;
   #   };
   #
   # Also try calling with your registries ( see [[file:./flake-registry.nix]] ):
-  #   builtins.mapAttrs ( _: builtins.fetchTree ) lib.libflake.registryFlakeRefs
+  # let
+  #   reg = builtins.mapAttrs ( _: builtins.fetchTree )
+  #                           lib.libflake.registryFlakeRefs;
+  #   foo = lib.callFlakeWith reg reg.foo {
+  #     bar = builtins.getFlake "/some/dir/bar";
+  #   };
+  # in foo.packages.default
   callFlakeWith = auto: refOrDir: extraArgs: let
     ftSrc    = builtins.fetchTree ( removeAttrs refOrDir ["dir"] );
     fromFt   = if refOrDir ? dir then ftSrc + "/${refOrDir.dir}" else ftSrc;
