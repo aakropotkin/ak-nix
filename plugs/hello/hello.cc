@@ -1,6 +1,14 @@
+/* ========================================================================== *
+ *
+ *
+ *
+ * -------------------------------------------------------------------------- */
+
 #include "nix/primops.hh"
 
 using namespace nix;
+
+/* -------------------------------------------------------------------------- */
 
 static void prim_hello(
     EvalState & state, const PosIdx pos, Value ** args, Value & v
@@ -9,11 +17,19 @@ static void prim_hello(
     v.mkString( "Hello, World!" );
 }
 
+
 static RegisterPrimOp primop_hello({
     .name = "__hello",
     .args = {},
     .doc = R"(
-      Return the string "Hello, World!". Does not accept arguments.
+      Return the string "Hello, World!"
     )",
     .fun = prim_hello,
 });
+
+
+/* -------------------------------------------------------------------------- *
+ *
+ *
+ *
+ * ========================================================================== */
