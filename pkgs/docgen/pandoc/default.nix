@@ -69,7 +69,7 @@ let
   docbookToJira = runPandoc { from = "docbook"; to = "jira"; };
   docbookToTexi = runPandoc { from = "docbook"; to = "texinfo"; };
   docbookToOrg  = runPandoc { from = "docbook"; to = "org"; };
-  docbookToMan = runPandoc { from  = "docbook"; to = "man"; };
+  docbookToMan  = runPandoc { from  = "docbook"; to = "man"; };
   docbookToManN = n: runPandoc {
     from  = "docbook";
     to    = "man";

@@ -1,30 +1,51 @@
-{ pkgs   ? import <nixpkgs> {}
-, stdenv ? pkgs.stdenv
-, nix    ? pkgs.nix
-, boost  ? pkgs.boost
+# ============================================================================ #
+#
+# Produces a Nix Plugin with a `builtins.hello' extensions.
+#
+# Example plugin invocation ( for a trivial hello world plugin )
+# NOTE: use `libhello.dylib' on Darwin.
+# $ nix --option plugin-files './result/libexec/libhello.so' eval  \
+#       --expr 'builtins.hello'
+#   "Hello, World!"
+#
+#
+# ---------------------------------------------------------------------------- #
+
+{ nixpkgs ? ( import ../../inputs ).nixpkgs.flake
+, system  ? builtins.currentSystem
+, pkgsFor ? nixpkgs.legacyPackages.${system}
+, stdenv  ? pkgsFor.stdenv
+, nix     ?
+  builtins.getFlake "github:NixOS/nix/${builtins.nixVersion or "2.12.0"}"
+, boost   ? pkgsFor.boost
 }: stdenv.mkDerivation {
   pname   = "nix-hello-plugin";
-  version = "0.0.1";
+  version = "0.1.0";
   src = builtins.path {
     name = "source";
     path = ./.;
     filter = name: type:
-      ( type == "regular" ) && ( ( baseNameOf name ) == "hello.cc" );
+      ( type == "regular" ) && ( ( builtins.match ".*\\.nix" name ) == null );
   };
-  buildInputs = [nix.dev boost.dev];
+  libExt      = stdenv.hostPlatform.extensions.sharedLibrary;
+  buildInputs = [nix.packages.${system}.nix.dev boost.dev];
   buildPhase = ''
-    runHook preBuild
-    g++ -shared -o libhello.so -g -std=c++17 ./hello.cc
-    runHook postBuild
+    runHook preBuild;
+    $CXX -shared -o libhello$libExt -std=c++17  ./*.cc  \
+       ${if stdenv.isDarwin then "-undefined suppress -flat_namespace" else ""};
+    runHook postBuild;
   '';
   installPhase = ''
-    runHook preInstall
-    mkdir -p $out/libexec
-    mv -- ./libhello.so $out/libexec/libhello.so
-    runHook postInstall
+    runHook preInstall;
+    mkdir -p $out/libexec;
+    mv -- ./libhello$libExt $out/libexec/libhello$libExt;
+    runHook postInstall;
   '';
 }
-/**
- * nix --option plugin-files './result/libexec/libhello.so' eval --expr 'hello'
- *   "Hello, World!"
- */
+
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #

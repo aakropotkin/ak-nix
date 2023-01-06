@@ -1,11 +1,11 @@
 { nixpkgs            ? builtins.getFlake "nixpkgs"
 , system             ? builtins.currentSystem
-, pkgs               ? nixpkgs.legacyPackages.${system}
+, pkgsFor            ? nixpkgs.legacyPackages.${system}
 , lib                ? nixpkgs.lib
 , genDoc             ? import "${nixpkgs}/nixos/lib/make-options-doc"
-, pandocGen          ? import ../pandoc { inherit (pkgs) pandoc; }
-, infoGen            ? import ../makeinfo { inherit (pkgs) texinfo; }
-, linkFarmFromDrvs   ? pkgs.linkFarmFromDrvs
+, pandocGen          ? import ./pandoc { inherit (pkgsFor) pandoc; }
+, infoGen            ? import ./makeinfo { inherit (pkgsFor) texinfo; }
+, linkFarmFromDrvs   ? pkgsFor.linkFarmFromDrvs
 }:
 let
   inherit (pandocGen) docbookToManN docbookToTexi docbookToHtml docbookToOrg;
@@ -14,7 +14,7 @@ let
 
   generateDocsForOptions = options:
     let
-      docs' = genDoc { inherit pkgs lib options; };
+      docs' = genDoc { inherit lib options; pkgs = pkgsFor; };
       texi = docbookToTexi docs'.optionsDocBook;
       singles = {
         asciidoc = docs'.optionsAsciiDoc // { name = "options.asciidoc"; };
