@@ -2,7 +2,6 @@
 
 using namespace nix;
 
-/* Determine whether the argument is the null value. */
 static void prim_hello(
     EvalState & state, const PosIdx pos, Value ** args, Value & v
   )
