@@ -5,7 +5,12 @@
 # ---------------------------------------------------------------------------- #
 
 {
+
+# ---------------------------------------------------------------------------- #
+
   description = "A dank starter flake";
+
+# ---------------------------------------------------------------------------- #
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/master";
   inputs.ak-nix.url  = "github:aakropotkin/ak-nix/main";
@@ -14,9 +19,26 @@
 # ---------------------------------------------------------------------------- #
 
   outputs = { self, nixpkgs, ak-nix, ... }: let
-    lib = ak-nix.lib.extend self.overlays.lib;
+
+# ---------------------------------------------------------------------------- #
+
+    eachDefaultSystemMap = fn: let
+      defaultSystems = [
+        "x86_64-linux"  "aarch64-linux"  "i686-linux"
+        "x86_64-darwin" "aarch64-darwin"
+      ];
+      proc = system: { name = system; value = fn system; };
+    in builtins.listToAttrs ( map proc defaultSystems );
+
+
+# ---------------------------------------------------------------------------- #
+
+    lib        = ak-nix.lib.extend self.overlays.lib;
     pkgsForSys = system: nixpkgs.legacyPackages.${system};
-  in {  # Begin Outputs
+
+# ---------------------------------------------------------------------------- #
+
+  in {
 
 # ---------------------------------------------------------------------------- #
 
@@ -38,14 +60,14 @@
 # ---------------------------------------------------------------------------- #
 
     # Installable Packages for Flake CLI.
-    packages = lib.eachDefaultSystemMap ( system: let
+    packages = eachDefaultSystemMap ( system: let
       pkgsFor = pkgsForSys system;
     in {} );
 
 
 # ---------------------------------------------------------------------------- #
 
-  };  # End Outputs
+  };  # End `outputs'
 }
 
 

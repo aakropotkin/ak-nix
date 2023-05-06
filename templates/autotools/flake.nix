@@ -1,20 +1,54 @@
+# ============================================================================ #
+#
+#
+# ---------------------------------------------------------------------------- #
+
 {
+
+# ---------------------------------------------------------------------------- #
+
   # FIXME: Replace "PROJECT" with your project name.
   description = "a basic autotools package";
 
-  inputs.utils.url = "github:numtide/flake-utils";
+# ---------------------------------------------------------------------------- #
 
-  outputs = { self, nixpkgs, utils, PROJECT-src }:
-  let systemMap = utils.lib.eachSystemMap utils.lib.defaultSystems;
+  outputs = { self, nixpkgs, utils, PROJECT-src }: let
+
+# ---------------------------------------------------------------------------- #
+
+    eachDefaultSystemMap = fn: let
+      defaultSystems = [
+        "x86_64-linux"  "aarch64-linux"  "i686-linux"
+        "x86_64-darwin" "aarch64-darwin"
+      ];
+      proc = system: { name = system; value = fn system; };
+    in builtins.listToAttrs ( map proc defaultSystems );
+
+# ---------------------------------------------------------------------------- #
+
   in {
-    packages = systemMap ( system:
-      let pkgsFor = import nixpkgs { inherit system; };
-      in rec {
-        PROJECT = pkgsFor.callPackage ./default.nix {};
-        default = PROJECT;
-      }
-    );
-    defaultPackage = systemMap ( system: self.package.${system}.default );
-  };
+
+    packages = eachDefaultSystemMap ( system: let
+      pkgsFor = import nixpkgs { inherit system; };
+      PROJECT = pkgsFor.callPackage ./default.nix {};
+    in {
+      inherit PROJECT;
+      default = PROJECT;
+    } );
+
+
+# ---------------------------------------------------------------------------- #
+
+  };  # End `outputs'
+
+
+# ---------------------------------------------------------------------------- #
+
 }
 
+
+# ---------------------------------------------------------------------------- #
+#
+#
+#
+# ============================================================================ #
