@@ -186,11 +186,13 @@ in {
 
     mkIndirectFlakeRef
     mkFlakeRegistryAlias
+    lookupFlakeIn
   ;
 
 } // ( lib.optionalAttrs ( ! lib.inPureEvalMode ) {
 
   inherit
+    lookupFlake
     registries'
     registryFlakeRefs'
     registryFlakeTrees'
