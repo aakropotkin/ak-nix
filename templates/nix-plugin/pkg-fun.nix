@@ -13,25 +13,25 @@
   dontConfigure         = true;
   libExt                = stdenv.hostPlatform.extensions.sharedLibrary;
   buildPhase            = ''
-    $CC                                     \
-      -x c++                                \
-      -shared                               \
-      -fPIC                                 \
-      -std=c++17                            \
-      -I${nix.dev}/include                  \
-      -I${nix.dev}/include/nix              \
-      -I${boost.dev}/include                \
-      -I${nlohmann_json}/include            \
-      -L${nix}/lib                          \
-      -lnixutil                             \
-      -lnixstore                            \
-      -lnixcmd                              \
-      -lnixexpr                             \
-      -lstdc++                              \
-      -include ${nix.dev}/include/config.h  \
-      -o "lib$pname$libExt"                 \
+    $CC                                                                        \
+      -x c++                                                                   \
+      -shared                                                                  \
+      -fPIC                                                                    \
+      -std=c++17                                                               \
+      -I${nix.dev}/include                                                     \
+      -I${nix.dev}/include/nix                                                 \
+      -I${boost.dev}/include                                                   \
+      -I${nlohmann_json}/include                                               \
+      -L${nix}/lib                                                             \
+      -lnixutil                                                                \
+      -lnixstore                                                               \
+      -lnixcmd                                                                 \
+      -lnixexpr                                                                \
+      -lstdc++                                                                 \
+      -include ${nix.dev}/include/nix/config.h                                 \
+      -o "lib$pname$libExt"                                                    \
       ${if stdenv.isDarwin then "-undefined suppress -flat_namespace" else ""} \
-      ./*.cc                                \
+      ./*.cc                                                                   \
     ;
   '';
   installPhase = ''
