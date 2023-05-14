@@ -145,6 +145,9 @@
 
       tests-sub.path        = ./templates/tests-sub;
       tests-sub.description = "a subset of tests for the `ak-nix' Test harness";
+
+      nix-plugin.path        = ./templates/nix-plugin;
+      nix-plugin.description = "a nix plugin with wrapper executable";
     };
 
 
