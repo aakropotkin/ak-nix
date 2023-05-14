@@ -43,7 +43,7 @@ class FlakeCommand : virtual Args, public MixFlakeOptions
       }
 };
 
-struct CmdFlakeScrape : FlakeCommand {
+struct CmdName : FlakeCommand {
 
   bool someOption = false;
 
