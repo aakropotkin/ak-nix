@@ -45,7 +45,7 @@
       if [[ -d "\$p/bin" ]]; then PATH="\$PATH:\$p/bin"; fi
     done
     exec "${nix}/bin/nix" --plugin-files "$out/libexec/lib$pname$libExt"  \
-                          $pname "\$@";
+                          "$pname" "\$@";
     EOF
     chmod +x "$out/bin/$pname";
   '';
