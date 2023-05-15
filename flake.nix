@@ -148,6 +148,9 @@
 
       nix-plugin.path        = ./templates/nix-plugin;
       nix-plugin.description = "a nix plugin with wrapper executable";
+
+      nix-bin.path        = ./templates/nix-bin;
+      nix-bin.description = "an executable which uses nix libraries";
     };
 
 
