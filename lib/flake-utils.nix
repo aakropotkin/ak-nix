@@ -41,7 +41,7 @@
       locked  = builtins.mapAttrs ( id: fetchInput ) lock.nodes;
       stdArgs = locked // auto // { inherit self; };
       fetchInput = { locked, ... }: builtins.fetchTree locked;
-    in lib.canPassStrict stdArgs flake.outputs;
+    in lib.canPassStrict flake.outputs stdArgs;
     self = flake // ( flake.outputs ( inputs // extraArgs ) );
   in self;
 
