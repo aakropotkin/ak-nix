@@ -15,19 +15,21 @@
       "Makefile"
     ] );
   };
-  nativeBuildInputs     = [pkg-config];
-  buildInputs           = [nix.dev boost nlohmann_json];
-  dontConfigure         = true;
-  buildPhase            = ''
-    $CXX                                                                       \
-      -I${nix.dev}/include                                                     \
-      -I${boost.dev}/include                                                   \
-      -I${nlohmann_json}/include                                               \
-      -include ${nix.dev}/include/nix/config.h                                 \
-      $(pkg-config --libs --cflags nix-main nix-store nix-expr)                \
-      -o "$pname"                                                              \
-      ${if stdenv.isDarwin then "-undefined suppress -flat_namespace" else ""} \
-      ./main.cc                                                                \
+  nativeBuildInputs = [pkg-config];
+  buildInputs       = [nix.dev boost nlohmann_json];
+  dontConfigure     = true;
+  buildPhase        = ''
+    $CXX                                                                 \
+      -I${nix.dev}/include                                               \
+      -I${boost.dev}/include                                             \
+      -I${nlohmann_json}/include                                         \
+      -include ${nix.dev}/include/nix/config.h                           \
+      ./main.cc                                                          \
+      -Wl,--as-needed                                                    \
+      $(pkg-config --libs --cflags nix-cmd nix-main nix-store nix-expr)  \
+      -lnixfetchers                                                      \
+      -Wl,--no-as-needed                                                 \
+      -o "$pname"                                                        \
     ;
   '';
   installPhase = ''

@@ -1,4 +1,6 @@
 
+#include <iostream>
+#include <cstdlib>
 #include <string>
 
 #include <nix/shared.hh>
@@ -9,22 +11,28 @@
 
 #include <nlohmann/json.hpp>
 
-using namespace nix;
-
   int
 main( int argc, char * argv[], char ** envp )
 {
-  initNix();
-  initGC();
+  nix::initNix();
+  nix::initGC();
 
-  evalSettings.pureEval = false;
+  nix::evalSettings.pureEval = false;
 
-  EvalState state( {}, openStore() );
+  nix::EvalState state( {}, nix::openStore() );
 
-  auto originalRef = parseFlakeRef( argv[1], absPath( "." ) );
-  auto resolvedRef = originalRef.resolve( state.store );
+  try
+    {
+      auto originalRef = parseFlakeRef( argv[1], nix::absPath( "." ) );
+      auto resolvedRef = originalRef.resolve( state.store );
+    }
+  catch( std::exception & e )
+    {
+      std::cerr << e.what() << std::endl;
+      return EXIT_SUCCESS;
+    }
 
   std::cout << resolvedRef.to_string() << std::endl;
 
-  return 0;
+  return EXIT_SUCCESS;
 }
