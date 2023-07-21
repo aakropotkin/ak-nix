@@ -14,18 +14,16 @@
   dontConfigure         = true;
   libExt                = stdenv.hostPlatform.extensions.sharedLibrary;
   buildPhase            = ''
-    $CXX                                                                       \
-      -shared                                                                  \
-      -fPIC                                                                    \
-      -std=c++17                                                               \
-      -I${nix.dev}/include                                                     \
-      -I${boost.dev}/include                                                   \
-      -I${nlohmann_json}/include                                               \
-      -include ${nix.dev}/include/nix/config.h                                 \
-      $(pkg-config --libs --cflags nix-main nix-store nix-expr)                \
-      -o "lib$pname$libExt"                                                    \
-      ${if stdenv.isDarwin then "-undefined suppress -flat_namespace" else ""} \
-      ./*.cc                                                                   \
+    $CXX                                                          \
+      -shared                                                     \
+      -fPIC                                                       \
+      -I${nix.dev}/include                                        \
+      -I${boost.dev}/include                                      \
+      -I${nlohmann_json}/include                                  \
+      -include ${nix.dev}/include/nix/config.h                    \
+      $(pkg-config --libs --cflags nix-main nix-store nix-expr)   \
+      -o "lib$pname$libExt"                                       \
+      ./*.cc                                                      \
     ;
   '';
   installPhase = ''
@@ -38,8 +36,7 @@
     for p in \$( <"$out/nix-support/propagated-build-inputs"; ); do
       if [[ -d "\$p/bin" ]]; then PATH="\$PATH:\$p/bin"; fi
     done
-    exec "${nix}/bin/nix" --plugin-files "$out/libexec/lib$pname$libExt"  \
-                          "$pname" "\$@";
+    exec "${nix}/bin/nix" --plugin-files "$out/libexec/lib$pname$libExt" "\$@";
     EOF
     chmod +x "$out/bin/$pname";
   '';
