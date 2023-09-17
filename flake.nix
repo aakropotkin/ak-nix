@@ -128,6 +128,9 @@
       inherit basic;
       default = basic;
 
+      basic-with-lib.path = ./templates/basic-with-lib;
+      basic-with-lib.description = "a dank starter flake with lib extensions";
+
       meaty.path        = ./templates/meaty;
       meaty.description = "a meaty starter flake";
 

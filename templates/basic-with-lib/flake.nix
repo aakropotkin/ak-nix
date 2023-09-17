@@ -1,7 +1,6 @@
 # ============================================================================ #
 #
-# CHANGE: Look for any `CHANGEME' blocks and replace things like `NAME' with
-#         your flake's name.
+# A dank flake starter kit.
 #
 # ---------------------------------------------------------------------------- #
 
@@ -11,15 +10,15 @@
 
   description = "A dank starter flake";
 
+# ---------------------------------------------------------------------------- #
+
+  inputs.nixpkgs.url = "github:NixOS/nixpkgs/master";
+  inputs.ak-nix.url  = "github:aakropotkin/ak-nix/main";
+  inputs.ak-nix.inputs.nixpkgs.follows = "/nixpkgs";
 
 # ---------------------------------------------------------------------------- #
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs";
-
-
-# ---------------------------------------------------------------------------- #
-
-  outputs = { nixpkgs, ... }: let
+  outputs = { self, nixpkgs, ak-nix, ... }: let
 
 # ---------------------------------------------------------------------------- #
 
@@ -34,69 +33,41 @@
 
 # ---------------------------------------------------------------------------- #
 
-    inherit (nixpkgs) lib;
-
-
-# ---------------------------------------------------------------------------- #
-
-    # Aggregate dependency overlays here.
-    
-    ## CHANGEME
-    
-    # If you only need `nixpkgs.legacyPackages', use this
-    overlays.deps = final: prev: {};
-
-    ## If you only need a single extension, use this and change `INPUT'
-    ##overlays.deps = INPUT.overlays.default;
-    
-    ## If you need two, use this and change `INPUT#'s.
-    ##overlays.deps = lib.composeExtensions INPUT0.overlays.default
-    ##                                      INPUT1.overlays.default;
-
-    ## If you need many, use this and change `INPUT#s's
-    ##overlays.deps = lib.composeManyExtensions [
-    ##  INPUT0.overlays.default
-    ##  INPUT1.overlays.default
-    ##  INPUT2.overlays.default
-    ##];
-
-
-# ---------------------------------------------------------------------------- #
-
-    # Define our overlay
-  
-    # CHANGEME
-    
-    overlays.NAME = final: prev: {
-      ## NAME = final.callPackage ./default.nix {};
-    };
-
-    
-    # Make our default overlay as `deps + NAME'.
-    overlays.default = lib.composeExtensions overlays.deps overlays.NAME;
-
+    lib        = ak-nix.lib.extend self.overlays.lib;
+    pkgsForSys = system: nixpkgs.legacyPackages.${system};
 
 # ---------------------------------------------------------------------------- #
 
   in {
 
-    inherit lib overlays;
+# ---------------------------------------------------------------------------- #
 
-    # Installable Packages for Flake CLI.
-    packages = eachDefaultSystemMap ( system: let
-      pkgsFor = nixpkgs.legacyPackages.${system}.extend overlays.default;
+    # Pure `lib' extensions.
+    overlays.lib  = final: prev: {};
+    # Nixpkgs overlay: Builders, Packages, Overrides, etc.
+    overlays.pkgs = final: prev: let
+      callPackagesWith = auto: prev.lib.callPackagesWith ( final // auto );
+      callPackageWith  = auto: prev.lib.callPackageWith ( final // auto );
+      callPackages     = callPackagesWith {};
+      callPackage      = callPackageWith {};
     in {
-      # CHANGEME
-      inherit (pkgsFor) NAME;
-    } );
-
-
-
-  };  # End `outputs'
+      lib = prev.lib.extend self.overlays.lib;
+    };
+    # Recommended: Compose with deps into a single overlay.
+    overlays.default = self.overlays.pkgs;
 
 
 # ---------------------------------------------------------------------------- #
 
+    # Installable Packages for Flake CLI.
+    packages = eachDefaultSystemMap ( system: let
+      pkgsFor = pkgsForSys system;
+    in {} );
+
+
+# ---------------------------------------------------------------------------- #
+
+  };  # End `outputs'
 }
 
 
