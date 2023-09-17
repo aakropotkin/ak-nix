@@ -1,45 +1,22 @@
 {
   "nodes": {
-    "ak-nix": {
-      "inputs": {
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1684161787,
-        "narHash": "sha256-yIUxgeCXP2aRtEOQvbYOauqFWbyj+NnZ1TcAyN9dTEg=",
-        "owner": "aakropotkin",
-        "repo": "ak-nix",
-        "rev": "061e9d05bd3b4937768b5682affd0347d7233817",
-        "type": "github"
-      },
-      "original": {
-        "owner": "aakropotkin",
-        "ref": "main",
-        "repo": "ak-nix",
-        "type": "github"
-      }
-    },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1688834976,
-        "narHash": "sha256-XQgahdzeRSEDZ4HQIaxW8CWcxur0X/OXMDtRgEeqAYc=",
+        "lastModified": 1694961060,
+        "narHash": "sha256-3CJ/6H/JmVRDc8QdFVjFlhpTfeRFzb6nWf48X9IuZO0=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "93658d87a524363d6ad85382b813b59d9580f787",
+        "rev": "9466d15361b37413d51d4057f427dd7adba958cf",
         "type": "github"
       },
       "original": {
         "owner": "NixOS",
-        "ref": "master",
         "repo": "nixpkgs",
         "type": "github"
       }
     },
     "root": {
       "inputs": {
-        "ak-nix": "ak-nix",
         "nixpkgs": "nixpkgs"
       }
     }
